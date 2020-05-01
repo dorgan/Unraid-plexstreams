@@ -1,0 +1,96 @@
+<?xml version='1.0' standalone='yes'?>
+
+<!DOCTYPE PLUGIN [
+  <!ENTITY name      "plexstreams">
+  <!ENTITY author    "Donald Organ">
+  <!ENTITY version   "2020.05.01">
+  <!ENTITY launch    "Settings/PlexStreams">
+  <!ENTITY branch    "master">
+  <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
+  <!ENTITY vnstatURL "&gitURL;/deps/">
+  <!ENTITY pluginURL "&gitURL;/&name;.plg">
+  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
+  <!ENTITY plgPATH   "/boot/config/plugins/&name;">
+  <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
+]>
+
+<PLUGIN  name="&name;"
+         author="&author;"
+         version="&version;"
+         pluginURL="&pluginURL;"
+         support="TBD"
+         launch="&launch;"
+         icon="filk">
+
+    <CHANGES>
+    ##&name;
+###2020.05.01
+###2020.05.01
+    </CHANGES>
+
+    <!--
+    The 'plugin' package file.
+    -->
+    <FILE Name="&plgPATH;/&plgNAME;.txz">
+        <URL>&gitURL;/archive/&plgNAME;.txz</URL>
+    </FILE>
+
+    <!--
+    The 'plugin' MD5 hash.
+    -->
+    <FILE Name="&plgPATH;/&plgNAME;.md5">
+        <URL>&gitURL;/archive/&plgNAME;.md5</URL>
+    </FILE>
+
+    <FILE Name="&plgPATH;/&name;.cfg">
+      <INLINE>
+      <![CDATA[
+      APIKEY=""
+      ]]>
+      </INLINE>
+    </FILE>
+
+
+    
+
+    <FILE Run="/bin/bash">
+        <INLINE>
+            # Creating some directories
+            if [ ! -f "/boot/config/plugins/&name;/&name;.cfg" ]; then
+                echo "APIKEY=\"\"" > /boot/config/plugins/&name;/&name;.cfg
+            fi
+
+            echo ""
+            echo "-----------------------------------------------------------"
+            echo " &name; has been installed."
+            echo " Version: &version;"
+            echo "-----------------------------------------------------------"
+            echo ""
+        </INLINE>
+    </FILE>
+
+    <!--
+    The 'remove' script.
+    -->
+    <FILE Run="/bin/bash" Method="remove">
+        <INLINE>
+          # uninstall plugin
+	        removepkg &plgPATH;/*.txz
+
+	        rm -rf &emhttp;
+            rm -rf &plgPATH;/*.txz \
+		        &plgPATH;/*.md5
+
+            echo ""
+            echo "-----------------------------------------------------------"
+            echo " &name; has been uninstalled."
+            echo " Please reboot your server to complete uninstall this plugin."
+            echo " Version: &version;"
+            echo "-----------------------------------------------------------"
+            echo ""
+
+            exit 0
+        </INLINE>
+    </FILE>
+
+</PLUGIN>

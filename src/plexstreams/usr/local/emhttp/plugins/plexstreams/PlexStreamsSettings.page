@@ -1,0 +1,26 @@
+Menu="PlexStreams"
+Title="Plex Stream Settings"
+Tag="movie"
+---
+<?php
+$plugin = "plexstreams";
+$plg_path = "/boot/config/plugins/" . $plugin;
+$cfg_file    = "$plg_path/" . $plugin . ".cfg";
+if (file_exists($cfg_file)) {
+    $cfg    = parse_ini_file($cfg_file);
+    $apiKey = $cfg['APIKEY'];
+} else {
+    $apiKey = '';
+}
+?>
+
+<form markdown="1" name="network_stat_settings" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="#file" value="networkstats/networkstats.cfg" />
+<input type="hidden" id="COMMAND" name="#command" value="" />
+
+<div>
+    <label for="apikey">Plex API Key:</label>
+    <input id="apikey" name="apikey" value="<?php echo($apiKey) ?>"/>
+</div>
+<input type="submit" value="SAVE">
+</form>
