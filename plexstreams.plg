@@ -62,11 +62,6 @@
 
     <FILE Run="/bin/bash">
         <INLINE>
-            # Creating some directories
-            if [ ! -f "/boot/config/plugins/&name;/&name;.cfg" ]; then
-                echo "APIKEY=\"\"" > /boot/config/plugins/&name;/&name;.cfg
-            fi
-
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
