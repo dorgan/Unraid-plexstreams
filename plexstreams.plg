@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.01">
+  <!ENTITY version   "2020.05.02">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -20,10 +20,12 @@
          pluginURL="&pluginURL;"
          support="TBD"
          launch="&launch;"
-         icon="filk">
+         IconFA="film"
+         icon="film">
 
     <CHANGES>
     ##&name;
+###2020.05.02
 ###2020.05.01
 ###2020.05.01
     </CHANGES>

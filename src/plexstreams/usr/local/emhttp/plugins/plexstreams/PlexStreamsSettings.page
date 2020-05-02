@@ -1,6 +1,6 @@
 Menu="PlexStreams"
 Title="Plex Stream Settings"
-Tag="movie"
+Tag="film"
 ---
 <?php
 $plugin = "plexstreams";
@@ -8,19 +8,81 @@ $plg_path = "/boot/config/plugins/" . $plugin;
 $cfg_file    = "$plg_path/" . $plugin . ".cfg";
 if (file_exists($cfg_file)) {
     $cfg    = parse_ini_file($cfg_file);
-    $apiKey = $cfg['APIKEY'];
+    //var_dump($cfg);
 } else {
-    $apiKey = '';
+    $cfg = array();
+}
+
+function getToken() {
+    global $cfg, $cfg_file;
+    var_dump($cfg);
+    $host = "https://plex.tv/users/sign_in.json";
+    $username = $cfg['USER'];
+    $password = $cfg['PASSWORD'];
+
+    $header = array(
+        'Content-Length: 0', 
+        'X-Plex-Client-Identifier: Unraid-Plex-Streams',
+        'X-Plex-Product: Unraid-Plex-Streams',
+        'X-Plex-Version: v1_06',
+    );
+    $process = curl_init($host);
+    curl_setopt($process, CURLOPT_HTTPHEADER, $header);
+    curl_setopt($process, CURLOPT_HEADER, 0);
+    curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password);
+    curl_setopt($process, CURLOPT_TIMEOUT, 30);
+    curl_setopt($process, CURLOPT_SSL_VERIFYPEER, 0);
+    curl_setopt($process, CURLOPT_POST, 1);
+    curl_setopt($process, CURLOPT_RETURNTRANSFER, true);
+    $data = curl_exec($process);
+
+    $tokenResp = json_decode($data, true);
+    curl_close($token);
+    if (isset($tokenResp['user']['authentication_token'])) {
+        $newToken = $tokenResp['user']['authentication_token'];
+        $cfg['TOKEN'] = $newToken;
+        $handle = fopen($cfg_file,'w');
+        if ($handle) {
+            foreach($cfg as $key=>$value) {
+                fwrite($handle, $key ."=\"" . $value ."\"" ."\n");
+            }
+            fclose($handle);
+        }
+    }
+}
+
+if (isset($cfg['USER']) && isset($cfg['PASSWORD'])) {
+    if (!isset($cfg['TOKEN'])) {
+        getToken();
+    } elseif (empty($cfg['TOKEN'])) {
+        getToken();
+    }
 }
 ?>
 
-<form markdown="1" name="network_stat_settings" method="POST" action="/update.php" target="progressFrame">
-<input type="hidden" name="#file" value="networkstats/networkstats.cfg" />
+<script>
+function clearToken() {
+    document.getElementById('plex-token').value = '';
+    document.getElementById('plexstreams_settings').submit();
+}
+</script>
+<form markdown="1" name="plexstreams_settings" id="plexstreams_settings" method="POST" action="/update.php" target="progressFrame">
+<input type="hidden" name="#file" value="plexstreams/plexstreams.cfg" />
 <input type="hidden" id="COMMAND" name="#command" value="" />
+<input type="hidden" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>"/> 
 
 <div>
-    <label for="apikey">Plex API Key:</label>
-    <input id="apikey" name="apikey" value="<?php echo($apiKey) ?>"/>
+    <label for="apikey">Plex URL:</label>
+    <input type="Text" id="host" name="HOST" value="<?php echo($cfg['HOST']) ?>"/>
+</div>    
+<div>
+    <label for="apikey">Plex User Name:</label>
+    <input id="apikey" type="text" name="USER" value="<?php echo($cfg['USER']) ?>"/>
 </div>
-<input type="submit" value="SAVE">
+<div>
+    <label for="apikey">Plex User Name:</label>
+    <input type="password" id="apikey" name="PASSWORD" value="<?php echo($cfg['PASSWORD']) ?>"/>
+</div>
+<input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>

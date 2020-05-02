@@ -1,5 +1,7 @@
-Menu="PlexStreams"
+Menu="NetworkServices"
 Title="Plex Streams"
-Tag="movie"
+Tag="film"
+Icon="film"
 Type="xmenu"
 Tabs="false"
+---
