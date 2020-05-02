@@ -62,6 +62,18 @@
 
     <FILE Run="/bin/bash">
         <INLINE>
+            # Verify and install plugin package
+            sum1=$(/usr/bin/md5sum /boot/config/plugins/&name;/&plgNAME;.txz)
+            sum2=$(/usr/bin/cat /boot/config/plugins/&name;/&plgNAME;.md5)
+            if [ "${sum1:0:32}" != "${sum2:0:32}" ]; then
+                echo "Wrong 'plugin' md5 hash."
+                rm &plgPATH;/&plgNAME;.txz
+                rm &plgPATH;/&plgNAME;.md5
+                exit 1
+            else
+                upgradepkg --install-new &plgPATH;/&plgNAME;.txz
+            fi
+
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
