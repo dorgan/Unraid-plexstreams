@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.02a">
+  <!ENTITY version   "2020.05.02b">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,7 @@
 
     <CHANGES>
     ##&name;
+###2020.05.02b
 ###2020.05.02a
 ###2020.05.02
 ###2020.05.01
@@ -48,7 +49,10 @@
     <FILE Name="&plgPATH;/&name;.cfg">
       <INLINE>
       <![CDATA[
-      APIKEY=""
+      USERNAME=""
+      PASSWORD=""
+      HOST=""
+      TOKEN=""
       ]]>
       </INLINE>
     </FILE>
