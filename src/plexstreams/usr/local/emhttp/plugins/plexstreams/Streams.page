@@ -1,7 +1,74 @@
-Menu="Plex_Streams"
-Title="Plex Streams"
+Menu="Plex_Streams:1"
+Title="Streams"
 Tag="film"
 ---
+<style>
+    .streams {
+        display:flex;
+        justify-content: space-evenly;
+        flex-wrap: wrap;
+        align-content: stretch;
+    }
+
+    .caution {
+        padding-left: 76px;
+        margin: 16px -40px;
+        padding: 16px 50px;
+        background-color:  rgb(254, 239, 227);
+        color: rgb(191, 54, 12);
+        display: block;
+        font-weight: bolder;
+        font-size: 14px;
+    }
+    .caution i {
+        font-size:15pt;
+    }
+
+    .caution .text {
+        display: inline-block;
+        vertical-align: 2px;
+        padding-left: 7px;
+    }
+
+    .stream-container {
+        background-color: #000;
+        position: relative;
+        width:30%;
+        height: 220px;
+        padding: 10px;
+    }
+
+    .stream {
+        background-position: center;
+        background-size: cover;
+        background-repeat: no-repeat;
+        width:450px;
+        height:200px;
+    }
+
+    .stream-container .title {
+        width: 450px;
+        position:absolute;
+        bottom: 0;
+        background: rgb(0,0,0,0.55);
+        color: #fff;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        font-weight: bolder;
+    }
+
+    .stream-container .title .status {
+        float:right;
+        color: #fff;
+    }
+
+    .userIcon {
+        position: absolute;
+        top: 0;
+        right: 0;
+        padding-top: 7px;
+    }
+</style>
 <?php
     $plugin = "plexstreams";
     $plg_path = "/boot/config/plugins/" . $plugin;
@@ -13,8 +80,134 @@ Tag="film"
     }
 
     if (!empty($cfg['TOKEN'])) {
-
+        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
+        $streams = getStreams($host, $cfg);
+        
+        if ($streams['@attributes']['size'] > 0) {
+            if ((int)$streams['@attributes']['size'] === 1) {
+                $streams['Video'] = [$streams['Video']];
+            }
+            echo('<div class="streams">');
+            foreach($streams['Video'] as $video) {
+                $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
+                if (isset($video['@attributes']['parentTitle'])) {
+                    $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
+                }
+                if (isset($video['@attributes']['grandparentTitle'])) {
+                    $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
+                }
+                $imgUrl = $host . $video['@attributes']['thumb'];
+                $user = $video['User']['@attributes']['title'];
+                $userAvatar = $video['User']['@attributes']['thumb'];
+                $state = $video['Player']['@attributes']['state'];
+                $stateIcon = 'play';
+                if ($state === 'paused') {
+                    $stateIcon = 'pause';
+                } else if ($state !== 'playing') {
+                    $stateIcon = 'buffer';
+                }
+                echo('
+                    <div class="stream-container">
+                        <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
+                        <div class="stream" style="background-image:url(' .$imgUrl .');">
+                            <div class="userIcon">
+                                <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                            </div>
+                        </div>
+                    </div>
+                ');
+                
+            }
+            echo('</div>');
+        } else {
+            echo('<p align="center">There are currently no active streams</p>');
+        }
     } else {
-        echo('<)
+        echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">Please provide server details under Settings -> Network Services -> Plex Streams or <a href="/Settings/PlexStreams">click here</a></div></div>');
+    }
+
+
+
+    function getStreams($host, $cfg) {
+        $retArray = [];
+        $url = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'];
+        return getUrl($url);
+    }
+
+    function getUrl($url) {
+        $arrContextOptions=array(
+            "http" => array(
+                "method" => "GET",
+                "header" => 
+                    "Content-Type: application/xml; charset=utf-8;\r\n".
+                    "Connection: close\r\n",
+                "ignore_errors" => true,
+                "timeout" => (float)30.0
+            ),
+            "ssl"=>array(
+                "allow_self_signed"=>true,
+                "verify_peer"=>false,
+                "verify_peer_name"=>false,
+            )
+        );
+        var_dump($url);
+        return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
+    }
+
+    function prettyPrint( $json )
+    {
+        $result = '';
+        $level = 0;
+        $in_quotes = false;
+        $in_escape = false;
+        $ends_line_level = NULL;
+        $json_length = strlen( $json );
+
+        for( $i = 0; $i < $json_length; $i++ ) {
+            $char = $json[$i];
+            $new_line_level = NULL;
+            $post = "";
+            if( $ends_line_level !== NULL ) {
+                $new_line_level = $ends_line_level;
+                $ends_line_level = NULL;
+            }
+            if ( $in_escape ) {
+                $in_escape = false;
+            } else if( $char === '"' ) {
+                $in_quotes = !$in_quotes;
+            } else if( ! $in_quotes ) {
+                switch( $char ) {
+                    case '}': case ']':
+                        $level--;
+                        $ends_line_level = NULL;
+                        $new_line_level = $level;
+                        break;
+
+                    case '{': case '[':
+                        $level++;
+                    case ',':
+                        $ends_line_level = $level;
+                        break;
+
+                    case ':':
+                        $post = " ";
+                        break;
+
+                    case " ": case "\t": case "\n": case "\r":
+                        $char = "";
+                        $ends_line_level = $new_line_level;
+                        $new_line_level = NULL;
+                        break;
+                }
+            } else if ( $char === '\\' ) {
+                $in_escape = true;
+            }
+            if( $new_line_level !== NULL ) {
+                $result .= "\n".str_repeat( "\t", $new_line_level );
+            }
+            $result .= $char.$post;
+        }
+
+        return $result;
     }
 ?>

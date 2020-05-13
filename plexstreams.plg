@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.02b">
+  <!ENTITY version   "2020.05.13">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,7 @@
 
     <CHANGES>
     ##&name;
+###2020.05.13
 ###2020.05.02b
 ###2020.05.02a
 ###2020.05.02
