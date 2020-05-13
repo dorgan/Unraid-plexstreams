@@ -3,13 +3,6 @@ Title="Streams"
 Tag="film"
 ---
 <style>
-    .streams {
-        display:flex;
-        justify-content: space-evenly;
-        flex-wrap: wrap;
-        align-content: stretch;
-    }
-
     .caution {
         padding-left: 76px;
         margin: 16px -40px;
@@ -30,31 +23,39 @@ Tag="film"
         padding-left: 7px;
     }
 
+    #streams-container {
+        
+    }
+
     .stream-container {
-        background-color: #000;
         position: relative;
-        width:30%;
-        height: 220px;
-        padding: 10px;
+        min-width: 350px;
+        max-width: 500px;
+        background-color: #000;
     }
 
-    .stream {
+    .stream .poster {
         background-position: center;
-        background-size: cover;
         background-repeat: no-repeat;
-        width:450px;
-        height:200px;
+        background-size: cover;
+        width: 150px;
+        height: 225px;
+        z-index: 997;
     }
 
-    .stream-container .title {
-        width: 450px;
+    .stream-container .bottom-box {
+        width: 100%;
         position:absolute;
         bottom: 0;
-        background: rgb(0,0,0,0.55);
+        background: rgb(70,67,67,0.55);
         color: #fff;
-        padding-top: 10px;
-        padding-bottom: 10px;
         font-weight: bolder;
+        z-index: 998;
+    }
+
+    .stream-container .bottom-box .title {
+        padding: 10px;
+        z-index: 999;
     }
 
     .stream-container .title .status {
@@ -87,8 +88,13 @@ Tag="film"
             if ((int)$streams['@attributes']['size'] === 1) {
                 $streams['Video'] = [$streams['Video']];
             }
-            echo('<div class="streams">');
-            foreach($streams['Video'] as $video) {
+            echo('<table border="0" cellspacing="0" cellpadding="0" id="streams-container">');
+            foreach($streams['Video'] as $idx=>$video) {
+                if (fmod($idx, 3) === 0 && $idx !== 0) {
+                    echo( '</tr><tr>');
+                } else if ($idx === 0) {
+                    echo('<tr>');
+                }
                 $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
                 if (isset($video['@attributes']['parentTitle'])) {
                     $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
@@ -106,19 +112,22 @@ Tag="film"
                 } else if ($state !== 'playing') {
                     $stateIcon = 'buffer';
                 }
-                echo('
+                echo('<td>
                     <div class="stream-container">
-                        <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
-                        <div class="stream" style="background-image:url(' .$imgUrl .');">
+                        <div class="stream">
+                            <div class="poster" style="background-image:url(' .$imgUrl .');">
+                            </div>
                             <div class="userIcon">
                                 <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
                             </div>
                         </div>
+                        <div class="bottom-box">
+                            <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
+                        </div>
                     </div>
-                ');
-                
+                </td>');
             }
-            echo('</div>');
+            echo('</table>');
         } else {
             echo('<p align="center">There are currently no active streams</p>');
         }
@@ -150,7 +159,6 @@ Tag="film"
                 "verify_peer_name"=>false,
             )
         );
-        var_dump($url);
         return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
     }
 
