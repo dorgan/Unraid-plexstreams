@@ -68,6 +68,21 @@ Tag="film"
         z-index: 998;
     }
 
+    .stream-container .bottom-box .progressBar {
+        height: 5px;
+        background-color: #cc0000;
+    }
+
+    .stream-container .bottom-box .progressBar .position {
+        position: absolute;
+        right: 5px;
+        top: 0;
+        width: 100px;
+        font-size:9px;
+        color: #fff;
+        text-align:right;
+    }
+
     .stream-container .bottom-box .title {
         padding: 10px;
         z-index: 999;
@@ -91,12 +106,12 @@ Tag="film"
 
     .details {
         opacity: 0;
-        transition:opacity 1s;
+        transition: visibility 0s, opacity 0.5s ease-out ;
         position: absolute;
         opacity: 0;
         left: 160px;
         top: 5px;
-        background-color: #222;
+        background: rgb(34, 34, 34, 0.80);
         color: #fff;
         width: 244px;
         height: 175px;
@@ -134,10 +149,12 @@ Tag="film"
     }
     
     .details li .label {
+        color: #aaa;
         width:75px;
     }
 
     .details li .value {
+        color: #fff;
         text-overflow: ellipsis;
         overflow: hidden;
         white-space: nowrap;
@@ -186,6 +203,18 @@ Tag="film"
                 $userAvatar = $video['User']['@attributes']['thumb'];
                 $state = $video['Player']['@attributes']['state'];
                 $stateIcon = 'play';
+
+                $length = ( (((int)$video['Media']['Part']['@attributes']['duration'] / 1000) / 60) );
+                $lengthRound = round($length, 0);
+                $lengthSec = $length > 0 ? round((fmod( $length, 1) * 60), 0) / 1 : 0;
+
+                $currentPosition = (((int)$video['@attributes']['viewOffset'] / 1000) / 60);
+                $currentPositionRound = round($currentPosition, 0);
+                $currentPositionSec = round((fmod($currentPosition, 1) * 60) / 1, 0);
+
+
+                $percentPlayed = round(($currentPositionRound/ $lengthRound) * 100, 0);
+
                 if ($state === 'paused') {
                     $stateIcon = 'pause';
                 } else if ($state !== 'playing') {
@@ -207,6 +236,7 @@ Tag="film"
                             <div class="blur">
                                 <div class="details">
                                     <ul class="detail-list">
+                                        <li><div class="label">Length</div><div class="value">' . $lengthRound .' Minutes</div></li>
                                         <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision'] === 'directplay' ? 'Direct Play' : $video['Media']['Part']['@attributes']['decision'] ) .'</div></li>
                                         <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
                                         <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
@@ -222,6 +252,7 @@ Tag="film"
                             </div>
                         </div>
                         <div class="bottom-box">
+                            <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionRound . ':' . $currentPositionSec . ' / ' . $lengthRound . ':' . $lengthSec .'</div></div>
                             <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
                         </div>
                     </div>
