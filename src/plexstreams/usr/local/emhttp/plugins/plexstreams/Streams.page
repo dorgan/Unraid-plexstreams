@@ -165,6 +165,7 @@ Tag="film"
             if ((int)$streams['@attributes']['size'] === 1) {
                 $streams['Video'] = [$streams['Video']];
             }
+            echo('<h4 style="padding-bottom:25px;">Hover the stream for details</h4>');
             echo('<table border="0" cellspacing="0" cellpadding="0" id="streams-container">');
             foreach($streams['Video'] as $idx=>$video) {
                 if (fmod($idx, 3) === 0 && $idx !== 0) {
@@ -206,11 +207,11 @@ Tag="film"
                             <div class="blur">
                                 <div class="details">
                                     <ul class="detail-list">
-                                        <li><div class="label">Stream</div><div class="value">' . $video['Media']['Part']['@attributes']['decision'] .'</div></li>
-                                        <li><div class="label">Location</div><div class="value">' . $video['Session']['@attributes']['location'] . '</div></li>
+                                        <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision'] === 'directplay' ? 'Direct Play' : $video['Media']['Part']['@attributes']['decision'] ) .'</div></li>
+                                        <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
                                         <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                        <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'DIRECT PLAY') . '</div></li>
-                                        <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'DIRECT PLAY') . '</div></li>
+                                        <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                        <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
                                     </ul>
                                 </div>
                                 <div class="poster" style="background-image:url(' .$thumbUrl .');">
