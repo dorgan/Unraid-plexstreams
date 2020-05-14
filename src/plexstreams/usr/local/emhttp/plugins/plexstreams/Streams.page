@@ -29,8 +29,7 @@ Tag="film"
 
     .stream-container {
         position: relative;
-        min-width: 350px;
-        max-width: 500px;
+        width: 500px;
         background-color: #000;
     }
 
@@ -102,6 +101,9 @@ Tag="film"
         margin: 0;
         height: 75px;
         width: 75px;
+        background-position: center;
+        background-reppate: no-repeat;
+        background-size: cover;
     }
 
     .details {
@@ -183,7 +185,7 @@ Tag="film"
                 $streams['Video'] = [$streams['Video']];
             }
             echo('<h4 style="padding-bottom:25px;">Hover the stream for details</h4>');
-            echo('<table border="0" cellspacing="0" cellpadding="0" id="streams-container">');
+            echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
             foreach($streams['Video'] as $idx=>$video) {
                 if (fmod($idx, 3) === 0 && $idx !== 0) {
                     echo( '</tr><tr>');
@@ -223,9 +225,9 @@ Tag="film"
                 $streamInfo = array();
 
                 foreach ($video['Media']['Part']['Stream'] as $stream) {
-                    if ($stream['@attributes']['location'] === 'segments-audio') {
+                    if ($stream['@attributes']['streamType'] === '2') {
                         $streamInfo['audio'] = $stream;
-                    } else if ($stream['@attributes']['location'] === 'segments-video') {
+                    } else if ($stream['@attributes']['streamType'] === '1') {
                         $streamInfo['video'] = $stream;
                     }
                 }
@@ -237,7 +239,7 @@ Tag="film"
                                 <div class="details">
                                     <ul class="detail-list">
                                         <li><div class="label">Length</div><div class="value">' . $lengthRound .' Minutes</div></li>
-                                        <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision'] === 'directplay' ? 'Direct Play' : $video['Media']['Part']['@attributes']['decision'] ) .'</div></li>
+                                        <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision']) .'</div></li>
                                         <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
                                         <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
                                         <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
@@ -246,13 +248,12 @@ Tag="film"
                                 </div>
                                 <div class="poster" style="background-image:url(' .$thumbUrl .');">
                                 </div>
-                                <div class="userIcon">
-                                    <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                                <div class="userIcon" title="' .$user . '" style="background-image:url(' . $userAvatar . ')">
                                 </div>
                             </div>
                         </div>
                         <div class="bottom-box">
-                            <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionRound . ':' . $currentPositionSec . ' / ' . $lengthRound . ':' . $lengthSec .'</div></div>
+                            <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionRound . ':' . str_pad($currentPositionSec, 2, '0', STR_PAD_LEFT) . ' / ' . $lengthRound . ':' . str_pad($lengthSec, 2, '0', STR_PAD_LEFT) .'</div></div>
                             <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
                         </div>
                     </div>

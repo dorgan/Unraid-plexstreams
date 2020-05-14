@@ -73,11 +73,11 @@ function clearToken() {
 
 <div>
     <label for="apikey">Plex URL:</label>
-    <input type="Text" id="host" name="HOST" value="<?php echo($cfg['HOST']) ?>"/>
+    <input type="Text" id="host" name="HOST" placeholder="https://1.1.1.1:34200/" value="<?php echo($cfg['HOST']) ?>"/>
 </div>    
 <div>
     <label for="apikey">Plex User Name:</label>
-    <input id="apikey" type="text" name="USER" value="<?php echo($cfg['USER']) ?>"/>
+    <input id="apikey" type="text" name="USER" placeholder="plex@user" value="<?php echo($cfg['USER']) ?>"/>
 </div>
 <div>
     <label for="apikey">Plex User Name:</label>
