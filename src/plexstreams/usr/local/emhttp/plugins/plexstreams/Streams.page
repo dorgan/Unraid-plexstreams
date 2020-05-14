@@ -64,11 +64,73 @@ Tag="film"
     }
 
     .userIcon {
+        border-radius: 50%;
+        overflow: hidden;
         position: absolute;
-        top: 0;
-        right: 0;
-        padding-top: 7px;
+        top: 5px;
+        right: 5px;
+        margin: 0;
+        height: 75px;
+        width: 75px;
     }
+
+    .details {
+        opacity: 0;
+        transition:opacity 1s;
+        position: absolute;
+        opacity: 0;
+        left: 160px;
+        top: 5px;
+        background-color: #222;
+        color: #fff;
+        width: 244px;
+        height: 175px;
+        font-weight:bold;
+    }
+
+    .details:hover {
+        opacity: 1;
+    }
+
+    .details ul {
+        margin-top: 0;
+        padding-left: 0;
+        list-style: none;
+        font-size:14px;
+    }
+    
+    .details li {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: baseline;
+        width:100%;
+        margin-bottom:5px;
+        box-sizing: border-box;
+        color: #fff;
+        font-size: 12px;
+        line-height: 17px;
+    }
+
+    .details li div {
+        color: #aaa;
+        text-align: right;
+        line-height: 14px;
+    }
+    
+    .details li .label {
+        width:60px;
+    }
+
+    .details li .value {
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        flex-grow: 1;
+        text-align: left;
+        margin-left: 10px;
+    }
+
 </style>
 <?php
     $plugin = "plexstreams";
@@ -115,6 +177,12 @@ Tag="film"
                 echo('<td>
                     <div class="stream-container">
                         <div class="stream">
+                            <div class="details">
+                                <ul class="detail-list">
+                                    <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
+                                    <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
+                                </ul>
+                            </div>
                             <div class="poster" style="background-image:url(' .$imgUrl .');">
                             </div>
                             <div class="userIcon">
