@@ -34,6 +34,21 @@ Tag="film"
         background-color: #000;
     }
 
+    .stream {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: contain;
+    }
+
+    .blur {
+        backdrop-filter: blur(3px);
+    }
+
+    .stream .blur {
+        width: 100%;
+        height: 100%;
+    }
+
     .stream .poster {
         background-position: center;
         background-repeat: no-repeat;
@@ -119,7 +134,7 @@ Tag="film"
     }
     
     .details li .label {
-        width:60px;
+        width:75px;
     }
 
     .details li .value {
@@ -164,7 +179,8 @@ Tag="film"
                 if (isset($video['@attributes']['grandparentTitle'])) {
                     $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
                 }
-                $imgUrl = $host . $video['@attributes']['thumb'];
+                $artUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['art']);
+                $thumbUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['thumb']);
                 $user = $video['User']['@attributes']['title'];
                 $userAvatar = $video['User']['@attributes']['thumb'];
                 $state = $video['Player']['@attributes']['state'];
@@ -174,19 +190,34 @@ Tag="film"
                 } else if ($state !== 'playing') {
                     $stateIcon = 'buffer';
                 }
+                $streamInfo = array();
+
+                foreach ($video['Media']['Part']['Stream'] as $stream) {
+                    if ($stream['@attributes']['location'] === 'segments-audio') {
+                        $streamInfo['audio'] = $stream;
+                    } else if ($stream['@attributes']['location'] === 'segments-video') {
+                        $streamInfo['video'] = $stream;
+                    }
+                }
+
                 echo('<td>
                     <div class="stream-container">
-                        <div class="stream">
-                            <div class="details">
-                                <ul class="detail-list">
-                                    <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
-                                    <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                </ul>
-                            </div>
-                            <div class="poster" style="background-image:url(' .$imgUrl .');">
-                            </div>
-                            <div class="userIcon">
-                                <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                        <div class="stream" style="background-image:url(' . $artUrl .');">
+                            <div class="blur">
+                                <div class="details">
+                                    <ul class="detail-list">
+                                        <li><div class="label">Stream</div><div class="value">' . $video['Media']['Part']['@attributes']['decision'] .'</div></li>
+                                        <li><div class="label">Location</div><div class="value">' . $video['Session']['@attributes']['location'] . '</div></li>
+                                        <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
+                                        <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'DIRECT PLAY') . '</div></li>
+                                        <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'DIRECT PLAY') . '</div></li>
+                                    </ul>
+                                </div>
+                                <div class="poster" style="background-image:url(' .$thumbUrl .');">
+                                </div>
+                                <div class="userIcon">
+                                    <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                                </div>
                             </div>
                         </div>
                         <div class="bottom-box">
