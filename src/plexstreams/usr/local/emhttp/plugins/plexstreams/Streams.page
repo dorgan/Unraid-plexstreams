@@ -3,13 +3,6 @@ Title="Streams"
 Tag="film"
 ---
 <style>
-    .streams {
-        display:flex;
-        justify-content: space-evenly;
-        flex-wrap: wrap;
-        align-content: stretch;
-    }
-
     .caution {
         padding-left: 76px;
         margin: 16px -40px;
@@ -30,31 +23,69 @@ Tag="film"
         padding-left: 7px;
     }
 
+    #streams-container {
+        
+    }
+
     .stream-container {
-        background-color: #000;
         position: relative;
-        width:30%;
-        height: 220px;
-        padding: 10px;
+        min-width: 350px;
+        max-width: 500px;
+        background-color: #000;
     }
 
     .stream {
         background-position: center;
-        background-size: cover;
         background-repeat: no-repeat;
-        width:450px;
-        height:200px;
+        background-size: contain;
     }
 
-    .stream-container .title {
-        width: 450px;
+    .blur {
+        backdrop-filter: blur(3px);
+    }
+
+    .stream .blur {
+        width: 100%;
+        height: 100%;
+    }
+
+    .stream .poster {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        width: 150px;
+        height: 225px;
+        z-index: 997;
+    }
+
+    .stream-container .bottom-box {
+        width: 100%;
         position:absolute;
         bottom: 0;
-        background: rgb(0,0,0,0.55);
+        background: rgb(70,67,67,0.55);
         color: #fff;
-        padding-top: 10px;
-        padding-bottom: 10px;
         font-weight: bolder;
+        z-index: 998;
+    }
+
+    .stream-container .bottom-box .progressBar {
+        height: 5px;
+        background-color: #cc0000;
+    }
+
+    .stream-container .bottom-box .progressBar .position {
+        position: absolute;
+        right: 5px;
+        top: 0;
+        width: 100px;
+        font-size:9px;
+        color: #fff;
+        text-align:right;
+    }
+
+    .stream-container .bottom-box .title {
+        padding: 10px;
+        z-index: 999;
     }
 
     .stream-container .title .status {
@@ -63,11 +94,75 @@ Tag="film"
     }
 
     .userIcon {
+        border-radius: 50%;
+        overflow: hidden;
         position: absolute;
-        top: 0;
-        right: 0;
-        padding-top: 7px;
+        top: 5px;
+        right: 5px;
+        margin: 0;
+        height: 75px;
+        width: 75px;
     }
+
+    .details {
+        opacity: 0;
+        transition: visibility 0s, opacity 0.5s ease-out ;
+        position: absolute;
+        opacity: 0;
+        left: 160px;
+        top: 5px;
+        background: rgb(34, 34, 34, 0.80);
+        color: #fff;
+        width: 244px;
+        height: 175px;
+        font-weight:bold;
+    }
+
+    .details:hover {
+        opacity: 1;
+    }
+
+    .details ul {
+        margin-top: 0;
+        padding-left: 0;
+        list-style: none;
+        font-size:14px;
+    }
+    
+    .details li {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: nowrap;
+        align-items: baseline;
+        width:100%;
+        margin-bottom:5px;
+        box-sizing: border-box;
+        color: #fff;
+        font-size: 12px;
+        line-height: 17px;
+    }
+
+    .details li div {
+        color: #aaa;
+        text-align: right;
+        line-height: 14px;
+    }
+    
+    .details li .label {
+        color: #aaa;
+        width:75px;
+    }
+
+    .details li .value {
+        color: #fff;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        flex-grow: 1;
+        text-align: left;
+        margin-left: 10px;
+    }
+
 </style>
 <?php
     $plugin = "plexstreams";
@@ -87,8 +182,14 @@ Tag="film"
             if ((int)$streams['@attributes']['size'] === 1) {
                 $streams['Video'] = [$streams['Video']];
             }
-            echo('<div class="streams">');
-            foreach($streams['Video'] as $video) {
+            echo('<h4 style="padding-bottom:25px;">Hover the stream for details</h4>');
+            echo('<table border="0" cellspacing="0" cellpadding="0" id="streams-container">');
+            foreach($streams['Video'] as $idx=>$video) {
+                if (fmod($idx, 3) === 0 && $idx !== 0) {
+                    echo( '</tr><tr>');
+                } else if ($idx === 0) {
+                    echo('<tr>');
+                }
                 $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
                 if (isset($video['@attributes']['parentTitle'])) {
                     $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
@@ -96,29 +197,68 @@ Tag="film"
                 if (isset($video['@attributes']['grandparentTitle'])) {
                     $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
                 }
-                $imgUrl = $host . $video['@attributes']['thumb'];
+                $artUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['art']);
+                $thumbUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['thumb']);
                 $user = $video['User']['@attributes']['title'];
                 $userAvatar = $video['User']['@attributes']['thumb'];
                 $state = $video['Player']['@attributes']['state'];
                 $stateIcon = 'play';
+
+                $length = ( (((int)$video['Media']['Part']['@attributes']['duration'] / 1000) / 60) );
+                $lengthRound = round($length, 0);
+                $lengthSec = $length > 0 ? round((fmod( $length, 1) * 60), 0) / 1 : 0;
+
+                $currentPosition = (((int)$video['@attributes']['viewOffset'] / 1000) / 60);
+                $currentPositionRound = round($currentPosition, 0);
+                $currentPositionSec = round((fmod($currentPosition, 1) * 60) / 1, 0);
+
+
+                $percentPlayed = round(($currentPositionRound/ $lengthRound) * 100, 0);
+
                 if ($state === 'paused') {
                     $stateIcon = 'pause';
                 } else if ($state !== 'playing') {
                     $stateIcon = 'buffer';
                 }
-                echo('
+                $streamInfo = array();
+
+                foreach ($video['Media']['Part']['Stream'] as $stream) {
+                    if ($stream['@attributes']['location'] === 'segments-audio') {
+                        $streamInfo['audio'] = $stream;
+                    } else if ($stream['@attributes']['location'] === 'segments-video') {
+                        $streamInfo['video'] = $stream;
+                    }
+                }
+
+                echo('<td>
                     <div class="stream-container">
-                        <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
-                        <div class="stream" style="background-image:url(' .$imgUrl .');">
-                            <div class="userIcon">
-                                <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                        <div class="stream" style="background-image:url(' . $artUrl .');">
+                            <div class="blur">
+                                <div class="details">
+                                    <ul class="detail-list">
+                                        <li><div class="label">Length</div><div class="value">' . $lengthRound .' Minutes</div></li>
+                                        <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision'] === 'directplay' ? 'Direct Play' : $video['Media']['Part']['@attributes']['decision'] ) .'</div></li>
+                                        <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
+                                        <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
+                                        <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                        <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                    </ul>
+                                </div>
+                                <div class="poster" style="background-image:url(' .$thumbUrl .');">
+                                </div>
+                                <div class="userIcon">
+                                    <img class="icon" src="' .$userAvatar .'" alt="' . $user .'" />
+                                </div>
                             </div>
                         </div>
+                        <div class="bottom-box">
+                            <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionRound . ':' . $currentPositionSec . ' / ' . $lengthRound . ':' . $lengthSec .'</div></div>
+                            <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
+                        </div>
                     </div>
-                ');
-                
+                </td>');
             }
-            echo('</div>');
+            echo('</table>');
         } else {
             echo('<p align="center">There are currently no active streams</p>');
         }
@@ -150,7 +290,6 @@ Tag="film"
                 "verify_peer_name"=>false,
             )
         );
-        var_dump($url);
         return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
     }
 

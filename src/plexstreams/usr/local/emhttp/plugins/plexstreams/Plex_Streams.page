@@ -1,6 +1,5 @@
 Menu="Tasks:89"
-Name="Plex_Streams"
-Display_Name="Plex Streams"
+Name="Plex Streams"
 Tag="film"
 Icon="film"
 Type="xmenu"
