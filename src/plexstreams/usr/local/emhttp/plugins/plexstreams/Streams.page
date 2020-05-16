@@ -187,77 +187,102 @@ Tag="film"
             echo('<h4 style="padding-bottom:25px;">Hover the stream for details</h4>');
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
             foreach($streams['Video'] as $idx=>$video) {
-                if (fmod($idx, 3) === 0 && $idx !== 0) {
-                    echo( '</tr><tr>');
-                } else if ($idx === 0) {
-                    echo('<tr>');
+                if (isset($video['Media']['@attributes'])) {
+                    $video['Media'] = [$video['Media']];
                 }
-                $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
-                if (isset($video['@attributes']['parentTitle'])) {
-                    $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
-                }
-                if (isset($video['@attributes']['grandparentTitle'])) {
-                    $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
-                }
-                $artUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['art']);
-                $thumbUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['thumb']);
-                $user = $video['User']['@attributes']['title'];
-                $userAvatar = $video['User']['@attributes']['thumb'];
-                $state = $video['Player']['@attributes']['state'];
-                $stateIcon = 'play';
+                foreach($video['Media'] as $media) {
+                    if ($media['@attributes']['selected'] === '1') {
+                        if (fmod($idx, 3) === 0 && $idx !== 0) {
+                            echo( '</tr><tr>');
+                        } else if ($idx === 0) {
+                            echo('<tr>');
+                        }
+                        $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
+                        if (isset($video['@attributes']['parentTitle'])) {
+                            $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
+                        }
+                        if (isset($video['@attributes']['grandparentTitle'])) {
+                            $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
+                        }
+                        $artUrl = '/plugins/' . $plugin .'/getImage.php?img=' . urlencode($video['@attributes']['art']);
+                        $thumbUrl = '/plugins/' . $plugin .'/getImage.php?img=' .  urlencode($video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb']);
+                        $user = $video['User']['@attributes']['title'];
+                        $userAvatar = $video['User']['@attributes']['thumb'];
+                        $state = $video['Player']['@attributes']['state'];
+                        $stateIcon = 'play';
+                        $length = floatval($media['Part']['@attributes']['duration']);
+                        $lengthInSeconds =  floatval($length) / 1000;
+                        $lengthInMinutes = ceil(($lengthInSeconds / 60 ));
+                        
+                        $lengthSeconds = floor($lengthInSeconds%60);
+                        $lengthMinutes = floor(($lengthInSeconds%3600)/60);
+                        $lengthHours = floor(($lengthInSeconds%86400)/3600);
+                       
+                        $currentPosition = floatval((int)$video['@attributes']['viewOffset']);
+                        $currentPositionInSeconds = $currentPosition / 1000;
+                        $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
 
-                $length = ( (((int)$video['Media']['Part']['@attributes']['duration'] / 1000) / 60) );
-                $lengthRound = round($length, 0);
-                $lengthSec = $length > 0 ? round((fmod( $length, 1) * 60), 0) / 1 : 0;
+                        $currentPositionSeconds = floor($currentPositionInMinutes);
+                        $currentPositionMinutes = floor(($currentPositionInMinutes%3600)/60);
+                        $currentPositionHours = floor(($currentPositionInMinutes&86400)/3600);
 
-                $currentPosition = (((int)$video['@attributes']['viewOffset'] / 1000) / 60);
-                $currentPositionRound = round($currentPosition, 0);
-                $currentPositionSec = round((fmod($currentPosition, 1) * 60) / 1, 0);
+                        $percentPlayed = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
 
+                        if ($state === 'paused') {
+                            $stateIcon = 'pause';
+                        } else if ($state !== 'playing') {
+                            $stateIcon = 'buffer';
+                        }
+                        $streamInfo = array();
+                        foreach ($media['Part']['Stream'] as $stream) {
+                            if ($stream['@attributes']['streamType'] === '2') {
+                                $streamInfo['audio'] = $stream;
+                            } else if ($stream['@attributes']['streamType'] === '1') {
+                                $streamInfo['video'] = $stream;
+                            }
+                        }
 
-                $percentPlayed = round(($currentPositionRound/ $lengthRound) * 100, 0);
-
-                if ($state === 'paused') {
-                    $stateIcon = 'pause';
-                } else if ($state !== 'playing') {
-                    $stateIcon = 'buffer';
-                }
-                $streamInfo = array();
-
-                foreach ($video['Media']['Part']['Stream'] as $stream) {
-                    if ($stream['@attributes']['streamType'] === '2') {
-                        $streamInfo['audio'] = $stream;
-                    } else if ($stream['@attributes']['streamType'] === '1') {
-                        $streamInfo['video'] = $stream;
-                    }
-                }
-
-                echo('<td>
-                    <div class="stream-container">
-                        <div class="stream" style="background-image:url(' . $artUrl .');">
-                            <div class="blur">
-                                <div class="details">
-                                    <ul class="detail-list">
-                                        <li><div class="label">Length</div><div class="value">' . $lengthRound .' Minutes</div></li>
-                                        <li><div class="label">Stream</div><div class="value">' . ucwords($video['Media']['Part']['@attributes']['decision']) .'</div></li>
-                                        <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
-                                        <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                        <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
-                                        <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
-                                    </ul>
+                        echo('<td>
+                            <div class="stream-container">
+                                <div class="stream" style="background-image:url(' . $artUrl .');">
+                                    <div class="blur">
+                                        <div class="details">
+                                            <ul class="detail-list">
+                                                <li><div class="label">Length</div><div class="value">' . $lengthInMinutes .' Minutes</div></li>
+                                                <li><div class="label">Stream</div><div class="value">' . ucwords($part['@attributes']['decision']) .'</div></li>
+                                                <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
+                                                <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
+                                                <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                                <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                            </ul>
+                                        </div>
+                                        <div class="poster" style="background-image:url(' .$thumbUrl .');">
+                                        </div>
+                                        <div class="userIcon" title="' .$user . '" style="background-image:url(' . $userAvatar . ')">
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="poster" style="background-image:url(' .$thumbUrl .');">
-                                </div>
-                                <div class="userIcon" title="' .$user . '" style="background-image:url(' . $userAvatar . ')">
+                                <div class="bottom-box">
+                                    <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionInMinutes . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT) . ' / ' . $lengthInMinutes . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT) .'</div></div>
+                                    <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
                                 </div>
                             </div>
-                        </div>
-                        <div class="bottom-box">
-                            <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionRound . ':' . str_pad($currentPositionSec, 2, '0', STR_PAD_LEFT) . ' / ' . $lengthRound . ':' . str_pad($lengthSec, 2, '0', STR_PAD_LEFT) .'</div></div>
-                            <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
-                        </div>
-                    </div>
-                </td>');
+                        </td>');
+                        if (isset($_REQUEST['dbg'])) {
+                            echo('
+                                <table border="0" cellspacing="0" cellpadding="0">
+                                    <tr><td>Duration</td><td>' .(int)$part['@attributes']['duration'] .'</td></tr>
+                                    <tr><td>LengthInSeconds</td><td>' .$lengthInSeconds .'</td></tr>    
+                                    <tr><td>LengthInMinutes</td><td>' .$lengthInMinutes .'</td></tr>
+                                    <tr><td>lengthSec</td></td><td>' .$lengthInSeconds .'</td></tr>
+                                    <tr><td>lengthSeconds</td></td><td>' .$lengthSeconds .'</td></tr>
+                                    <tr><td>lengthMinutes</td></td><td>' .$lengthMinutes .'</td></tr>
+                                    <tr><td>lengthHours</td></td><td>' .$lengthHours .'</td></tr>
+                                </table>
+                            </td>');
+                        }
+                    }
+                }
             }
             echo('</table>');
         } else {
@@ -272,7 +297,16 @@ Tag="film"
     function getStreams($host, $cfg) {
         $retArray = [];
         $url = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
+        if (isset($_REQUEST['dbg'])) {
+            var_dump($url);
+        }
         return getUrl($url);
+    }
+
+    function v_d($obj) {
+        echo('<pre>');
+        var_dump($obj);
+        echo('</pre>');
     }
 
     function getUrl($url) {

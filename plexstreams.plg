@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.14e">
+  <!ENTITY version   "2020.05.15">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -18,13 +18,16 @@
          author="&author;"
          version="&version;"
          pluginURL="&pluginURL;"
-         support="TBD"
+         support="https://forums.unraid.net/topic/92459-plugin-plex-streams/?do=findComment&comment=856229"
          launch="&launch;"
          IconFA="film"
          icon="film">
 
     <CHANGES>
     ##&name;
+###2020.05.15
+ - More tweaks to UI
+
 ###2020.05.14e
  - Remove unused function
 
