@@ -249,11 +249,11 @@ Tag="film"
                                         <div class="details">
                                             <ul class="detail-list">
                                                 <li><div class="label">Length</div><div class="value">' . $lengthInMinutes .' Minutes</div></li>
-                                                <li><div class="label">Stream</div><div class="value">' . ucwords($part['@attributes']['decision']) .'</div></li>
+                                                <li><div class="label">Stream</div><div class="value">' . ucwords($media['Part']['@attributes']['decision']) .'</div></li>
                                                 <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
                                                 <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                                <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
-                                                <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Direct Play') . '</div></li>
+                                                <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Directplay') . '</div></li>
+                                                <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Directplay') . '</div></li>
                                             </ul>
                                         </div>
                                         <div class="poster" style="background-image:url(' .$thumbUrl .');">
@@ -271,7 +271,7 @@ Tag="film"
                         if (isset($_REQUEST['dbg'])) {
                             echo('
                                 <table border="0" cellspacing="0" cellpadding="0">
-                                    <tr><td>Duration</td><td>' .(int)$part['@attributes']['duration'] .'</td></tr>
+                                    <tr><td>Duration</td><td>' .(int)$media['Part']['@attributes']['duration'] .'</td></tr>
                                     <tr><td>LengthInSeconds</td><td>' .$lengthInSeconds .'</td></tr>    
                                     <tr><td>LengthInMinutes</td><td>' .$lengthInMinutes .'</td></tr>
                                     <tr><td>lengthSec</td></td><td>' .$lengthInSeconds .'</td></tr>
