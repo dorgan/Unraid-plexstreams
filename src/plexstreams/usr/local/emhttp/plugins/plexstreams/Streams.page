@@ -87,6 +87,15 @@ Tag="film"
         z-index: 999;
     }
 
+    .stream-container .bottom-box .title a {
+        text-decoration: none;
+        color: #fff;
+    }
+
+    .stream-container .bottom-box .title a:hover {
+        text-decoration: none;
+    }
+
     .stream-container .title .status {
         float:right;
         color: #fff;
@@ -102,7 +111,7 @@ Tag="film"
         height: 75px;
         width: 75px;
         background-position: center;
-        background-reppate: no-repeat;
+        background-repeat: no-repeat;
         background-size: cover;
     }
 
@@ -165,7 +174,19 @@ Tag="film"
         margin-left: 10px;
     }
 
+    .sb-overlay {
+        backdrop-filter: blur(7px);
+    }
+
 </style>
+<script>
+    function openBox(cmd,title,height,width,load,func,id) {
+    // open shadowbox window (run in foreground)
+    var run = cmd.split('?')[0].substr(-4)=='.php' ? cmd : '/logging.htm?cmd='+cmd+'&csrf_token=91E90CB5E22139F9';
+    var options = {overlayOpacity: 0.90};
+    Shadowbox.open({content:run, player:'iframe', title:title, height:Math.min(height,screen.availHeight), width:Math.min(width,screen.availWidth), options:options});
+    }
+</script>
 <?php
     $plugin = "plexstreams";
     $plg_path = "/boot/config/plugins/" . $plugin;
@@ -222,11 +243,14 @@ Tag="film"
                         $currentPositionInSeconds = $currentPosition / 1000;
                         $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
 
-                        $currentPositionSeconds = floor($currentPositionInMinutes);
-                        $currentPositionMinutes = floor(($currentPositionInMinutes%3600)/60);
-                        $currentPositionHours = floor(($currentPositionInMinutes&86400)/3600);
+                        $currentPositionSeconds = floor($currentPositionInSeconds%60);
+                        $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
+                        $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
 
                         $percentPlayed = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
+                        
+                        $currentPositionDisplay = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
+                        $lengthDisplay = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
 
                         if ($state === 'paused') {
                             $stateIcon = 'pause';
@@ -248,12 +272,12 @@ Tag="film"
                                     <div class="blur">
                                         <div class="details">
                                             <ul class="detail-list">
-                                                <li><div class="label">Length</div><div class="value">' . $lengthInMinutes .' Minutes</div></li>
+                                                <li><div class="label">Length</div><div class="value">' . $lengthDisplay .'</div></li>
                                                 <li><div class="label">Stream</div><div class="value">' . ucwords($media['Part']['@attributes']['decision']) .'</div></li>
-                                                <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . '</div></li>
+                                                <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . ' (' . $video['Player']['@attributes']['address'] . ')</div></li>
                                                 <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                                <li><div class="label">Audio</div><div class="value">' . ($streamInfo['audio']['@attributes']['decision'] ?? 'Directplay') . '</div></li>
-                                                <li><div class="label">Video</div><div class="value">' . ($streamInfo['video']['@attributes']['decision'] ?? 'Directplay') . '</div></li>
+                                                <li><div class="label">Audio</div><div class="value">' . ucwords($streamInfo['audio']['@attributes']['decision']) . '</div></li>
+                                                <li><div class="label">Video</div><div class="value">' . ucwords($streamInfo['video']['@attributes']['decision']) . '</div></li>
                                             </ul>
                                         </div>
                                         <div class="poster" style="background-image:url(' .$thumbUrl .');">
@@ -263,11 +287,12 @@ Tag="film"
                                     </div>
                                 </div>
                                 <div class="bottom-box">
-                                    <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionInMinutes . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT) . ' / ' . $lengthInMinutes . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT) .'</div></div>
-                                    <div class="title">' . $title . '<div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
+                                    <div class="progressBar" style="width: ' . $percentPlayed . '%;"><div class="position">' . $currentPositionDisplay. ' / ' . $lengthDisplay .'</div></div>
+                                    <div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($video['@attributes']['key']) . '\',\'Details\',600,900); return false;">' . $title . '</a><div class="status"><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></div></div>
                                 </div>
                             </div>
                         </td>');
+
                         if (isset($_REQUEST['dbg'])) {
                             echo('
                                 <table border="0" cellspacing="0" cellpadding="0">
@@ -275,15 +300,22 @@ Tag="film"
                                     <tr><td>LengthInSeconds</td><td>' .$lengthInSeconds .'</td></tr>    
                                     <tr><td>LengthInMinutes</td><td>' .$lengthInMinutes .'</td></tr>
                                     <tr><td>lengthSec</td></td><td>' .$lengthInSeconds .'</td></tr>
-                                    <tr><td>lengthSeconds</td></td><td>' .$lengthSeconds .'</td></tr>
-                                    <tr><td>lengthMinutes</td></td><td>' .$lengthMinutes .'</td></tr>
                                     <tr><td>lengthHours</td></td><td>' .$lengthHours .'</td></tr>
+                                    <tr><td>lengthMinutes</td></td><td>' .$lengthMinutes .'</td></tr>
+                                    <tr><td>lengthSeconds</td></td><td>' .$lengthSeconds .'</td></tr>
+                                    <tr><td>currentPosition</td></td><td>' .$currentPosition .'</td></tr>
+                                    <tr><td>currentPositionInSeconds</td></td><td>' .$currentPositionInSeconds .'</td></tr>
+                                    <tr><td>currentPositionInMinutes</td></td><td>' .$currentPositionInMinutes .'</td></tr>
+                                    <tr><td>currentPositionHours</td></td><td>' .$currentPositionHours .'</td></tr>
+                                    <tr><td>currentPositionMinutes</td></td><td>' .$currentPositionMinutes .'</td></tr>
+                                    <tr><td>currentPositionSeconds</td></td><td>' .$currentPositionSeconds .'</td></tr>                                    
                                 </table>
                             </td>');
                         }
                     }
                 }
             }
+            echo('</tr>');
             echo('</table>');
         } else {
             echo('<p align="center">There are currently no active streams</p>');
@@ -298,7 +330,7 @@ Tag="film"
         $retArray = [];
         $url = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
         if (isset($_REQUEST['dbg'])) {
-            var_dump($url);
+            v_d($url);
         }
         return getUrl($url);
     }
