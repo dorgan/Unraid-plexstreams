@@ -26,9 +26,11 @@
     <CHANGES>
     ##&name;
 ###2020.05.18a
+- Added basic dashboard widget functionality
+
 ###2020.05.18
  - Correct issue for direct play status wasnt showing for audtio/video
- 
+
 ###2020.05.16
  - Added the ability to click on the Stream title to get content details
  - Fixed bug that was displaying progress time incorrectly
