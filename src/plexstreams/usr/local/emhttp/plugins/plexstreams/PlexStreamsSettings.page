@@ -3,14 +3,7 @@ Title="Plex Stream Settings"
 Tag="film"
 ---
 <?php
-$plugin = "plexstreams";
-$plg_path = "/boot/config/plugins/" . $plugin;
-$cfg_file    = "$plg_path/" . $plugin . ".cfg";
-if (file_exists($cfg_file)) {
-    $cfg    = parse_ini_file($cfg_file);
-} else {
-    $cfg = array();
-}
+include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
 
 function getToken() {
     global $cfg, $cfg_file;

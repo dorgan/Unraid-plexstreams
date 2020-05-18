@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.18">
+  <!ENTITY version   "2020.05.18a">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,7 @@
 
     <CHANGES>
     ##&name;
+###2020.05.18a
 ###2020.05.18
  - Correct issue for direct play status wasnt showing for audtio/video
  

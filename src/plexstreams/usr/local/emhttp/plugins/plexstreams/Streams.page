@@ -188,14 +188,8 @@ Tag="film"
     }
 </script>
 <?php
-    $plugin = "plexstreams";
-    $plg_path = "/boot/config/plugins/" . $plugin;
-    $cfg_file    = "$plg_path/" . $plugin . ".cfg";
-    if (file_exists($cfg_file)) {
-        $cfg    = parse_ini_file($cfg_file);
-    } else {
-        $cfg = array();
-    }
+    include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
+    include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
 
     if (!empty($cfg['TOKEN'])) {
         $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
@@ -322,43 +316,5 @@ Tag="film"
         }
     } else {
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">Please provide server details under Settings -> Network Services -> Plex Streams or <a href="/Settings/PlexStreams">click here</a></div></div>');
-    }
-
-
-
-    function getStreams($host, $cfg) {
-        $retArray = [];
-        $url = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
-        if (isset($_REQUEST['dbg'])) {
-            v_d($url);
-        }
-        return getUrl($url);
-    }
-
-    function v_d($obj) {
-        echo('<pre>');
-        var_dump($obj);
-        echo('</pre>');
-    }
-
-    function getUrl($url) {
-        $arrContextOptions=array(
-            "http" => array(
-                "method" => "GET",
-                "header" => 
-                    "Content-Type: application/xml; charset=utf-8;\r\n".
-                    "Connection: close\r\n".
-                    "Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n".
-                    "Pragma: no-cache\r\n",
-                "ignore_errors" => true,
-                "timeout" => (float)30.0
-            ),
-            "ssl"=>array(
-                "allow_self_signed"=>true,
-                "verify_peer"=>false,
-                "verify_peer_name"=>false,
-            )
-        );
-        return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
     }
 ?>
