@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.16">
+  <!ENTITY version   "2020.05.18">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.05.18
+ - Correct issue for direct play status wasnt showing for audtio/video
+ 
 ###2020.05.16
  - Added the ability to click on the Stream title to get content details
  - Fixed bug that was displaying progress time incorrectly

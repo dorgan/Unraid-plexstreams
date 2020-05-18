@@ -276,8 +276,8 @@ Tag="film"
                                                 <li><div class="label">Stream</div><div class="value">' . ucwords($media['Part']['@attributes']['decision']) .'</div></li>
                                                 <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . ' (' . $video['Player']['@attributes']['address'] . ')</div></li>
                                                 <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                                <li><div class="label">Audio</div><div class="value">' . ucwords($streamInfo['audio']['@attributes']['decision']) . '</div></li>
-                                                <li><div class="label">Video</div><div class="value">' . ucwords($streamInfo['video']['@attributes']['decision']) . '</div></li>
+                                                <li><div class="label">Audio</div><div class="value">' . (ucwords($streamInfo['audio']['@attributes']['decision']) ?? 'Directplay' ) . '</div></li>
+                                                <li><div class="label">Video</div><div class="value">' . (ucwords($streamInfo['video']['@attributes']['decision']) ?? 'Directplay' ) . '</div></li>
                                             </ul>
                                         </div>
                                         <div class="poster" style="background-image:url(' .$thumbUrl .');">
