@@ -51,8 +51,8 @@ Tag="film"
                                 ?>
                                     <tr style="display:table-row;">
                                         <td><strong>Name</strong></td>
-                                        <td width="25%"><strong>Status</strong></td>
-                                        <td width="25%"><strong>Time</strong></td>
+                                        <td width="25%" align="center"><strong>Status</strong></td>
+                                        <td width="25%" align="right"><strong>Time</strong></td>
                                     </tr>
                                     <?php
                                         foreach($streams['Video'] as $stream) {
@@ -99,9 +99,9 @@ Tag="film"
                                                     }
                                                     echo('
                                                         <tr style="display:table-row;">
-                                                            <td>' .$title .'</td>
-                                                            <td><i class="fa fa-' .$stateIcon  . '" title="' . $state . '"></i></td>
-                                                            <td>' .$currentPositionDisplay .' / ' . $lengthDisplay .'</td>
+                                                            <td><p class="plexstream-title">' .$title .'</p></td>
+                                                            <td align="center"><i class="fa fa-' .$stateIcon  . '" title="' . $state . '"></i></td>
+                                                            <td align="right">' .$currentPositionDisplay .' / ' . $lengthDisplay .'</td>
                                                         </td>
                                                     ');
                                                 }
@@ -120,6 +120,15 @@ Tag="film"
                 </tr>
         </tbody>
 </table>
+<style>
+p.plexstream-title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 240px;
+    padding-right:20px
+}
+</style>
 
 <script>
 $(function() {
