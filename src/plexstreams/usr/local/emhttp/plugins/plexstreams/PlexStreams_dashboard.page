@@ -34,7 +34,7 @@ Tag="film"
                             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
                                 <div class="section" style="line-height:2rem;">Plex Streams<br><span><?php echo $streamCount ?> Active Stream(s)</span><br><br></div>
                                 <i class="fa fa-fw chevron mt0" id="dash_plexstreams_toggle" onclick="toggleChevron('dash_plexstreams_toggle',0)"></i>
-                                <a href="/Settings/" title="Plex Streams Setup page"><i class="fa fa-fw fa-cog chevron mt0"></i></a>
+                                <a href="/Settings/PlexStreams" title="Plex Streams Setup page"><i class="fa fa-fw fa-cog chevron mt0"></i></a>
                                 <a href="/Plex_Streams" title="View Streams"><i class="fa fa-fw fa-film chevron mt0"></i></a>
                         </td>
                         <td></td>
@@ -55,56 +55,55 @@ Tag="film"
                                         <td width="25%"><strong>Time</strong></td>
                                     </tr>
                                     <?php
-                                        foreach($streams['Video'] as $idx=>$video) {
-                                            foreach($streams['Video'] as $stream) {
-                                                if (isset($stream['Media']['@attributes'])) {
-                                                    $stream['Media'] = [$stream['Media']];
-                                                }
-                                                
-                                                foreach($stream['Media'] as $media) {
-                                                    if ($media['@attributes']['selected'] === '1') {
-                                                        $title = $stream['@attributes']['title'] . ' (' . $stream['@attributes']['year'] . ')';
-                                                        if (isset($stream['@attributes']['parentTitle'])) {
-                                                            $title = $stream['@attributes']['parentTitle'] . ' - ' . $title;
-                                                        }
-                                                        if (isset($stream['@attributes']['grandparentTitle'])) {
-                                                            $title = $stream['@attributes']['grandparentTitle'] . ' - ' . $title;
-                                                        }
-                                                        $length = floatval($media['Part']['@attributes']['duration']);
-                                                        $lengthInSeconds =  floatval($length) / 1000;
-                                                        $lengthInMinutes = ceil(($lengthInSeconds / 60 ));
-                                                        
-                                                        $lengthSeconds = floor($lengthInSeconds%60);
-                                                        $lengthMinutes = floor(($lengthInSeconds%3600)/60);
-                                                        $lengthHours = floor(($lengthInSeconds%86400)/3600);
-
-                                                        $currentPosition = floatval((int)$stream['@attributes']['viewOffset']);
-                                                        $currentPositionInSeconds = $currentPosition / 1000;
-                                                        $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
-
-                                                        $currentPositionSeconds = floor($currentPositionInSeconds%60);
-                                                        $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
-                                                        $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
-
-                                                        $percentPlayed = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
-
-                                                        $currentPositionDisplay = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
-                                                        $lengthDisplay = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
-                                                        $state = $video['Player']['@attributes']['state'];
-                                                        $stateIcon = 'play';
-                                                        if ($state === 'paused') {
-                                                            $stateIcon = 'pause';
-                                                        } else if ($state !== 'playing') {
-                                                            $stateIcon = 'buffer';
-                                                        }
-                                                        echo('
-                                                            <tr style="display:table-row;">
-                                                                <td>' .$title .'</td>
-                                                                <td><i class="fa fa-' .$stateIcon  . '" title="' .ucwords($state) .'"></i></td>
-                                                                <td>' .$currentPositionDisplay .' / ' . $lengthDisplay .'</td>
-                                                            </td>
-                                                        ');
+                                        foreach($streams['Video'] as $stream) {
+                                            if (isset($stream['Media']['@attributes'])) {
+                                                $stream['Media'] = [$stream['Media']];
+                                            }
+                                            
+                                            foreach($stream['Media'] as $media) {
+                                                if ($media['@attributes']['selected'] === '1') {
+                                                    $title = $stream['@attributes']['title'] . ' (' . $stream['@attributes']['year'] . ')';
+                                                    if (isset($stream['@attributes']['parentTitle'])) {
+                                                        $title = $stream['@attributes']['parentTitle'] . ' - ' . $title;
                                                     }
+                                                    if (isset($stream['@attributes']['grandparentTitle'])) {
+                                                        $title = $stream['@attributes']['grandparentTitle'] . ' - ' . $title;
+                                                    }
+                                                    $length = floatval($media['Part']['@attributes']['duration']);
+                                                    $lengthInSeconds =  floatval($length) / 1000;
+                                                    $lengthInMinutes = ceil(($lengthInSeconds / 60 ));
+                                                    
+                                                    $lengthSeconds = floor($lengthInSeconds%60);
+                                                    $lengthMinutes = floor(($lengthInSeconds%3600)/60);
+                                                    $lengthHours = floor(($lengthInSeconds%86400)/3600);
+
+                                                    $currentPosition = floatval((int)$stream['@attributes']['viewOffset']);
+                                                    $currentPositionInSeconds = $currentPosition / 1000;
+                                                    $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
+
+                                                    $currentPositionSeconds = floor($currentPositionInSeconds%60);
+                                                    $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
+                                                    $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+
+                                                    $percentPlayed = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
+
+                                                    $currentPositionDisplay = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
+                                                    $lengthDisplay = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
+                                                    $state = $stream['Player']['@attributes']['state'];
+                                                    
+                                                    $stateIcon = 'play';
+                                                    if ($state === 'paused') {
+                                                        $stateIcon = 'pause';
+                                                    } else if ($state !== 'playing') {
+                                                        $stateIcon = 'buffer';
+                                                    }
+                                                    echo('
+                                                        <tr style="display:table-row;">
+                                                            <td>' .$title .'</td>
+                                                            <td><i class="fa fa-' .$stateIcon  . '" title="' . $state . '"></i></td>
+                                                            <td>' .$currentPositionDisplay .' / ' . $lengthDisplay .'</td>
+                                                        </td>
+                                                    ');
                                                 }
                                             }
                                         }

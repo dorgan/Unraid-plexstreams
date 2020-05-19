@@ -73,7 +73,7 @@ function clearToken() {
     <input id="apikey" type="text" name="USER" placeholder="plex@user" value="<?php echo($cfg['USER']) ?>"/>
 </div>
 <div>
-    <label for="apikey">Plex User Name:</label>
+    <label for="apikey">Plex Password:</label>
     <input type="password" id="apikey" name="PASSWORD" value="<?php echo($cfg['PASSWORD']) ?>"/>
 </div>
 <input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
