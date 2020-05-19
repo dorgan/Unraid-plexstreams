@@ -255,9 +255,19 @@ Tag="film"
                         foreach ($media['Part']['Stream'] as $stream) {
                             if ($stream['@attributes']['streamType'] === '2') {
                                 $streamInfo['audio'] = $stream;
+                                if (!isset($streamInfo['audio']['@attributes']['decision'])) {
+                                    $streamInfo['audio']['@attributes']['decision'] = 'direct play';
+                                }
                             } else if ($stream['@attributes']['streamType'] === '1') {
                                 $streamInfo['video'] = $stream;
+                                if (!isset($streamInfo['video']['@attributes']['decision'])) {
+                                    $streamInfo['video']['@attributes']['decision'] = 'direct play';
+                                }
                             }
+                        }
+                        $streamDecision = $media['Part']['@attributes']['decision'];
+                        if ($streamDecision === 'directplay') {
+                            $streamDecision = 'Direct Play';
                         }
 
                         echo('<td>
@@ -267,11 +277,11 @@ Tag="film"
                                         <div class="details">
                                             <ul class="detail-list">
                                                 <li><div class="label">Length</div><div class="value">' . $lengthDisplay .'</div></li>
-                                                <li><div class="label">Stream</div><div class="value">' . ucwords($media['Part']['@attributes']['decision']) .'</div></li>
+                                                <li><div class="label">Stream</div><div class="value">' . ucwords($streamDecision) .'</div></li>
                                                 <li><div class="label">Location</div><div class="value">' . strtoupper($video['Session']['@attributes']['location']) . ' (' . $video['Player']['@attributes']['address'] . ')</div></li>
                                                 <li><div class="label">Bandwidth</div><div class="value">' .round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1) . ' Mbps</div></li>
-                                                <li><div class="label">Audio</div><div class="value">' . (ucwords($streamInfo['audio']['@attributes']['decision']) ?? 'Directplay' ) . '</div></li>
-                                                <li><div class="label">Video</div><div class="value">' . (ucwords($streamInfo['video']['@attributes']['decision']) ?? 'Directplay' ) . '</div></li>
+                                                <li><div class="label">Audio</div><div class="value">' . ucwords($streamInfo['audio']['@attributes']['decision']) . '</div></li>
+                                                <li><div class="label">Video</div><div class="value">' . ucwords($streamInfo['video']['@attributes']['decision']) . '</div></li>
                                             </ul>
                                         </div>
                                         <div class="poster" style="background-image:url(' .$thumbUrl .');">
