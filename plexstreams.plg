@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.18a">
+  <!ENTITY version   "2020.05.18b">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,8 +25,13 @@
 
     <CHANGES>
     ##&name;
+###2020.05.18b
+ - Display state icon on dashboard widget
+ - Correct label for password on settings screen
+ - Make setting icon link directly to Plex Stream Settings
+
 ###2020.05.18a
-- Added basic dashboard widget functionality
+ - Added basic dashboard widget functionality
 
 ###2020.05.18
  - Correct issue for direct play status wasnt showing for audtio/video
