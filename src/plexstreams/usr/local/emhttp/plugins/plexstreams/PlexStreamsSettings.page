@@ -7,7 +7,6 @@ include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
 
 function getToken() {
     global $cfg, $cfg_file;
-    var_dump($cfg);
     $host = "https://plex.tv/users/sign_in.json";
     $username = $cfg['USER'];
     $password = $cfg['PASSWORD'];
@@ -30,7 +29,7 @@ function getToken() {
     $data = curl_exec($process);
 
     $tokenResp = json_decode($data, true);
-    curl_close($token);
+    @curl_close($process);
     if (isset($tokenResp['user']['authentication_token'])) {
         $newToken = $tokenResp['user']['authentication_token'];
         $cfg['TOKEN'] = $newToken;

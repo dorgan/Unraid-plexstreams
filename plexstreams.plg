@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.19a">
+  <!ENTITY version   "2020.05.20">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,11 @@
 
     <CHANGES>
     ##&name;
+###2020.05.20
+ - Add audio streams to both streams page and dashboard widget
+ - Remove debug output from saving settings
+ - Correct details screen for TV Shows
+
 ###2020.05.19a
  - Correcting display issue for stream transcodes
 

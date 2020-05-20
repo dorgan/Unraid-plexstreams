@@ -53,8 +53,10 @@ body {
         if (isset($video['Director']['@attributes'])) {
             $video['Director'] = [$video['Director']];
         }
-        foreach ($video['Genre'] as $genre) {
-            array_push($genres, $genre['@attributes']['tag']);
+        if (isset($video['Genre'])) {
+            foreach ($video['Genre'] as $genre) {
+                array_push($genres, $genre['@attributes']['tag']);
+            }
         }
         $director = [];
         
@@ -65,25 +67,35 @@ body {
             <h1>' . $title .'</h1>
             <p>' . $videoAttr['summary'] . '</p><p>
             <strong>Year:</strong> ' .$videoAttr['year'] . '<br/>
-            <strong>Studio:</strong> ' . $videoAttr['studio'] . '<br/>
-            <strong>Director:</strong> ' .implode(' / ', $directors) .'<br/>
-            <strong>Genre:</strong> ' . implode(' / ', $genres) . '<br/>
-            <strong>Rating:</strong> ' .$videoAttr['contentRating'] . '</p>
         ');
 
-        echo('<h2>Cast</h2>');
+        if (isset($videoAttr['studio'])) {
+            echo('<strong>Studio:</strong> ' . $videoAttr['studio'] . '<br/>');
+        }
+        if (count($directors) > 0) {
+            echo('<strong>Director:</strong> ' .implode(' / ', $directors) .'<br/>');
+        }
+        if (count($genres) > 0) {
+            echo('<strong>Genre:</strong> ' . implode(' / ', $genres) . '<br/>');
+        }
+        echo('<strong>Rating:</strong> ' .$videoAttr['contentRating'] . '</p>');
+
+        
         //echo('<div class="roles">');
         echo('<p>');
-        foreach($video['Role'] as $role) {
-        echo($role['@attributes']['tag'] . ' as ' . $role['@attributes']['role'] . '<br/>');
-        //     $imageUrl = str_replace('http:', 'https:', $role['@attributes']['thumb']);
-        //     echo('
-        //         <div class="role">
-        //             <div class="avatar" style="background-image:url(' .$imageUrl .');"></div>
-        //             <div>' .$role['@attributes']['Tag']  . '</div>
-        //         </div>');
+        if (isset($video['Role'])) {
+            echo('<h2>Cast</h2>');
+            foreach($video['Role'] as $role) {
+            echo($role['@attributes']['tag'] . ' as ' . $role['@attributes']['role'] . '<br/>');
+            //     $imageUrl = str_replace('http:', 'https:', $role['@attributes']['thumb']);
+            //     echo('
+            //         <div class="role">
+            //             <div class="avatar" style="background-image:url(' .$imageUrl .');"></div>
+            //             <div>' .$role['@attributes']['Tag']  . '</div>
+            //         </div>');
+            }
+            echo('</p>');
         }
-        echo('</p>');
         //echo('</div>');
     }
 

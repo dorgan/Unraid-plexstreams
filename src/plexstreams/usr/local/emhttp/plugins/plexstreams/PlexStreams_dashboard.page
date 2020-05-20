@@ -13,13 +13,7 @@ Tag="film"
     if (!empty($cfg['TOKEN'])) {
         $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
         $streams = getStreams($host, $cfg);
-
-        if ($streams['@attributes']['size'] > 0) {
-            if ((int)$streams['@attributes']['size'] === 1) {
-                $streams['Video'] = [$streams['Video']];
-            }
-            $streamCount =$streams['@attributes']['size'];
-        }
+        $mergedStreams = mergeStreams($streams);
     }
 ?>
 
@@ -47,7 +41,7 @@ Tag="film"
                             <table>
                                 <tbody style="display: table-row-group;">
                                 <?php
-                                    if ($streamCount > 0) {
+                                    if (count($mergedStreams) > 0) {
                                 ?>
                                     <tr style="display:table-row;">
                                         <td><strong>Name</strong></td>
@@ -55,57 +49,14 @@ Tag="film"
                                         <td width="25%" align="right"><strong>Time</strong></td>
                                     </tr>
                                     <?php
-                                        foreach($streams['Video'] as $stream) {
-                                            if (isset($stream['Media']['@attributes'])) {
-                                                $stream['Media'] = [$stream['Media']];
-                                            }
-                                            
-                                            foreach($stream['Media'] as $media) {
-                                                if ($media['@attributes']['selected'] === '1') {
-                                                    $title = $stream['@attributes']['title'] . ' (' . $stream['@attributes']['year'] . ')';
-                                                    if (isset($stream['@attributes']['parentTitle'])) {
-                                                        $title = $stream['@attributes']['parentTitle'] . ' - ' . $title;
-                                                    }
-                                                    if (isset($stream['@attributes']['grandparentTitle'])) {
-                                                        $title = $stream['@attributes']['grandparentTitle'] . ' - ' . $title;
-                                                    }
-                                                    $length = floatval($media['Part']['@attributes']['duration']);
-                                                    $lengthInSeconds =  floatval($length) / 1000;
-                                                    $lengthInMinutes = ceil(($lengthInSeconds / 60 ));
-                                                    
-                                                    $lengthSeconds = floor($lengthInSeconds%60);
-                                                    $lengthMinutes = floor(($lengthInSeconds%3600)/60);
-                                                    $lengthHours = floor(($lengthInSeconds%86400)/3600);
-
-                                                    $currentPosition = floatval((int)$stream['@attributes']['viewOffset']);
-                                                    $currentPositionInSeconds = $currentPosition / 1000;
-                                                    $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
-
-                                                    $currentPositionSeconds = floor($currentPositionInSeconds%60);
-                                                    $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
-                                                    $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
-
-                                                    $percentPlayed = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
-
-                                                    $currentPositionDisplay = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
-                                                    $lengthDisplay = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
-                                                    $state = $stream['Player']['@attributes']['state'];
-                                                    
-                                                    $stateIcon = 'play';
-                                                    if ($state === 'paused') {
-                                                        $stateIcon = 'pause';
-                                                    } else if ($state !== 'playing') {
-                                                        $stateIcon = 'buffer';
-                                                    }
-                                                    echo('
-                                                        <tr style="display:table-row;">
-                                                            <td><p class="plexstream-title">' .$title .'</p></td>
-                                                            <td align="center"><i class="fa fa-' .$stateIcon  . '" title="' . $state . '"></i></td>
-                                                            <td align="right">' .$currentPositionDisplay .' / ' . $lengthDisplay .'</td>
-                                                        </td>
-                                                    ');
-                                                }
-                                            }
+                                        foreach($mergedStreams as $stream) {
+                                            echo('
+                                                <tr style="display:table-row;">
+                                                    <td><p class="plexstream-title">' .$stream['title'] .'</p></td>
+                                                    <td align="center"><i class="fa fa-' .$stream['stateIcon']  . '" title="' . $stream['state'] . '"></i></td>
+                                                    <td align="right">' .$stream['currentPositionDisplay'] .' / ' . $stream['lengthDisplay'] .'</td>
+                                                </td>
+                                            ');
                                         }
                                     ?>
                                     </tbody>
