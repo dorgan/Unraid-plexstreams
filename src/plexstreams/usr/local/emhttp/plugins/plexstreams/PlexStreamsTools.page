@@ -1,0 +1,8 @@
+Menu="SystemInformation"
+Name="Plex Streams"
+Tag="film"
+Icon="film"
+Type="xmenu"
+Tabs="true"
+Title="Plex Streams"
+---

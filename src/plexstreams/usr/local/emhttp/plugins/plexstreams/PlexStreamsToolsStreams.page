@@ -1,6 +1,6 @@
-Menu="Plex_Streams:1"
+Menu="PlexStreamsTools:2"
 Title="Streams"
-Tag="film"
+Markdown="false"
 ---
 <?php
 include('/usr/local/emhttp/plugins/plexstreams/stream_display.php');

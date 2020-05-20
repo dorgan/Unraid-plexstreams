@@ -50,6 +50,26 @@ if (isset($cfg['USER']) && isset($cfg['PASSWORD'])) {
         getToken();
     }
 }
+if (!isset($cfg['DISPLAY_WIDGET'])) {
+    $cfg['DISPLAY_WIDGET'] = "1";
+}
+
+if (!isset($cfg['DISPLAY_NAV'])) {
+    $cfg['DISPLAY_NAV'] = "1";
+}
+$pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
+
+if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page')) {
+    rename($pluginPath .'Plex_Streams.page', $pluginPath .'Plex_Streams.page.off');
+} else if ($cfg['DISPLAY_NAV'] === '1' && file_exists($pluginPath . 'Plex_Streams.page.off')) {
+    rename($pluginPath .'Plex_Streams.page.off', $pluginPath .'Plex_Streams.page');
+}
+
+if ($cfg['DISPLAY_WIDGET'] === '0' && file_exists($pluginPath . 'PlexStreams_dashboard.page')) {
+    rename($pluginPath .'PlexStreams_dashboard.page', $pluginPath .'PlexStreams_dashboard.page.off');
+} else if ($cfg['DISPLAY_WIDGET'] === '1' && file_exists($pluginPath . 'PlexStreams_dashboard.page.off')) {
+    rename($pluginPath .'PlexStreams_dashboard.page.off', $pluginPath .'PlexStreams_dashboard.page');
+}
 ?>
 
 <script>
@@ -74,6 +94,16 @@ function clearToken() {
 <div>
     <label for="apikey">Plex Password:</label>
     <input type="password" id="apikey" name="PASSWORD" value="<?php echo($cfg['PASSWORD']) ?>"/>
+</div>
+<div>
+    Display Dashboard Widget:
+    <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_ON" value="1"  <?php echo( $cfg['DISPLAY_WIDGET'] === "1" ? "checked" : ""); ?>/>On
+    <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_OFF" value="0"  <?php echo( $cfg['DISPLAY_WIDGET'] === "0" ? "checked" : ""); ?>/>Off
+</div>
+<div style="height="100px;">
+    Display in Nav:
+    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_ON" value="1"  <?php echo( $cfg['DISPLAY_NAV'] === "1" ? "checked" : ""); ?>/>On
+    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_OFF" value="0"  <?php echo( $cfg['DISPLAY_NAV'] === "0" ? "checked" : ""); ?>/>Off
 </div>
 <input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>
