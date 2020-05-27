@@ -9,7 +9,7 @@
     }
     if (isset($cfg['HOST'])) {
         $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-        $url = $host . $_GET['img'];
+        $url = $host . $_GET['img'] .'?X-Plex-Token=' . $cfg['TOKEN'];
         
         # Check if the client already has the requested item
         if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) or isset($_SERVER['HTTP_IF_NONE_MATCH'])) {

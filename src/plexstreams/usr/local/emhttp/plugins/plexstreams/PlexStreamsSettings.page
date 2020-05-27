@@ -4,6 +4,7 @@ Tag="film"
 ---
 <?php
 include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
+include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
 
 function getToken() {
     global $cfg, $cfg_file;
@@ -81,29 +82,40 @@ function clearToken() {
 <form markdown="1" name="plexstreams_settings" id="plexstreams_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="#file" value="plexstreams/plexstreams.cfg" />
 <input type="hidden" id="COMMAND" name="#command" value="" />
-<input type="hidden" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>"/> 
 
+<input type="button" value="Get Plex Token" style="margin-right:0px;" onclick="PlexOAuth(function(token){document.getElementById('plex-token').value = token;});"/>
+<input type="input" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>" readonly="true"  style="height:25px;padding:5px;"/> 
+
+<?php
+    if (isset($cfg['TOKEN']) && $cfg['TOKEN'] !== '') {
+        $servers = getServers($cfg);
+        echo( '
+            <div>
+                Server:
+                <select name="HOST">
+        ');
+        foreach($servers as $server) {
+            foreach($server['IP'] as $ip) {
+                echo('<option value="'  .$ip .'"' .($cfg['HOST'] === $ip ? ' selected="selected"' : '') . '>' .$server['Name'] .' (' . $ip .')' . '</option>');
+            }
+        }
+        echo('
+                </select>
+            </div>
+        ');
+    }
+?>
 <div>
-    <label for="apikey">Plex URL:</label>
-    <input type="Text" id="host" name="HOST" placeholder="https://1.1.1.1:34200/" value="<?php echo($cfg['HOST']) ?>"/>
-</div>    
-<div>
-    <label for="apikey">Plex User Name:</label>
-    <input id="apikey" type="text" name="USER" placeholder="plex@user" value="<?php echo($cfg['USER']) ?>"/>
-</div>
-<div>
-    <label for="apikey">Plex Password:</label>
-    <input type="password" id="apikey" name="PASSWORD" value="<?php echo($cfg['PASSWORD']) ?>"/>
+    Display in Nav:
+    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_ON" value="1"  <?php echo( $cfg['DISPLAY_NAV'] === "1" ? "checked" : ""); ?>/>On
+    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_OFF" value="0"  <?php echo( $cfg['DISPLAY_NAV'] === "0" ? "checked" : ""); ?>/>Off
 </div>
 <div>
     Display Dashboard Widget:
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_ON" value="1"  <?php echo( $cfg['DISPLAY_WIDGET'] === "1" ? "checked" : ""); ?>/>On
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_OFF" value="0"  <?php echo( $cfg['DISPLAY_WIDGET'] === "0" ? "checked" : ""); ?>/>Off
 </div>
-<div style="height="100px;">
-    Display in Nav:
-    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_ON" value="1"  <?php echo( $cfg['DISPLAY_NAV'] === "1" ? "checked" : ""); ?>/>On
-    <input type="radio" name="DISPLAY_NAV" id="DISPLAY_NAV_OFF" value="0"  <?php echo( $cfg['DISPLAY_NAV'] === "0" ? "checked" : ""); ?>/>Off
-</div>
 <input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>
+
+<script src="/plugins/plexstreams/js/plex.js" async="true"></script>

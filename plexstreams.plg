@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.20b">
+  <!ENTITY version   "2020.05.27">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,11 @@
 
     <CHANGES>
     ##&name;
+###2020.05.27
+ - Integrate with Plex OAuth
+ - Allow for remote plex server connection
+ - Correct issue for remote plex server wasnt displaying artwork
+ 
 ###2020.05.20b
  - Ability to turn dashboard widget on/off
  - Ability to turn top level nav on/off
@@ -116,6 +121,17 @@
                 upgradepkg --install-new &plgPATH;/&plgNAME;.txz
             fi
 
+            WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+            if [[ -f "$WIDGET_OFF_FILE" ]]; then
+                rm /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+                mv /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+            fi
+            
+            NAV_OFF=/usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+            if [[ -f "$NAV_OFF" ]]; then
+                rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+                mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+            fi
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
