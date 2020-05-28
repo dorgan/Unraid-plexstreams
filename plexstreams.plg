@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.27a">
+  <!ENTITY version   "2020.05.28">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.05.28
+ - Correcting details sent to Plex.tv during OAuth Process
+
 ###2020.05.27a
  - Fix issue for movie details where not being pulled
 

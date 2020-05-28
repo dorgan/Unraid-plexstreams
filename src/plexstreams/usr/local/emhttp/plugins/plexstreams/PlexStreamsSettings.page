@@ -117,5 +117,8 @@ function clearToken() {
 </div>
 <input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>
-
+<script>
+    var OS_VERSION = '<?php echo(OS_VERSION); ?>';
+    var PLUGIN_VERSION = '<?php echo(PLUGIN_VERSION); ?>';
+</script>
 <script src="/plugins/plexstreams/js/plex.js" async="true"></script>

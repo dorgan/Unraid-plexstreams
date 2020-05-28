@@ -1,4 +1,6 @@
 <?php
+    define('OS_VERSION', 'Unraid ' . $GLOBALS['unRaidSettings']['version']);
+    define('PLUGIN_VERSION', 'v1.1.1');
 
     function getServers($cfg) {
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
