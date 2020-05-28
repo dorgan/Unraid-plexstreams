@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.28a">
+  <!ENTITY version   "2020.05.28b">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.05.28b
+ - Make sure server selection drop down appears when default server has no streams
+
 ###2020.05.28a
  - Added the ability for the streams page to show different servers
      - Default server is what is used for dashboard widget
