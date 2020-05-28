@@ -190,12 +190,18 @@
 
     if (!empty($cfg['TOKEN'])) {
         $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
+        if (isset($_REQUEST['host'])) {
+            $host = $_REQUEST['host'];
+        }
+
         $streams = getStreams($host, $cfg);
         
         if ($streams['@attributes']['size'] > 0) {
             
-            echo('<h4 style="padding-bottom:25px;">Hover the stream for details</h4>');
-            
+            echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
+            echo('<form method="GET">');
+            echo('<div style="margin-bottom:25px;">Change Server: ' .generateServerList($cfg, 'host', 'host', $host) . ' <input type="submit" value="Apply"/></div>');
+            echo('</form>');
             $mergedStreams = mergeStreams($streams);
             
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');

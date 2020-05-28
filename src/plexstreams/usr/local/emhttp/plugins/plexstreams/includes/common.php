@@ -6,35 +6,54 @@
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
 
         $servers = getUrl($url);
-        $serverList = [];
-        if (isset($servers['@attributes'])) {
-            $servers = [$servers];
-        }
-        foreach($servers as $server) {
-            if (isset($server['Device']['@attributes'])) {
-                $server['Device'] = [$server['Device']];
+        if ($servers !== false) {
+            $serverList = [];
+            if (isset($servers['@attributes'])) {
+                $servers = [$servers];
             }
-            foreach($server['Device'] as $device) {
-                if (isset($device['@attributes']['provides'])) {
-                    $providers = explode(',', $device['@attributes']['provides']);
-                    if (in_array('server', $providers)) {
-                        $server = [
-                            'Name' => $device['@attributes']['name'],
-                            'IP' => []
-                        ];
-                        if (isset($device['Connection']['@attibutes'])) {
-                            $device['Connection'] = [$device['Connection']];
+            foreach($servers as $server) {
+                if (isset($server['Device']['@attributes'])) {
+                    $server['Device'] = [$server['Device']];
+                }
+                foreach($server['Device'] as $device) {
+                    if (isset($device['@attributes']['provides'])) {
+                        $providers = explode(',', $device['@attributes']['provides']);
+                        if (in_array('server', $providers)) {
+                            $server = [
+                                'Name' => $device['@attributes']['name'],
+                                'IP' => []
+                            ];
+                            if (isset($device['Connection']['@attibutes'])) {
+                                $device['Connection'] = [$device['Connection']];
+                            }
+                            foreach($device['Connection'] as $connection) {
+                                array_push($server['IP'], $connection['@attributes']['uri']);
+                            }
+                            array_push($serverList, $server);
                         }
-                        foreach($device['Connection'] as $connection) {
-                            array_push($server['IP'], $connection['@attributes']['uri']);
-                        }
-                        array_push($serverList, $server);
                     }
                 }
             }
+        } else {
+            return false;
         }
 
         return $serverList;
+    }
+
+    function generateServerList($cfg, $name, $id, $selected) {
+        $servers = getServers($cfg);
+        $retVal = '
+                <select name="' .$name . '" id="' .$id .'">
+        ';
+        foreach($servers as $server) {
+            foreach($server['IP'] as $ip) {
+                $retVal .= '<option value="'  .$ip .'"' .($selected === $ip ? ' selected="selected"' : '') . '>' .$server['Name'] .' (' . $ip .')' . '</option>';
+            }
+        }
+        $retVal .= '</select>';
+
+        return $retVal;
     }
 
     function getStreams($host, $cfg) {

@@ -89,9 +89,10 @@ function clearToken() {
 <?php
     if (isset($cfg['TOKEN']) && $cfg['TOKEN'] !== '') {
         $servers = getServers($cfg);
+        echo(generateServerList($cfg, 'HOST', 'HOST', $cfg['HOST']));
         echo( '
             <div>
-                Server:
+                Default Server:
                 <select name="HOST">
         ');
         foreach($servers as $server) {
