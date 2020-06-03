@@ -207,7 +207,7 @@
             
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
             foreach($mergedStreams as $idx => $stream) {
-                if (fmod($idx, 3) === 0 && $idx !== 0) {
+                if ($idx%3 === 0 && $idx !== 0) {
                     echo( '</tr><tr>');
                 } else if ($idx === 0) {
                     echo('<tr>');
