@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.03">
+  <!ENTITY version   "2020.06.07">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.06.07
+ - Maintain settings for dashboard widget and nav item
+
 ###2020.06.03
  - Fix diplay issue where more than 3 streams was not wrapping
 
@@ -138,13 +141,15 @@
             fi
 
             WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
-            if [[ -f "$WIDGET_OFF_FILE" ]]; then
+            WIDGET_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_WIDGET"]);'`
+            if [[ -f "$WIDGET_OFF_FILE" || "$WIDGET_SETTING" == "0" ]]; then
                 rm /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
                 mv /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
             fi
             
             NAV_OFF=/usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
-            if [[ -f "$NAV_OFF" ]]; then
+            NAV_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_NAV"]);'`
+            if [[ -f "$NAV_OFF" || "$NAV_SETTING" == "0" ]]; then
                 rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
                 mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
             fi
