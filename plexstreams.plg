@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.07">
+  <!ENTITY version   "2020.06.07a">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.06.07a
+ - Make dashboard widget use ajax so that it doesnt slow down the loading of the dashboard
+ 
 ###2020.06.07
  - Maintain settings for dashboard widget and nav item
 

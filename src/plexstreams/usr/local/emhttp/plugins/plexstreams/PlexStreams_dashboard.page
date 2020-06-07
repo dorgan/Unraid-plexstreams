@@ -3,18 +3,9 @@ Icon="film"
 Tag="film"
 ---
 <?php
-    include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
-    include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
     $dashboard_widget_pos = 1;
     $dashboard_widget_colspan = 3;
-    $streams = [];
     $streamCount = 0;
-
-    if (!empty($cfg['TOKEN'])) {
-        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-        $streams = getStreams($host, $cfg);
-        $mergedStreams = mergeStreams($streams);
-    }
 ?>
 
 <style type="text/css">
@@ -26,7 +17,7 @@ Tag="film"
                         <td></td>
                         <td class="next" colspan="<?php echo $dashboard_widget_colspan ?>" style="white-space: no-wrap;">
                             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
-                                <div class="section" style="line-height:2rem;">Plex Streams<br><span><?php echo count($mergedStreams) ?> Active Stream(s)</span><br><br></div>
+                                <div class="section" style="line-height:2rem;">Plex Streams<br><span><span id="plexstreams_count">0</span> Active Stream(s)</span><br><br></div>
                                 <i class="fa fa-fw chevron mt0" id="dash_plexstreams_toggle" onclick="toggleChevron('dash_plexstreams_toggle',0)"></i>
                                 <a href="/Settings/PlexStreams" title="Plex Streams Setup page"><i class="fa fa-fw fa-cog chevron mt0"></i></a>
                                 <a href="/Tools/PlexStreamsTools" title="View Streams"><i class="fa fa-fw fa-film chevron mt0"></i></a>
@@ -39,32 +30,11 @@ Tag="film"
                     <td></td>
                     <td colspan="<?php echo $dashboard_widget_colspan ?>" class="top">
                             <table>
-                                <tbody style="display: table-row-group;">
-                                <?php
-                                    if (count($mergedStreams) > 0) {
-                                ?>
-                                    <tr style="display:table-row;">
-                                        <td><strong>Name</strong></td>
-                                        <td width="25%" align="center"><strong>Status</strong></td>
-                                        <td width="25%" align="right"><strong>Time</strong></td>
+                                <tbody style="display: table-row-group;" id="plexstreams_streams">
+                                    <tr>
+                                        <td colspan="3"><div style="text-align:center;"><i>Retrieving Stream Data...</i></div></td>
                                     </tr>
-                                    <?php
-                                        foreach($mergedStreams as $stream) {
-                                            echo('
-                                                <tr style="display:table-row;">
-                                                    <td><p class="plexstream-title">' .$stream['title'] .'</p></td>
-                                                    <td align="center"><i class="fa fa-' .$stream['stateIcon']  . '" title="' . $stream['state'] . '"></i></td>
-                                                    <td align="right">' .$stream['currentPositionDisplay'] .' / ' . $stream['lengthDisplay'] .'</td>
-                                                </td>
-                                            ');
-                                        }
-                                    ?>
-                                    </tbody>
-                                <?php
-                                } else {
-                                    echo('<tr><td colspan="3"><i>There are currently no active streams</i></td></tr>');
-                                }
-                                ?>
+                                </tbody>
                             </table>
                     </td>
                     <td></td>
@@ -81,17 +51,38 @@ p.plexstream-title {
 }
 </style>
 
-<script>
+<script async>
 $(function() {
-  // append data from the table into the correct one
-  $("#db-box<?php echo $dashboard_widget_pos ?>").append($(".dash_plexstreams").html());
+    // append data from the table into the correct one
+    $("#db-box<?php echo $dashboard_widget_pos ?>").append($(".dash_plexstreams").html());
 
-  // reload toggle to get the correct state
-  toggleView('dash_plexstreams_toggle',true);
+    // reload toggle to get the correct state
+    toggleView('dash_plexstreams_toggle',true);
 
-  // reload sorting to get the stored data (cookie)
-  sortTable($('#db-box1'),$.cookie('db-box1'));
-  sortTable($('#db-box2'),$.cookie('db-box2'));
-  sortTable($('#db-box3'),$.cookie('db-box3'));
+    // reload sorting to get the stored data (cookie)
+    sortTable($('#db-box1'),$.cookie('db-box1'));
+    sortTable($('#db-box2'),$.cookie('db-box2'));
+    sortTable($('#db-box3'),$.cookie('db-box3'));
+
+    function checkStreams() {
+        $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+            $('#plexstreams_count').html(streams.length);
+            if (streams.length > 0) {
+                $('#plexstreams_streams').html('');
+                streams.forEach(function(stream) {
+                    $('#plexstreams_streams').append('<tr style="display:table-row;">' +
+                        '<td><p class="plexstream-title">' +stream.title +  '</p></td>' +
+                        '<td align="center"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
+                        '<td align="center">' + stream.currentPositionDisplay + ' / ' + stream.lengthDisplay + '</td>' +
+                    '</tr>');
+                });
+            } else {
+                $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>There are currently no active streams</i></td></tr>');
+            }
+        });
+    }
+    checkStreams();
+
+    setInterval(checkStreams, 5000);
 });
 </script>
