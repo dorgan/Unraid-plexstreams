@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.09a">
+  <!ENTITY version   "2020.06.09b">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.06.09b
+ - Correct streams page image output and error for ajax call for Live TV streams
+
 ###2020.06.09a
  - Make sure settings are set before trying to display streams in the widget
 

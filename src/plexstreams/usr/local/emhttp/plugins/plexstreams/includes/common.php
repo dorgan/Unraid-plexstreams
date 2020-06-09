@@ -116,51 +116,59 @@
                 }
                 foreach($video['Media'] as $media) {
                     if ($media['@attributes']['selected'] === '1') {
-                        $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
-                        if (isset($video['@attributes']['parentTitle'])) {
-                            $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
+                        if (!isset($media['@attributes']['channelCallSign'])) {
+                            $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
+                            if (isset($video['@attributes']['parentTitle'])) {
+                                $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
+                            }
+                            if (isset($video['@attributes']['grandparentTitle'])) {
+                                $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
+                            }
+                        } else  {
+                            $title = $media['@attributes']['channelCallSign'] . ' (' . $media['@attributes']['channelIdentifier'] .') - ' . $video['@attributes']['grandparentTitle'];
                         }
-                        if (isset($video['@attributes']['grandparentTitle'])) {
-                            $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
+                        if (isset($media['Part']['@attributes']['duration'])) {
+                            $duration = $media['Part']['@attributes']['duration'];
+                            $lengthInSeconds = $duration / 1000;
+                            $lengthInMinutes = ceil($lengthInSeconds / 60 );
+                            $lengthSeconds = floor($lengthInSeconds%60);
+                            $lengthMinutes = floor(($lengthInSeconds%3600)/60);
+                            $lengthHours = floor(($lengthInSeconds%86400)/3600);
+                            
+                            $currentPosition = floatval((int)$video['@attributes']['viewOffset']);
+                            $currentPositionInSeconds = $video['@attributes']['viewOffset'] / 1000;
+                            $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
+                            $currentPositionSeconds = floor($currentPositionInSeconds%60);
+                            $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
+                            $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
                         }
-
-                        $duration = $media['Part']['@attributes']['duration'];
-                        $lengthInSeconds = $duration / 1000;
-                        $lengthInMinutes = ceil($lengthInSeconds / 60 );
-                        $lengthSeconds = floor($lengthInSeconds%60);
-                        $lengthMinutes = floor(($lengthInSeconds%3600)/60);
-                        $lengthHours = floor(($lengthInSeconds%86400)/3600);
-                        
-                        $currentPosition = floatval((int)$video['@attributes']['viewOffset']);
-                        $currentPositionInSeconds = $video['@attributes']['viewOffset'] / 1000;
-                        $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
-                        $currentPositionSeconds = floor($currentPositionInSeconds%60);
-                        $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
-                        $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
-                        
+                        $artThumb = $video['@attributes']['art'];
+                        if (isset($media['@attributes']['channelThumb'])) {
+                            $artThumb = $media['@attributes']['channelThumb'];
+                        }
                         $mergedStream = [
                             'type' => 'video',
                             'title' => $title,
                             'key' => $video['@attributes']['key'],
                             'duration' => $duration,
-                            'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($video['@attributes']['art']),
+                            'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($artThumb),
                             'thumbUrl' => '/plugins/plexstreams/getImage.php?img=' .  urlencode($video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb']),
                             'user' => $video['User']['@attributes']['title'],
                             'userAvatar' => $video['User']['@attributes']['thumb'],
                             'state' => $video['Player']['@attributes']['state'],
                             'stateIcon' => 'play',
                             'length' => $duration,
-                            'lengthInSeconds' => $lengthInSeconds,
-                            'lengthInMinutes' => $lengthInMinutes,
-                            'lengthSeconds' => $lengthInSeconds,
-                            'lengthMinutes' => $lengthMinuites,
-                            'lengthHours' => $lengthHours,
-                            'currentPosition' => $currentPosition,
-                            'currentPositionInSeconds' =>  $currentPositionInSeconds,
-                            'currentPositionInMinutes' =>  $currentPositionInMinutes,
-                            'currentPositionSeconds' => $currentPositionSeconds,
-                            'currentPositionMinutes' => $currentPositionMinutes,
-                            'currentPositionHours' => $currentPositionHours,
+                            'lengthInSeconds' => $lengthInSeconds || null,
+                            'lengthInMinutes' => $lengthInMinutes || null,
+                            'lengthSeconds' => $lengthInSeconds || null,
+                            'lengthMinutes' => $lengthMinuites || null,
+                            'lengthHours' => $lengthHours || null,
+                            'currentPosition' => $currentPosition || null,
+                            'currentPositionInSeconds' =>  $currentPositionInSeconds || null,
+                            'currentPositionInMinutes' =>  $currentPositionInMinutes || null,
+                            'currentPositionSeconds' => $currentPositionSeconds || null,
+                            'currentPositionMinutes' => $currentPositionMinutes || null,
+                            'currentPositionHours' => $currentPositionHours || null,
                             'percentPlayed' => round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0),
                             'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
                             'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
