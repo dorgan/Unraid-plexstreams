@@ -79,6 +79,10 @@ $(function() {
             } else {
                 $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>There are currently no active streams</i></td></tr>');
             }
+        }).fail(function(jqXHR) {
+            if (jqXHR.status == '500') {
+                $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</i></td></tr>');
+            }
         });
     }
     checkStreams();
