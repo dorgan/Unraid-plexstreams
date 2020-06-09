@@ -6,51 +6,6 @@ Tag="film"
 include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
 include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
 
-function getToken() {
-    global $cfg, $cfg_file;
-    $host = "https://plex.tv/users/sign_in.json";
-    $username = $cfg['USER'];
-    $password = $cfg['PASSWORD'];
-
-    $header = array(
-        'Content-Length: 0', 
-        'X-Plex-Client-Identifier: Unraid-Plex-Streams',
-        'X-Plex-Product: Unraid-Plex-Streams',
-        'X-Plex-Version: v1_06',
-    );
-    $process = curl_init($host);
-    curl_setopt($process, CURLOPT_HTTPHEADER, $header);
-    curl_setopt($process, CURLOPT_HEADER, 0);
-    curl_setopt($process, CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
-    curl_setopt($process, CURLOPT_USERPWD, $username . ":" . $password);
-    curl_setopt($process, CURLOPT_TIMEOUT, 30);
-    curl_setopt($process, CURLOPT_SSL_VERIFYPEER, 0);
-    curl_setopt($process, CURLOPT_POST, 1);
-    curl_setopt($process, CURLOPT_RETURNTRANSFER, true);
-    $data = curl_exec($process);
-
-    $tokenResp = json_decode($data, true);
-    @curl_close($process);
-    if (isset($tokenResp['user']['authentication_token'])) {
-        $newToken = $tokenResp['user']['authentication_token'];
-        $cfg['TOKEN'] = $newToken;
-        $handle = fopen($cfg_file,'w');
-        if ($handle) {
-            foreach($cfg as $key=>$value) {
-                fwrite($handle, $key ."=\"" . $value ."\"" ."\n");
-            }
-            fclose($handle);
-        }
-    }
-}
-
-if (isset($cfg['USER']) && isset($cfg['PASSWORD'])) {
-    if (!isset($cfg['TOKEN'])) {
-        getToken();
-    } elseif (empty($cfg['TOKEN'])) {
-        getToken();
-    }
-}
 if (!isset($cfg['DISPLAY_WIDGET'])) {
     $cfg['DISPLAY_WIDGET'] = "1";
 }
@@ -87,21 +42,13 @@ function clearToken() {
 <input type="input" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>" readonly="true"  style="height:25px;padding:5px;"/> 
 
 <?php
+
     if (isset($cfg['TOKEN']) && $cfg['TOKEN'] !== '') {
         $servers = getServers($cfg);
-        echo(generateServerList($cfg, 'HOST', 'HOST', $cfg['HOST']));
+        
         echo( '
             <div>
-                Default Server:
-                <select name="HOST">
-        ');
-        foreach($servers as $server) {
-            foreach($server['IP'] as $ip) {
-                echo('<option value="'  .$ip .'"' .($cfg['HOST'] === $ip ? ' selected="selected"' : '') . '>' .$server['Name'] .' (' . $ip .')' . '</option>');
-            }
-        }
-        echo('
-                </select>
+                Default Server: ' . generateServerList($cfg, 'HOST', 'HOST', $cfg['HOST']) .'
             </div>
         ');
     }

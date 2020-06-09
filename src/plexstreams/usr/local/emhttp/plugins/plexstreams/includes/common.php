@@ -4,7 +4,9 @@
 
     function getServers($cfg) {
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
-
+        if (isset($_REQUEST['dbg'])) {
+            v_d($url);
+        }
         $servers = getUrl($url);
         if ($servers !== false) {
             $serverList = [];
@@ -26,8 +28,17 @@
                             if (isset($device['Connection']['@attibutes'])) {
                                 $device['Connection'] = [$device['Connection']];
                             }
+                            
                             foreach($device['Connection'] as $connection) {
-                                array_push($server['IP'], $connection['@attributes']['uri']);
+                                if (!isset($connection['@attributes'])) {
+                                    if (!in_array($connection['uri'], $server['IP'])) {
+                                        array_push($server['IP'], $connection['uri']);
+                                    }
+                                } else {
+                                    if (!in_array($connection['@attributes']['uri'], $server['IP'])) {
+                                        array_push($server['IP'], $connection['@attributes']['uri']);
+                                    }
+                                }
                             }
                             array_push($serverList, $server);
                         }

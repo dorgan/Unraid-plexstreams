@@ -10,7 +10,11 @@
         }
 
         $streams = getStreams($host, $cfg);
+        
         $mergedStreams = mergeStreams($streams);
+        if (isset($_REQUEST['dbg'])) {
+            v_d($mergedStreams);
+        }
         header('Content-type: application/json');
         echo(json_encode($mergedStreams));
     }
