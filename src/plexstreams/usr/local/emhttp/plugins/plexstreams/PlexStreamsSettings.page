@@ -13,6 +13,10 @@ if (!isset($cfg['DISPLAY_WIDGET'])) {
 if (!isset($cfg['DISPLAY_NAV'])) {
     $cfg['DISPLAY_NAV'] = "1";
 }
+
+if (!isset($cfg['FORCE_PLEX_HTTPS'])) {
+    $cfg['FORCE_PLEX_HTTPS'] = "0";
+}
 $pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
 
 if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page')) {
@@ -62,6 +66,11 @@ function clearToken() {
     Display Dashboard Widget:
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_ON" value="1"  <?php echo( $cfg['DISPLAY_WIDGET'] === "1" ? "checked" : ""); ?>/>On
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_OFF" value="0"  <?php echo( $cfg['DISPLAY_WIDGET'] === "0" ? "checked" : ""); ?>/>Off
+</div>
+<div>
+    Force HTTP with Plex:
+    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_ON" value="1"  <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "1" ? "checked" : ""); ?>/>On
+    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_OFF" value="0"  <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "0" ? "checked" : ""); ?>/>Off
 </div>
 <input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>

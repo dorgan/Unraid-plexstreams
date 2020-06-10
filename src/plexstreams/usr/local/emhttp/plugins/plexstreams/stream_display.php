@@ -200,10 +200,10 @@
         echo('<div style="margin-bottom:25px;">Change Server: ' .generateServerList($cfg, 'host', 'host', $host) . ' <input type="submit" value="Apply"/></div>');
         echo('</form>');
         
-        if ($streams['@attributes']['size'] > 0) {
+        if ($streams[0]['@attributes']['size'] > 0) {
             
             echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
-            $mergedStreams = mergeStreams($streams);
+            $mergedStreams = mergeStreams($streams[0], $streams[1]);
             
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
             foreach($mergedStreams as $idx => $stream) {

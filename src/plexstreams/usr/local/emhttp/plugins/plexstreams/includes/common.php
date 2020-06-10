@@ -32,11 +32,19 @@
                             foreach($device['Connection'] as $connection) {
                                 if (!isset($connection['@attributes'])) {
                                     if (!in_array($connection['uri'], $server['IP'])) {
-                                        array_push($server['IP'], $connection['uri']);
+                                        $ip = $connection['uri'];
+                                        if ($cfg['FORCE_PLEX_HTTPS']) {
+                                            $ip = str_replace('http:', 'https:', $ip);
+                                        }
+                                        array_push($server['IP'], $ip);
                                     }
                                 } else {
                                     if (!in_array($connection['@attributes']['uri'], $server['IP'])) {
-                                        array_push($server['IP'], $connection['@attributes']['uri']);
+                                        $ip = $connection['@attributes']['uri'];
+                                        if ($cfg['FORCE_PLEX_HTTPS']) {
+                                            $ip = str_replace('http:', 'https:', $ip);
+                                        }
+                                        array_push($server['IP'], $ip);
                                     }
                                 }
                             }
@@ -67,13 +75,20 @@
         return $retVal;
     }
 
-    function getStreams($host, $cfg) {
-        $retArray = [];
-        $url = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
+    function getStreams($hosts, $cfg) {
+        $responses = array(
+            '0' => [],
+            '1' => []
+        );
+        $streams = $hosts . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
+        $schedules = $hosts ."/media/subscriptions/scheduled?X-Plex-Token=" .$cfg['TOKEN'];
         if (isset($_REQUEST['dbg'])) {
-            v_d($url);
+            v_d($streams);
+            v_d($schedules);
         }
-        return getUrl($url);
+        $responses = getUrl([$streams, $schedules]);
+
+        return $responses;
     }
 
     function v_d($obj) {
@@ -82,30 +97,73 @@
         echo('</pre>');
     }
 
-    function getUrl($url) {
-        $arrContextOptions=array(
-            "http" => array(
-                "method" => "GET",
-                "header" => 
-                    "Content-Type: application/xml; charset=utf-8;\r\n".
-                    "Connection: close\r\n".
-                    "Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n".
-                    "Pragma: no-cache\r\n",
-                "ignore_errors" => true,
-                "timeout" => (float)30.0
-            ),
-            "ssl"=>array(
-                "allow_self_signed"=>true,
-                "verify_peer"=>false,
-                "verify_peer_name"=>false,
-            )
-        );
-        return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
+    function getUrl($urls) {
+        if (is_array($urls)) {
+            $rets = [];
+            $multi = [];
+            $mh = curl_multi_init();
+            foreach($urls as $idx=>$url) {
+                $multi[$idx] = curl_init();
+                curl_setopt($multi[$idx], CURLOPT_URL, $url);
+                curl_setopt($multi[$idx], CURLOPT_HEADER, 0);
+                curl_setopt($multi[$idx], CURLOPT_SSL_VERIFYPEER, 0);
+                curl_setopt($multi[$idx], CURLOPT_SSL_VERIFYSTATUS, 0);
+                curl_setopt($multi[$idx], CURLOPT_CONNECTTIMEOUT, 30);
+                curl_setopt($multi[$idx], CURLOPT_FOLLOWLOCATION, 1);
+                curl_setopt($multi[$idx], CURLOPT_RETURNTRANSFER, 1);
+                curl_multi_add_handle($mh, $multi[$idx]);
+            }
+            //execute the handles
+            do {
+                $mrc = curl_multi_exec($mh, $active);
+            }
+            while ($mrc == CURLM_CALL_MULTI_PERFORM);
+
+            while ($active && $mrc == CURLM_OK) {
+                if (curl_multi_select($mh) != -1) {
+                    do {
+                        $mrc = curl_multi_exec($mh, $active);
+                    } while ($mrc == CURLM_CALL_MULTI_PERFORM);
+                }
+            }
+            
+            foreach($multi as $idx=>$m) {
+                if (isset($_REQUEST['dbg'])) {
+                    v_d(curl_multi_getcontent($multi[$idx]));
+                }
+                $rets[$idx] = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);
+                curl_multi_remove_handle($mh, $m);
+            }
+
+            curl_multi_close($mh);
+            return $rets;
+        } else {
+            $arrContextOptions=array(
+                "http" => array(
+                    "method" => "GET",
+                    "header" => 
+                        "Content-Type: application/xml; charset=utf-8;\r\n".
+                        "Connection: close\r\n".
+                        "Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n".
+                        "Pragma: no-cache\r\n",
+                    "ignore_errors" => true,
+                    "timeout" => (float)30.0
+                ),
+                "ssl"=>array(
+                    "allow_self_signed"=>true,
+                    "verify_peer"=>false,
+                    "verify_peer_name"=>false,
+                )
+            );
+            $rets = json_decode(json_encode(simplexml_load_string(file_get_contents($urls, false, stream_context_create($arrContextOptions)))), TRUE);
+        }
+
+        return $rets;
     }
 
-    function mergeStreams($streams) {
+    function mergeStreams($streams, $scheduled) {
         $mergedStreams = [];
-
+        
         if (isset($streams['Video'])) {
             if (isset($streams['Video']) && isset($streams['Video']['@attributes'])) {
                 $streams['Video'] = [$streams['Video']];
@@ -158,17 +216,17 @@
                             'state' => $video['Player']['@attributes']['state'],
                             'stateIcon' => 'play',
                             'length' => $duration,
-                            'lengthInSeconds' => $lengthInSeconds || null,
-                            'lengthInMinutes' => $lengthInMinutes || null,
-                            'lengthSeconds' => $lengthInSeconds || null,
-                            'lengthMinutes' => $lengthMinuites || null,
-                            'lengthHours' => $lengthHours || null,
-                            'currentPosition' => $currentPosition || null,
-                            'currentPositionInSeconds' =>  $currentPositionInSeconds || null,
-                            'currentPositionInMinutes' =>  $currentPositionInMinutes || null,
-                            'currentPositionSeconds' => $currentPositionSeconds || null,
-                            'currentPositionMinutes' => $currentPositionMinutes || null,
-                            'currentPositionHours' => $currentPositionHours || null,
+                            'lengthInSeconds' => $lengthInSeconds,
+                            'lengthInMinutes' => $lengthInMinutes,
+                            'lengthSeconds' => $lengthInSeconds,
+                            'lengthMinutes' => $lengthMinuites,
+                            'lengthHours' => $lengthHours,
+                            'currentPosition' => $currentPosition,
+                            'currentPositionInSeconds' =>  $currentPositionInSeconds,
+                            'currentPositionInMinutes' =>  $currentPositionInMinutes,
+                            'currentPositionSeconds' => $currentPositionSeconds,
+                            'currentPositionMinutes' => $currentPositionMinutes,
+                            'currentPositionHours' => $currentPositionHours,
                             'percentPlayed' => round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0),
                             'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
                             'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
@@ -282,6 +340,13 @@
                         $mergedStreams[] = $mergedStream;
                     }
                 }
+            }
+        }
+
+        if (isset($scheduled) && isset($scheduled['@attributes'])) {
+            $streams['Scheduled'] = [$streams['Scheduled']];
+            foreach($streams['Scheduled'] as $scheduled) {
+
             }
         }
 

@@ -35,7 +35,6 @@
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 12800);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         $out = curl_exec ($ch);
         curl_close ($ch);
