@@ -4,6 +4,7 @@
 
     function getServers($cfg) {
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
+        $url2 = 'https://plex.tv/api/resources?X-Plex-Token=' .$cfg['TOKEN'] . ($cfg['FORCE_PLEX_HTTPS'] === '1' ? '&includeHttps=1' : '');
         if (isset($_REQUEST['dbg'])) {
             v_d($url);
         }
@@ -21,34 +22,24 @@
                     if (isset($device['@attributes']['provides'])) {
                         $providers = explode(',', $device['@attributes']['provides']);
                         if (in_array('server', $providers)) {
-                            $server = [
+                            $serverList[$device['@attributes']['clientIdentifier']] = [
                                 'Name' => $device['@attributes']['name'],
-                                'IP' => []
+                                'Identifier' => $device['@attributes']['clientIdentifier'],
+                                'Connections' => []
                             ];
-                            if (isset($device['Connection']['@attibutes'])) {
-                                $device['Connection'] = [$device['Connection']];
-                            }
-                            
-                            foreach($device['Connection'] as $connection) {
-                                if (!isset($connection['@attributes'])) {
-                                    if (!in_array($connection['uri'], $server['IP'])) {
-                                        $ip = $connection['uri'];
-                                        if ($cfg['FORCE_PLEX_HTTPS']) {
-                                            $ip = str_replace('http:', 'https:', $ip);
-                                        }
-                                        array_push($server['IP'], $ip);
-                                    }
-                                } else {
-                                    if (!in_array($connection['@attributes']['uri'], $server['IP'])) {
-                                        $ip = $connection['@attributes']['uri'];
-                                        if ($cfg['FORCE_PLEX_HTTPS']) {
-                                            $ip = str_replace('http:', 'https:', $ip);
-                                        }
-                                        array_push($server['IP'], $ip);
-                                    }
+                        }
+                    }
+                }
+                if (count($serverList) > 0) {
+                    $connections = getUrl($url2);
+                    if ($connections !== false) {
+                        foreach($connections['Device'] as $device) {
+                            $identifier = $device['@attributes']['clientIdentifier'];
+                            if (isset($serverList[$identifier])) {
+                                foreach($device['Connection'] as $connection) {
+                                    array_push($serverList[$identifier]['Connections'], $connection['@attributes']);
                                 }
                             }
-                            array_push($serverList, $server);
                         }
                     }
                 }
@@ -66,8 +57,9 @@
                 <select name="' .$name . '" id="' .$id .'">
         ';
         foreach($servers as $server) {
-            foreach($server['IP'] as $ip) {
-                $retVal .= '<option value="'  .$ip .'"' .($selected === $ip ? ' selected="selected"' : '') . '>' .$server['Name'] .' (' . $ip .')' . '</option>';
+            foreach($server['Connections'] as $connection) {
+                $url = $connection['uri'];
+                $retVal .= '<option value="'  .$url .'"' .($selected === $url ? ' selected="selected"' : '') . '>' .$server['Name'] .' (' . $connection['address'] . ':' .$connection['port'] .')' . ($connection['local'] === '0' ? ' - Remote' : '') . '</option>';
             }
         }
         $retVal .= '</select>';

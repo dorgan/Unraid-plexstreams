@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.09c">
+  <!ENTITY version   "2020.06.10">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,9 +25,12 @@
 
     <CHANGES>
     ##&name;
+###2020.06.10
+ - Updated way to use SSL when connecting to plex server.  This should fix outstanding problems.
+
 ###2020.06.09c
-- All multi-curl support and foundation for including DVR recording sessions
-- Added option to force https communication with Plex Servers - doesnt work locally, but maybe would work for others
+ - All multi-curl support and foundation for including DVR recording sessions
+ - Added option to force https communication with Plex Servers - doesnt work locally, but maybe would work for others
 
 ###2020.06.09b
  - Correct streams page image output and error for ajax call for Live TV streams
