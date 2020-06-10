@@ -228,6 +228,7 @@
                 if (isset($stream['streamInfo']['video'])) {
                     echo('                  <li><div class="label">Video</div><div class="value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
                 }
+
                 echo('
                                         </ul>
                                     </div>
@@ -238,7 +239,10 @@
                                 </div>
                             </div>
                             <div class="bottom-box">
-                                <div class="progressBar" style="width: ' . $stream['percentPlayed'] . '%;"><div class="position">' . $stream['currentPositionDisplay'] . ' / ' . $stream['lengthDisplay'] .'</div></div>
+                                <div class="progressBar" duration="' . $stream['duration'] .'" style="width:' . 
+                                    (!is_null($stream['duration']) ? $stream['percentPlayed'] : '0') .
+                                    '%"><div class="position">' . 
+                                    (!is_null($stream['duration']) ?  $stream['currentPositionDisplay'] . ' / ' . $stream['lengthDisplay'] : '' ) .'</div></div>
                                 <div class="title">' . ($stream['type'] === 'video' ? '<a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($stream['key']) . '\',\'Details\',600,900); return false;">' : '') . $stream['title'] . ($stream['type'] === 'video' ? '</a>' : '' ) . '<div class="status"><i class="fa fa-' .$stream['stateIcon']  . '" title="' .ucwords($stream['state']) .'"></i></div></div>
                             </div>
                         </div>

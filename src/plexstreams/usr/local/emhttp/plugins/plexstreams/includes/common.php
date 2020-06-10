@@ -191,6 +191,8 @@
                             $currentPositionSeconds = floor($currentPositionInSeconds%60);
                             $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                             $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+                        } else {
+                            $duration = null;
                         }
                         $artThumb = $video['@attributes']['art'];
                         if (isset($media['@attributes']['channelThumb'])) {
@@ -207,26 +209,28 @@
                             'userAvatar' => $video['User']['@attributes']['thumb'],
                             'state' => $video['Player']['@attributes']['state'],
                             'stateIcon' => 'play',
-                            'length' => $duration,
-                            'lengthInSeconds' => $lengthInSeconds,
-                            'lengthInMinutes' => $lengthInMinutes,
-                            'lengthSeconds' => $lengthInSeconds,
-                            'lengthMinutes' => $lengthMinuites,
-                            'lengthHours' => $lengthHours,
-                            'currentPosition' => $currentPosition,
-                            'currentPositionInSeconds' =>  $currentPositionInSeconds,
-                            'currentPositionInMinutes' =>  $currentPositionInMinutes,
-                            'currentPositionSeconds' => $currentPositionSeconds,
-                            'currentPositionMinutes' => $currentPositionMinutes,
-                            'currentPositionHours' => $currentPositionHours,
-                            'percentPlayed' => round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0),
-                            'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
-                            'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
+                            'length' => $duration ?? null,
+                            'lengthInSeconds' => $lengthInSeconds ?? null,
+                            'lengthInMinutes' => $lengthInMinutes ?? null,
+                            'lengthSeconds' => $lengthInSeconds ?? null,
+                            'lengthMinutes' => $lengthMinuites ?? null,
+                            'lengthHours' => $lengthHours ?? null,
+                            'currentPosition' => $currentPosition ?? null,
+                            'currentPositionInSeconds' =>  $currentPositionInSeconds ?? null,
+                            'currentPositionInMinutes' =>  $currentPositionInMinutes ?? null,
+                            'currentPositionSeconds' => $currentPositionSeconds ?? null,
+                            'currentPositionMinutes' => $currentPositionMinutes ?? null,
+                            'currentPositionHours' => $currentPositionHours ?? null,
                             'location' => $video['Session']['@attributes']['location'],
                             'address' => $video['Player']['@attributes']['address'],
                             'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
                             'streamInfo' => []
                         ];
+                        if ($mergedStream['duration'] !== null) {
+                            $mergedStream['percentPlayed'] = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
+                            $mergedStream['currentPositionDisplay'] = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
+                            $mergedStream['lengthDisplay'] = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
+                        }
 
                         if ($mergedStream['state'] === 'paused') {
                             $mergedStream['stateIcon'] = 'pause';
