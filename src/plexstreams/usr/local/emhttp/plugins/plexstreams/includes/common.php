@@ -2,6 +2,13 @@
     define('OS_VERSION', 'Unraid ' . $GLOBALS['unRaidSettings']['version']);
     define('PLUGIN_VERSION', 'v1.1.1');
 
+    function getGeo($ip) {
+        $url = 'https://plex.tv/api/v2/geoip?ip_address=' . $ip;
+        $resp = getUrl($url);
+        if (isset($resp['@attributes'])) {
+            return $resp['@attributes']['city'] . ', ' . $resp['@attributes']['subdivision'] . ' ' . $resp['@attributes']['code'];
+        }
+    }
     function getServers($cfg) {
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
         $url2 = 'https://plex.tv/api/resources?X-Plex-Token=' .$cfg['TOKEN'] . ($cfg['FORCE_PLEX_HTTPS'] === '1' ? '&includeHttps=1' : '');

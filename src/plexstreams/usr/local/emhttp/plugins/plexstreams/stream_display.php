@@ -213,6 +213,8 @@
                 } else if ($idx === 0) {
                     echo('<tr>');
                 }
+                $loc = strtoupper($stream['location']);
+                $location = $loc . ' (' . $stream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($stream['address']) : '' ) . ')';
                 echo('
                     <td>
                         <div class="stream-container">
@@ -222,7 +224,7 @@
                                         <ul class="detail-list">
                                             <li><div class="label">Length</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
                                             <li><div class="label">Stream</div><div class="value">' . ucwords($stream['streamDecision']) .'</div></li>
-                                            <li><div class="label">Location</div><div class="value">' . strtoupper($stream['location']) . ' (' .$stream['address']  . ')</div></li>
+                                            <li><div class="label">Location</div><div class="value" title="' . $location . '" style="pointer:default;">' .$location .'</div></li>
                                             <li><div class="label">Bandwidth</div><div class="value">' .$stream['bandwidth'] . ' Mbps</div></li>
                                             <li><div class="label">Audio</div><div class="value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
                 ');
