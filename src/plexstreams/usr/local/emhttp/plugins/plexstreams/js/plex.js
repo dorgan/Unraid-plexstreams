@@ -1,3 +1,28 @@
+var serverList = [];
+function getServers(selected) {
+    var url = '/plugins/plexstreams/getServers.php?useSsl=' + $('input[name="FORCE_PLEX_HTTPS"]:checked').val();
+    var params = new URLSearchParams(window.location.search);
+    $('select#HOST').hide();
+    $('.lds-dual-ring').show();
+    if (params.has('HOST')) {
+        selected = params.get('HOST');
+    }
+    $.get(url).done(function(data) {
+        serverList = data.serverList;
+        $host = $('select#HOST');
+        $host.html('<option value="" disabled>Choose Server</option>');
+        for (var id in serverList) {
+            if (serverList.hasOwnProperty(id)) {
+                serverList[id].Connections.forEach(function(connection) {
+                    $host.append('<option value="' + connection.uri + '"' + (selected === connection.uri ? ' selected="selected"' : '' ) + '>' + serverList[id].Name + '(' + connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</option>');
+                });
+            }
+        }
+        $('select#HOST').show();
+        $('.lds-dual-ring').hide();
+    });
+}
+
 function setLocalStorage(key, value, path) {
     if (path !== false) {
         key = key + '_' + window.location.pathname;
@@ -171,6 +196,7 @@ function PlexOAuth(success, error, pre) {
                 success: function (data) {
                     if (data.authToken){
                         closePlexOAuthWindow();
+                        getServers();
                         if (typeof success === "function") {
                             success(data.authToken)
                         }

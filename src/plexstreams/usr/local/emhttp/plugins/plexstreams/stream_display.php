@@ -1,3 +1,4 @@
+<link type="text/css" rel="stylesheet" href="/plugins/plexstreams/spinner.css">
 <style>
     .caution {
         padding-left: 76px;
@@ -197,7 +198,7 @@
         $streams = getStreams($host, $cfg);
 
         echo('<form method="GET">');
-        echo('<div style="margin-bottom:25px;">Change Server: ' .generateServerList($cfg, 'host', 'host', $host) . ' <input type="submit" value="Apply"/></div>');
+        echo('<div style="height:65px;line-height:75px;">Change Server: <div class="lds-dual-ring"></div><select name="HOST" id="HOST" style="display:none;"><option value="" selected disabled>Choose Server</option></select> <input type="submit" value="Apply"/></div>');
         echo('</form>');
         
         if ($streams[0]['@attributes']['size'] > 0) {
@@ -282,3 +283,7 @@
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">Please provide server details under Settings -> Network Services -> Plex Streams or <a href="/Settings/PlexStreams">click here</a></div></div>');
     }
 ?>
+<script src="/plugins/plexstreams/js/plex.js"></script>
+<script>
+  getServers('<?php echo($cfg['HOST']) ?>');
+</script>
