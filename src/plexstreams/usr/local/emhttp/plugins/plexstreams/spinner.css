@@ -1,5 +1,7 @@
 .lds-dual-ring {
-    display: inline-block;
+    position: absolute;
+    top: 0;
+    left: 50px;
     width: 41px;
     height: 41px;
     padding-right:25px;

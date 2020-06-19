@@ -8,7 +8,7 @@
         $cfg = array();
     }
     if (isset($cfg['HOST'])) {
-        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
+        $host = $_REQUEST['host'];
         $url = $host . $_GET['img'] .'?X-Plex-Token=' . $cfg['TOKEN'];
 
         if (startsWith($_GET['img'], 'http')) {

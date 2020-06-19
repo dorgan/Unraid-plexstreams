@@ -188,6 +188,7 @@
     include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
     include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
     $mergedStreams = [];
+    
 
     if (!empty($cfg['TOKEN'])) {
         $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
@@ -196,16 +197,10 @@
         }
 
         $streams = getStreams($host, $cfg);
-
-        echo('<form method="GET">');
-        echo('<div style="height:65px;line-height:75px;">Change Server: <div class="lds-dual-ring"></div><select name="HOST" id="HOST" style="display:none;"><option value="" selected disabled>Choose Server</option></select> <input type="submit" value="Apply"/></div>');
-        echo('</form>');
         
-        if ($streams[0]['@attributes']['size'] > 0) {
-            
+        $mergedStreams = mergeStreams($streams);
+        if (count($mergedStreams) > 0) {
             echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
-            $mergedStreams = mergeStreams($streams[0], $streams[1]);
-            
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
             foreach($mergedStreams as $idx => $stream) {
                 if ($idx%3 === 0 && $idx !== 0) {

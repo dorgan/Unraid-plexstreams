@@ -1,24 +1,31 @@
 var serverList = [];
-function getServers(selected) {
+
+function updateServerList(dest) {
+    var list = [];
+    $.each($("input[name='hostbox']:checked"), function(){
+        list.push($(this).val());
+    });
+    $('#' + dest).val(list.join(','));
+}
+
+function getServers(containerSelector, selected) {
     var url = '/plugins/plexstreams/getServers.php?useSsl=' + $('input[name="FORCE_PLEX_HTTPS"]:checked').val();
-    var params = new URLSearchParams(window.location.search);
-    $('select#HOST').hide();
+    var $host = $(containerSelector);
+    $host.hide();
     $('.lds-dual-ring').show();
-    if (params.has('HOST')) {
-        selected = params.get('HOST');
-    }
+    selected = selected.split(',');
+    $host.html('');
     $.get(url).done(function(data) {
         serverList = data.serverList;
-        $host = $('select#HOST');
-        $host.html('<option value="" disabled>Choose Server</option>');
         for (var id in serverList) {
             if (serverList.hasOwnProperty(id)) {
+                var server = serverList[id];
                 serverList[id].Connections.forEach(function(connection) {
-                    $host.append('<option value="' + connection.uri + '"' + (selected === connection.uri ? ' selected="selected"' : '' ) + '>' + serverList[id].Name + '(' + connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</option>');
+                    $host.append('<input type="checkbox" onchange="updateServerList(\'HOST\')" name="hostbox" id="' + connection.uri + '" data-id="' + id + '"' + (selected.indexOf(connection.uri) > -1 ? ' checked="checked"' : '' ) + ' value="' + connection.uri + '"/> <label for="' + connection.uri + '"> ' + server.Name + ' (' +  connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</label><br/>');
                 });
             }
         }
-        $('select#HOST').show();
+        $host.show();
         $('.lds-dual-ring').hide();
     });
 }
