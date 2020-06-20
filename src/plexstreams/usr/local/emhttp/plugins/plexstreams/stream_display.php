@@ -197,6 +197,7 @@
         if (count($mergedStreams) > 0) {
             echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
             echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
+            
             foreach($mergedStreams as $idx => $stream) {
                 if ($idx%3 === 0 && $idx !== 0) {
                     echo( '</tr><tr>');
@@ -236,7 +237,7 @@
                                     (!is_null($stream['duration']) ? $stream['percentPlayed'] : '0') .
                                     '%"><div class="position">' . 
                                     (!is_null($stream['duration']) ?  $stream['currentPositionDisplay'] . ' / ' . $stream['lengthDisplay'] : '' ) .'</div></div>
-                                <div class="title">' . ($stream['type'] === 'video' ? '<a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($stream['key']) . '\',\'Details\',600,900); return false;">' : '') . $stream['title'] . ($stream['type'] === 'video' ? '</a>' : '' ) . '<div class="status"><i class="fa fa-' .$stream['stateIcon']  . '" title="' .ucwords($stream['state']) .'"></i></div></div>
+                                <div class="title">' . ($stream['type'] === 'video' ? '<a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($stream['key']) . '&host=' .urlencode($stream['@host']) . '\',\'Details\',600,900); return false;">' : '') . $stream['title'] . ($stream['type'] === 'video' ? '</a>' : '' ) . '<div class="status"><i class="fa fa-' .$stream['stateIcon']  . '" title="' .ucwords($stream['state']) .'"></i></div></div>
                             </div>
                         </div>
                     </td>

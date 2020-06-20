@@ -249,6 +249,7 @@
                                 $artThumb = $media['@attributes']['channelThumb'];
                             }
                             $mergedStream = [
+                                '@host' => $streams['@host'],
                                 'type' => 'video',
                                 'title' => $title,
                                 'key' => $video['@attributes']['key'],

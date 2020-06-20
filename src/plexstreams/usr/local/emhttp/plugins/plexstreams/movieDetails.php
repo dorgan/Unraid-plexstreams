@@ -38,8 +38,8 @@ body {
     }
 
     if (!empty($cfg['TOKEN']) && isset($_GET['details'])) {
-        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-        $url = $host . urldecode($_GET['details']) . '?X-Plex-Token=' . $cfg['TOKEN'];
+        $host =  $_GET['host'];
+        $url = urldecode($host) . urldecode($_GET['details']) . '?X-Plex-Token=' . $cfg['TOKEN'];
         $details = getUrl($url);
         $video = $details['Video'];
         $videoAttr = $video['@attributes'];
