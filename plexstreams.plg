@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.19">
+  <!ENTITY version   "2020.06.20">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -25,6 +25,9 @@
 
     <CHANGES>
     ##&name;
+###2020.06.20
+ - Fix JavaScript Issue when retrieving plex token
+
 ###2020.06.19
  - Added the ability to view multiple servers at a time
 

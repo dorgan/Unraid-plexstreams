@@ -281,6 +281,3 @@
     }
 ?>
 <script src="/plugins/plexstreams/js/plex.js"></script>
-<script>
-  getServers('<?php echo($cfg['HOST']) ?>');
-</script>

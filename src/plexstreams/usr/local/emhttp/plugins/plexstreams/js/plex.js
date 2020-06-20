@@ -203,7 +203,7 @@ function PlexOAuth(success, error, pre) {
                 success: function (data) {
                     if (data.authToken){
                         closePlexOAuthWindow();
-                        getServers();
+                        getServers('#hostcontainer', $('#HOST').val());
                         if (typeof success === "function") {
                             success(data.authToken)
                         }
