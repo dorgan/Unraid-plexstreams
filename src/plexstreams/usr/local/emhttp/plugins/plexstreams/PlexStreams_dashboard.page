@@ -30,9 +30,17 @@ Tag="film"
                     <td></td>
                     <td colspan="<?php echo $dashboard_widget_colspan ?>" class="top">
                             <table>
+                                <thead>
+                                    <tr>
+                                        <th>Name</th>
+                                        <th>Status</th>
+                                        <th>User</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
                                 <tbody style="display: table-row-group;" id="plexstreams_streams">
                                     <tr>
-                                        <td colspan="3"><div style="text-align:center;"><i>Retrieving Stream Data...</i></div></td>
+                                        <td colspan="4"><div style="text-align:center;"><i>Retrieving Stream Data...</i></div></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -73,6 +81,7 @@ $(function() {
                     $('#plexstreams_streams').append('<tr style="display:table-row;">' +
                         '<td><p class="plexstream-title">' +stream.title +  '</p></td>' +
                         '<td align="center"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
+                        '<td align="center">' + stream.user + '</td>' +
                         '<td align="center">' + stream.currentPositionDisplay + ' / ' + stream.lengthDisplay + '</td>' +
                     '</tr>');
                 });
