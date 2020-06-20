@@ -91,8 +91,8 @@
         return $retVal;
     }
 
-    function getStreams($hosts, $cfg) {        
-        $hosts = explode(',', $hosts);
+    function getStreams($cfg) {        
+        $hosts = explode(',', $cfg['HOST']);
         $streams = [];
         $schedules = [];
         foreach($hosts as $host) {

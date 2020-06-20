@@ -13,9 +13,9 @@
                 $host = $_REQUEST['host'];
             }
 
-            $streams = getStreams($host, $cfg);
+            $streams = getStreams($cfg);
+            $mergedStreams = mergeStreams($streams);
             
-            $mergedStreams = mergeStreams($streams[0], $stremas[1]);
             if (isset($_REQUEST['dbg'])) {
                 v_d($mergedStreams);
             }

@@ -191,12 +191,7 @@
     
 
     if (!empty($cfg['TOKEN'])) {
-        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-        if (isset($_REQUEST['host'])) {
-            $host = $_REQUEST['host'];
-        }
-
-        $streams = getStreams($host, $cfg);
+        $streams = getStreams($cfg);
         
         $mergedStreams = mergeStreams($streams);
         if (count($mergedStreams) > 0) {
