@@ -12,6 +12,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
+  <!ENTITY md5       "33037dd1a59706ca1d6b6b6071dee3a0">
 ]>
 
 <PLUGIN  name="&name;"
@@ -141,25 +142,9 @@
  - Initial Beta Release
     </CHANGES>
 
-    <!--
-    The 'plugin' package file.
-    -->
-    <FILE Name="&plgPATH;/&plgNAME;.txz">
-        <URL>&gitURL;/archive/&plgNAME;.txz</URL>
-    </FILE>
-
-    <!--
-    The 'plugin' MD5 hash.
-    -->
-    <FILE Name="&plgPATH;/&plgNAME;.md5">
-        <URL>&gitURL;/archive/&plgNAME;.md5</URL>
-    </FILE>
-
     <FILE Name="&plgPATH;/&name;.cfg">
       <INLINE>
       <![CDATA[
-      USERNAME=""
-      PASSWORD=""
       HOST=""
       TOKEN=""
       ]]>
@@ -167,22 +152,26 @@
     </FILE>
 
 
-    
+    <!-- PRE-INSTALL SCRIPT -->
+    <FILE Run="/bin/bash">
+    <INLINE>
+    # Remove old 'name' packages
+    MD5=$(md5sum &name;.txz 2>/dev/null|grep -Po '^\S+')
+    if [[ $MD5 != "&md5;" ]]; then
+        rm -f &name;*.txz
+    fi
+    </INLINE>
+    </FILE>
 
+    <!-- Install Package-->
+    <FILE Name="&plgPATH;/&name;.txz" Run="upgradepkg --install-new --reinstall">
+        <URL>&gitURL;/archive/&plgNAME;.txz</URL>
+        <MD5>&md5;</MD5>
+    </FILE>
+
+    <!-- POST-INSTALL SCRIPT -->
     <FILE Run="/bin/bash">
         <INLINE>
-            # Verify and install plugin package
-            sum1=$(/usr/bin/md5sum /boot/config/plugins/&name;/&plgNAME;.txz)
-            sum2=$(/usr/bin/cat /boot/config/plugins/&name;/&plgNAME;.md5)
-            if [ "${sum1:0:32}" != "${sum2:0:32}" ]; then
-                echo "Wrong 'plugin' md5 hash."
-                rm &plgPATH;/&plgNAME;.txz
-                rm &plgPATH;/&plgNAME;.md5
-                exit 1
-            else
-                upgradepkg --install-new &plgPATH;/&plgNAME;.txz
-            fi
-
             WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
             WIDGET_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_WIDGET"]);'`
             if [[ -f "$WIDGET_OFF_FILE" || "$WIDGET_SETTING" == "0" ]]; then
@@ -196,6 +185,7 @@
                 rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
                 mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
             fi
+
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
