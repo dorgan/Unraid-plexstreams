@@ -11,6 +11,7 @@
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
+  <!ENTITY source    "/boot/config/plugins/&name;/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
   <!ENTITY md5       "33037dd1a59706ca1d6b6b6071dee3a0">
 ]>
