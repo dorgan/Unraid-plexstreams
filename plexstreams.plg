@@ -157,7 +157,7 @@
     <INLINE>
     # Remove old 'source' packages
     MD5=$(md5sum &source;.txz 2>/dev/null|grep -Po '^\S+')
-    if [[ $MD5 != &md5; ]]; then
+    if [[ $MD5 != "&md5;" ]]; then
     rm -f &source;*.txz
     fi
     </INLINE>
