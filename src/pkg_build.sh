@@ -11,7 +11,6 @@ else
     VERSION=$(date +"%Y.%m.%d")
     ARCH="-x86_64-1"
     PACKAGE="${ARCHIVE}/${PLUGIN}-${VERSION}${ARCH}.txz"
-    MD5="${ARCHIVE}/${PLUGIN}-${VERSION}${ARCH}.md5"
 
 
     for x in '' a b c d e d f g h i j k l m n o p q r s t u v w x y z; do
@@ -20,12 +19,12 @@ else
         if [[ ! -f $PKG ]]; then
           PACKAGE=$PKG
           VERSION="${VERSION}${x}"
-          MD5="${ARCHIVE}/${PLUGIN}-${VERSION}${ARCH}.md5"
           break
         fi
     done
 
     sed -i -e "s#\(ENTITY\s*version[^\"]*\).*#\1\"${VERSION}\">#" "$PLG_FILE"
+    sed -i -e "s#\(ENTITY\s*md5[^\"]*\).*#\1\"${MD5}\">#" "$PLG_FILE"
     sed -i "/##&name/a\###${VERSION}" "$PLG_FILE"
 
     mkdir -p "${TMPDIR}/"
@@ -34,15 +33,14 @@ else
     cd "$TMPDIR/"
     makepkg -l y -c y "${PACKAGE}"
     cd "$ARCHIVE/"
-    md5sum $(basename "$PACKAGE") > "$MD5"
+    MD5=$(md5sum $PACKAGE 2>/dev/null|grep -Po '^\S+')
     rm -rf "$TMPDIR"
 
     # Verify and install plugin package
     sum1=$(md5sum "${PACKAGE}")
-    sum2=$(cat "$MD5")
-    if [ "${sum1:0:32}" != "${sum2:0:32}" ]; then
+    if [ $sum1 != $MD5 ]; then
       echo "Checksum mismatched.";
-      rm "$MD5" "${PACKAGE}"
+      rm "${PACKAGE}"
     else
       echo "Checksum matched."
     fi
