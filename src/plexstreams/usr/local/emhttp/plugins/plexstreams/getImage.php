@@ -8,9 +8,16 @@
         $cfg = array();
     }
     if (isset($cfg['HOST'])) {
-        $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-        $url = $host . $_GET['img'];
-        
+        $host = $_REQUEST['host'];
+        $url = $host . $_GET['img'] .'?X-Plex-Token=' . $cfg['TOKEN'];
+
+        if (startsWith($_GET['img'], 'http')) {
+            $url = urldecode($_GET['img']);
+        }
+
+        if (isset($_GET['dbg'])) {
+            var_dump($url);
+        }
         # Check if the client already has the requested item
         if (isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) or isset($_SERVER['HTTP_IF_NONE_MATCH'])) {
             header('HTTP/1.1 304 Not Modified');
@@ -27,7 +34,6 @@
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 4);
         curl_setopt($ch, CURLOPT_BUFFERSIZE, 12800);
         curl_setopt($ch, CURLOPT_NOPROGRESS, false);
-        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
         curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
         $out = curl_exec ($ch);
@@ -67,4 +73,10 @@
         }
 
     }
+
+    function startsWith ($string, $startString) { 
+        $len = strlen($startString); 
+        return (substr($string, 0, $len) === $startString); 
+    } 
+    
 ?>

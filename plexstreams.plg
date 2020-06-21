@@ -3,9 +3,9 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.05.14b">
+  <!ENTITY version   "2020.06.20c">
   <!ENTITY launch    "Settings/PlexStreams">
-  <!ENTITY branch    "dev">
+  <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
   <!ENTITY vnstatURL "&gitURL;/deps/">
   <!ENTITY pluginURL "&gitURL;/&name;.plg">
@@ -18,24 +18,127 @@
          author="&author;"
          version="&version;"
          pluginURL="&pluginURL;"
-         support="TBD"
+         support="https://forums.unraid.net/topic/92459-plugin-plex-streams/"
          launch="&launch;"
          IconFA="film"
          icon="film">
 
     <CHANGES>
     ##&name;
-###2020.05.14b
-###2020.05.14a
-###2020.05.14
-###2020.05.13b
-###2020.05.13a
-###2020.05.13
-###2020.05.02b
-###2020.05.02a
-###2020.05.02
-###2020.05.01
-###2020.05.01
+###2020.06.20c
+ - Add streaming user to dashboard widget
+
+###2020.06.20b
+ - Updating movie details page to use correct HOST
+
+###2020.06.20a
+ - Fix javascript issues, and dashboard widget issue
+
+###2020.06.20
+ - Fix JavaScript Issue when retrieving plex token
+
+###2020.06.19
+ - Added the ability to view multiple servers at a time
+
+###2020.06.12a
+ - Add Geo IP lookup
+ 
+###2020.06.12
+ - Make server list load via ajax so that it doesnt slow down the initial rendering the pages
+ 
+###2020.06.10a
+ - Correcting display issue with live streams from Tuner Devices
+
+###2020.06.10
+ - Updated way to use SSL when connecting to plex server.  This should fix outstanding problems.
+
+###2020.06.09c
+ - All multi-curl support and foundation for including DVR recording sessions
+ - Added option to force https communication with Plex Servers - doesnt work locally, but maybe would work for others
+
+###2020.06.09b
+ - Correct streams page image output and error for ajax call for Live TV streams
+
+###2020.06.09a
+ - Make sure settings are set before trying to display streams in the widget
+
+###2020.06.09
+ - Correct issue when plex server has disabled remote connections
+
+###2020.06.07a
+ - Make dashboard widget use ajax so that it doesnt slow down the loading of the dashboard
+ 
+###2020.06.07
+ - Maintain settings for dashboard widget and nav item
+
+###2020.06.03
+ - Fix diplay issue where more than 3 streams was not wrapping
+
+###2020.05.28b
+ - Make sure server selection drop down appears when default server has no streams
+
+###2020.05.28a
+ - Added the ability for the streams page to show different servers
+     - Default server is what is used for dashboard widget
+
+###2020.05.28
+ - Correcting details sent to Plex.tv during OAuth Process
+
+###2020.05.27a
+ - Fix issue for movie details where not being pulled
+
+###2020.05.27
+ - Integrate with Plex OAuth
+ - Allow for remote plex server connection
+ - Correct issue for remote plex server wasnt displaying artwork
+
+###2020.05.20b
+ - Ability to turn dashboard widget on/off
+ - Ability to turn top level nav on/off
+
+###2020.05.20a
+ - Correcting missing streamcount from dashboard widget
+
+###2020.05.20
+ - Add audio streams to both streams page and dashboard widget
+ - Remove debug output from saving settings
+ - Correct details screen for TV Shows
+
+###2020.05.19a
+ - Correcting display issue for stream transcodes
+
+###2020.05.19
+ - Correct display issue on dashboard widget for long titles
+
+###2020.05.18b
+ - Display state icon on dashboard widget
+ - Correct label for password on settings screen
+ - Make setting icon link directly to Plex Stream Settings
+
+###2020.05.18a
+ - Added basic dashboard widget functionality
+
+###2020.05.18
+ - Correct issue for direct play status wasnt showing for audtio/video
+
+###2020.05.16
+ - Added the ability to click on the Stream title to get content details
+ - Fixed bug that was displaying progress time incorrectly
+
+###2020.05.15a
+ - Fixing bug for stream type wasnt being displayed
+ 
+###2020.05.15
+ - More tweaks to UI
+
+###2020.05.14e
+ - Remove unused function
+
+###2020.05.14d
+ - Some CSS tweaks and add icon for when tasks menu is on the left
+     
+###2020.05.14c
+ - Initial Beta Release
     </CHANGES>
 
     <!--
@@ -80,6 +183,19 @@
                 upgradepkg --install-new &plgPATH;/&plgNAME;.txz
             fi
 
+            WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+            WIDGET_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_WIDGET"]);'`
+            if [[ -f "$WIDGET_OFF_FILE" || "$WIDGET_SETTING" == "0" ]]; then
+                rm /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+                mv /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+            fi
+            
+            NAV_OFF=/usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+            NAV_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_NAV"]);'`
+            if [[ -f "$NAV_OFF" || "$NAV_SETTING" == "0" ]]; then
+                rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+                mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+            fi
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
