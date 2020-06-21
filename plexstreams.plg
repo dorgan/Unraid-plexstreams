@@ -155,16 +155,16 @@
     <!-- PRE-INSTALL SCRIPT -->
     <FILE Run="/bin/bash">
     <INLINE>
-    # Remove old 'source' packages
-    MD5=$(md5sum &source;.txz 2>/dev/null|grep -Po '^\S+')
+    # Remove old 'name' packages
+    MD5=$(md5sum &name;.txz 2>/dev/null|grep -Po '^\S+')
     if [[ $MD5 != "&md5;" ]]; then
-        rm -f &source;*.txz
+        rm -f &name;*.txz
     fi
     </INLINE>
     </FILE>
 
     <!-- Install Package-->
-    <FILE Name="&plgPATH;/&source;.txz" Run="upgradepkg --install-new --reinstall">
+    <FILE Name="&plgPATH;/&name;.txz" Run="upgradepkg --install-new --reinstall">
         <URL>&gitURL;/archive/&plgNAME;.txz</URL>
         <MD5>&md5;</MD5>
     </FILE>
