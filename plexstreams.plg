@@ -166,7 +166,7 @@
 
     <!-- Install Package-->
     <FILE Name="&source;.txz" Run="upgradepkg --install-new --reinstall">
-        <URL>&gitURL;archive/&name;.txz</URL>
+        <URL>&gitURL;/archive/&name;.txz</URL>
         <MD5>&md5;</MD5>
     </FILE>
 
