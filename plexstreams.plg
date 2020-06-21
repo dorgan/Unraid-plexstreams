@@ -165,7 +165,7 @@
 
     <!-- Install Package-->
     <FILE Name="&plgPATH;/&plgNAME;.txz" Run="upgradepkg --install-new --reinstall">
-        <URL>&gitURL;/archive/&plgNAME;-.txz</URL>
+        <URL>&gitURL;/archive/&plgNAME;.txz</URL>
         <MD5>&md5;</MD5>
     </FILE>
 
