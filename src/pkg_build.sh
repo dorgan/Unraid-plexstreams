@@ -24,7 +24,6 @@ else
     done
 
     sed -i -e "s#\(ENTITY\s*version[^\"]*\).*#\1\"${VERSION}\">#" "$PLG_FILE"
-    sed -i -e "s#\(ENTITY\s*md5[^\"]*\).*#\1\"${MD5}\">#" "$PLG_FILE"
     sed -i "/##&name/a\###${VERSION}" "$PLG_FILE"
 
     mkdir -p "${TMPDIR}/"
@@ -34,14 +33,6 @@ else
     makepkg -l y -c y "${PACKAGE}"
     cd "$ARCHIVE/"
     MD5=$(md5sum $PACKAGE 2>/dev/null|grep -Po '^\S+')
+    sed -i -e "s#\(ENTITY\s*md5[^\"]*\).*#\1\"${MD5}\">#" "$PLG_FILE"
     rm -rf "$TMPDIR"
-
-    # Verify and install plugin package
-    sum1=$(md5sum "${PACKAGE}")
-    if [ $sum1 != $MD5 ]; then
-      echo "Checksum mismatched.";
-      rm "${PACKAGE}"
-    else
-      echo "Checksum matched."
-    fi
 fi

@@ -250,6 +250,7 @@
                             }
                             $mergedStream = [
                                 '@host' => $streams['@host'],
+                                'id' => $media['@attributes']['id'],
                                 'type' => 'video',
                                 'title' => $title,
                                 'key' => $video['@attributes']['key'],
@@ -269,9 +270,9 @@
                                 'currentPosition' => $currentPosition ?? null,
                                 'currentPositionInSeconds' =>  $currentPositionInSeconds ?? null,
                                 'currentPositionInMinutes' =>  $currentPositionInMinutes ?? null,
-                                'currentPositionSeconds' => $currentPositionSeconds ?? null,
-                                'currentPositionMinutes' => $currentPositionMinutes ?? null,
                                 'currentPositionHours' => $currentPositionHours ?? null,
+                                'currentPositionMinutes' => $currentPositionMinutes ?? null,
+                                'currentPositionSeconds' => $currentPositionSeconds ?? null,
                                 'location' => $video['Session']['@attributes']['location'],
                                 'address' => $video['Player']['@attributes']['address'],
                                 'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
@@ -281,6 +282,8 @@
                                 $mergedStream['percentPlayed'] = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
                                 $mergedStream['currentPositionDisplay'] = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);
                                 $mergedStream['lengthDisplay'] = str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT);
+                            } else {
+                                $mergedStream['percentPlayed'] = 0;
                             }
 
                             if ($mergedStream['state'] === 'paused') {
@@ -356,9 +359,9 @@
                                 'currentPosition' => $currentPosition,
                                 'currentPositionInSeconds' =>  $currentPositionInSeconds,
                                 'currentPositionInMinutes' =>  $currentPositionInMinutes,
-                                'currentPositionSeconds' => $currentPositionSeconds,
-                                'currentPositionMinutes' => $currentPositionMinutes,
                                 'currentPositionHours' => $currentPositionHours,
+                                'currentPositionMinutes' => $currentPositionMinutes,
+                                'currentPositionSeconds' => $currentPositionSeconds,
                                 'percentPlayed' => round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0),
                                 'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
                                 'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
