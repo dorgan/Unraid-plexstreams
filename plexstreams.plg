@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.22">
+  <!ENTITY version   "2020.06.22a">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
-  <!ENTITY md5       "f4d684ae2afa7e590198bb1b730de533">
+  <!ENTITY md5       "4aacda85629c85f371748b9025346cad">
 ]>
 
 <PLUGIN  name="&name;"
