@@ -188,6 +188,7 @@
                 rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
                 mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
             fi
+
             echo ""
             echo "-----------------------------------------------------------"
             echo " &name; has been installed."
