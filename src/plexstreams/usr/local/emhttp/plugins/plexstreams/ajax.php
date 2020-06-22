@@ -2,17 +2,12 @@
     include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
     include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
 
-    header('Content-type: application/json');
+    header('Content-Type: application/json');
 
     $mergedStreams = [];
 
     if (!empty($cfg['TOKEN'])) {
         if ($cfg['HOST'] !== '') {
-            $host =  (substr($cfg['HOST'], -1) !== '/' ? $cfg['HOST'] : substr($cfg['HOST'],0,-1));
-            if (isset($_REQUEST['host'])) {
-                $host = $_REQUEST['host'];
-            }
-
             $streams = getStreams($cfg);
             $mergedStreams = mergeStreams($streams);
             

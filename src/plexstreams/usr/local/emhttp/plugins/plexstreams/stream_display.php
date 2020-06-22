@@ -21,11 +21,23 @@
     }
 
     #streams-container {
-        
+        display: inline;
+    }
+
+    #streams-container ul{
+        display: flex;
+        flex-wrap: wrap;
     }
 
     .stream-container {
+        list-style: none;
+        flex: 0 0 30%;
         position: relative;
+        margin-right: 10px;
+        margin-bottom: 10px;
+    }
+
+    .stream-subcontainer {
         width: 500px;
         background-color: #000;
     }
@@ -55,7 +67,7 @@
     }
 
     .stream-container .bottom-box {
-        width: 100%;
+        width: 500px;
         position:absolute;
         bottom: 0;
         background: rgb(70,67,67,0.55);
@@ -196,31 +208,25 @@
         $mergedStreams = mergeStreams($streams);
         if (count($mergedStreams) > 0) {
             echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
-            echo('<table border="0" cellspacing="0" cellpadding="5" id="streams-container">');
-            
+            echo ('<div id="streams-container"><ul>');            
             foreach($mergedStreams as $idx => $stream) {
-                if ($idx%3 === 0 && $idx !== 0) {
-                    echo( '</tr><tr>');
-                } else if ($idx === 0) {
-                    echo('<tr>');
-                }
                 $loc = strtoupper($stream['location']);
                 $location = $loc . ' (' . $stream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($stream['address']) : '' ) . ')';
                 echo('
-                    <td>
-                        <div class="stream-container">
+                    <li class="stream-container" id="' . $stream['id'] . '">
+                        <div class="stream-subcontainer">
                             <div class="stream" style="background-image:url(' . $stream['artUrl'] .');">
                                 <div class="blur">
                                     <div class="details">
                                         <ul class="detail-list">
                                             <li><div class="label">Length</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
-                                            <li><div class="label">Stream</div><div class="value">' . ucwords($stream['streamDecision']) .'</div></li>
+                                            <li><div class="label">Stream</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
                                             <li><div class="label">Location</div><div class="value" title="' . $location . '" style="pointer:default;">' .$location .'</div></li>
-                                            <li><div class="label">Bandwidth</div><div class="value">' .$stream['bandwidth'] . ' Mbps</div></li>
-                                            <li><div class="label">Audio</div><div class="value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
+                                            <li><div class="label">Bandwidth</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
+                                            <li><div class="label">Audio</div><div class="audio value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
                 ');
                 if (isset($stream['streamInfo']['video'])) {
-                    echo('                  <li><div class="label">Video</div><div class="value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
+                    echo('                  <li><div class="label">Video</div><div class="video value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
                 }
 
                 echo('
@@ -236,39 +242,16 @@
                                 <div class="progressBar" duration="' . $stream['duration'] .'" style="width:' . 
                                     (!is_null($stream['duration']) ? $stream['percentPlayed'] : '0') .
                                     '%"><div class="position">' . 
-                                    (!is_null($stream['duration']) ?  $stream['currentPositionDisplay'] . ' / ' . $stream['lengthDisplay'] : '' ) .'</div></div>
+                                    (!is_null($stream['duration']) ?  '<span class="currentPositionHours">' .str_pad($stream['currentPositionHours'], 2, 0, STR_PAD_LEFT) . '</span>:<span class="currentPositionMinutes">' . str_pad($stream['currentPositionMinutes'], 2, 0, STR_PAD_LEFT) . '</span>:<span class="currentPositionSeconds">' .str_pad($stream['currentPositionSeconds'], 2, 0, STR_PAD_LEFT) .'</span>  / ' . $stream['lengthDisplay'] : '' ) .'</div></div>
                                 <div class="title">' . ($stream['type'] === 'video' ? '<a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($stream['key']) . '&host=' .urlencode($stream['@host']) . '\',\'Details\',600,900); return false;">' : '') . $stream['title'] . ($stream['type'] === 'video' ? '</a>' : '' ) . '<div class="status"><i class="fa fa-' .$stream['stateIcon']  . '" title="' .ucwords($stream['state']) .'"></i></div></div>
                             </div>
                         </div>
-                    </td>
+                    </li>
                 ');
-
-                if (isset($_REQUEST['dbg'])) {
-                    
-                    echo('
-                        <table border="0" cellspacing="0" cellpadding="0">
-                            <tr><td>Duration</td><td>' .$stream['duration'] .'</td></tr>
-                            <tr><td>LengthInSeconds</td><td>' .$stream['lengthInSeconds'] .'</td></tr>    
-                            <tr><td>LengthInMinutes</td><td>' .$stream['lengthInMinutes'] .'</td></tr>
-                            <tr><td>lengthSec</td></td><td>' .$stream['lengthInSeconds'] .'</td></tr>
-                            <tr><td>lengthHours</td></td><td>' .$stream['lengthHours'] .'</td></tr>
-                            <tr><td>lengthMinutes</td></td><td>' .$stream['lengthMinutes'] .'</td></tr>
-                            <tr><td>lengthSeconds</td></td><td>' .$stream['lengthSeconds'] .'</td></tr>
-                            <tr><td>currentPosition</td></td><td>' .$stream['currentPosition'] .'</td></tr>
-                            <tr><td>currentPositionInSeconds</td></td><td>' .$stream['currentPositionInSeconds'] .'</td></tr>
-                            <tr><td>currentPositionInMinutes</td></td><td>' .$stream['currentPositionInMinutes'] .'</td></tr>
-                            <tr><td>currentPositionHours</td></td><td>' .$stream['currentPositionHours'] .'</td></tr>
-                            <tr><td>currentPositionMinutes</td></td><td>' .$stream['currentPositionMinutes'] .'</td></tr>
-                            <tr><td>currentPositionSeconds</td></td><td>' .$stream['currentPositionSeconds'] .'</td></tr>                                    
-                        </table>
-                    </td>');
-                }
-            }
-            if (isset($streams['Video'])) {
-                echo('</tr>');
             }
 
-            echo('</table>');
+
+            echo('</ul></div>');
         } else {
             echo('<p align="center">There are currently no active streams</p>');
         }
@@ -277,3 +260,7 @@
     }
 ?>
 <script src="/plugins/plexstreams/js/plex.js"></script>
+<script>
+    updateFullStreamInfo();
+    setInterval(updateFullStreamInfo, 5000);
+</script>

@@ -1,5 +1,113 @@
 var serverList = [];
 
+function uCWord(str) {
+    return str.charAt(0).toUpperCase() + str.slice(1)
+}
+
+function updateFullStreamInfo() {
+    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+        if (streams.length > 0) {
+            var currentDate = new Date();
+            var lastUpdate = currentDate.getTime();
+            streams.forEach(function(stream) {
+                var node = $('#' + stream.id + '.stream-container')[0];
+                console.log('Updating Stream ID:' + stream.id);
+                $container = $(node);
+                if ($container.length > 0) {
+                    $status = $container.find('.status i');
+                    $progressBar = $container.find('.progressBar');
+                    $progressBar.css({
+                        width: stream.percentPlayed + '%'
+                    });
+                    
+                    $status.attr('class', 'fa fa-' + stream.stateIcon);
+                    $status.attr('title', uCWord(stream.state));
+                    var $details = $container.find('.details');
+                    $details.find('.stream.value').html(stream.streamDecision);
+                    $details.find('.bandwidth.value').html(stream.bandwidth);
+                    $details.find('.audio.value').html(uCWord(stream.streamInfo.audio['@attributes'].decision));
+                    $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
+                } else {
+                    // var containerCount = $('.stream-container').length;
+                    // var isNewRow = containerCount % 3 === 0;
+                    // var $streamsContainer = $('#streams-container tbody');
+                    // var $currentRow;
+                    // if (isNewRow) {
+                    //     $currentRow = $streamsContainer.append('<tr></tr>');
+                    // } else {
+                    //     $currentRow = $streamsContainer.find('tr').last();
+                    // }
+                    
+                    // $container = $currentRow.append(newEntry);
+                    // node = $currentRow[0];
+                }
+                if (stream.duration) {
+                    $hours = $container.find('.currentPositionHours');
+                    $minutes = $container.find('.currentPositionMinutes');
+                    $seconds = $container.find('.currentPositionSeconds');
+                }
+                if (node.prevState && node.prevState !== stream.state) {
+                    if (stream.duration) {
+                        $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
+                        $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
+                        $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
+                        if (stream.state === 'playing') {
+                            incrementTimer($hours, $minutes, $seconds);
+                        }
+                    }
+                }
+                if (stream.duration  && stream.state === 'playing' && !node.timer) {
+                    node.timer = setInterval(incrementTimer, 1000, $hours, $minutes, $seconds);
+                } else if(stream.state !== 'playing') {
+                    if (node.timer) {
+                        clearInterval(node.timer);
+                        node.timer = undefined;
+                    }
+                    $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
+                    $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
+                    $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
+                }
+                node.prevState = stream.state;
+                $container.attr('updatedat', lastUpdate);
+            });
+            $('.stream-container[updatedat]').each(function() {
+                if ($(this).is('[updatedat]')) {
+                    if ($(this).attr('updatedat') !== lastUpdate.toString()) {
+                        if (this.timer) {
+                            clearInterval(this.timer)
+                        };
+                        $(this).remove();
+                    }
+                }
+            })
+        } else {
+            $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>There are currently no active streams</i></td></tr>');
+        }
+    }).fail(function(jqXHR) {
+        if (jqXHR.status == '500') {
+            $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</i></td></tr>');
+        }
+    });
+}
+
+function incrementTimer($hours, $minutes, $seconds) {
+    var seconds = parseInt($seconds.html(), 10);
+    var minutes = parseInt($minutes.html(), 10);
+    var hours = parseInt($hours.html());
+    seconds += 1;
+    if (seconds > 59) {
+        seconds = 0;
+        minutes += 1;
+    }
+    if (minutes > 59) {
+        minutes = 0;
+        hours += 1;
+    }
+    $seconds.html(seconds.toString().padStart(2, 0));
+    $minutes.html(minutes.toString().padStart(2, 0));
+    $hours.html(hours.toString().padStart(2, 0));
+}
+
 function updateServerList(dest) {
     var list = [];
     $.each($("input[name='hostbox']:checked"), function(){
