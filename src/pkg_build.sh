@@ -24,6 +24,7 @@ else
     done
 
     sed -i -e "s#\(ENTITY\s*version[^\"]*\).*#\1\"${VERSION}\">#" "$PLG_FILE"
+    sed -i -e "s#\(ENTITY\s*md5[^\"]*\).*#\1\"${MD5}\">#" "$PLG_FILE"
     sed -i "/##&name/a\###${VERSION}" "$PLG_FILE"
 
     mkdir -p "${TMPDIR}/"
