@@ -27,12 +27,6 @@
     <CHANGES>
     ##&name;
 ###2020.06.26b
-- Seems new install method has some issues
-
-###2020.06.26a
-- Correcting packaging issue
-
-###2020.06.26
  - Both the dashboard and th streams page now fully update with new/removed streams without having to reload
  
 ###2020.06.22
