@@ -278,6 +278,9 @@
                                 'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
                                 'streamInfo' => []
                             ];
+                            $loc = strtoupper($mergedStream['location']);
+                            $mergedStream['locationDisplay'] = $loc . ' (' . $mergedStream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($mergedStream['address']) : '' ) . ')';
+                            
                             if ($mergedStream['duration'] !== null) {
                                 $mergedStream['percentPlayed'] = round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0);
                                 $mergedStream['currentPositionDisplay'] = str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT);

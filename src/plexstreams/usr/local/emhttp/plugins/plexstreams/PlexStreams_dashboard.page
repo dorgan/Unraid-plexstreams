@@ -10,8 +10,12 @@ Tag="film"
 
 <style type="text/css">
         .dash_plexstreams_toggle{display:none}
+        .dash_plexstreams_toggle tbody td {
+            padding-top: 0px;
+            padding-bottom: 0px;
+        }
 </style>
-<table id="db-box<?php echo $dashboard_widget_pos ?>" class="dash_plexstreams dashboard box<?php echo $dashboard_widget_pos ?>" style="display:none">
+<table cellspacing="0" cellpadding="0" id="db-box<?php echo $dashboard_widget_pos ?>" class="dash_plexstreams dashboard box<?php echo $dashboard_widget_pos ?>" style="display:none">
         <thead sort="10" class="sortable">
                 <tr>
                         <td></td>
@@ -32,15 +36,15 @@ Tag="film"
                             <table>
                                 <thead>
                                     <tr>
-                                        <th>Name</th>
-                                        <th>Status</th>
+                                        <th width="40%">Name</th>
+                                        <th align="center">Status</th>
                                         <th>User</th>
-                                        <th>Time</th>
+                                        <th align="right">Time</th>
                                     </tr>
                                 </thead>
                                 <tbody style="display: table-row-group;" id="plexstreams_streams">
-                                    <tr>
-                                        <td colspan="4"><div style="text-align:center;"><i>Retrieving Stream Data...</i></div></td>
+                                    <tr id="retrieving_streams">
+                                        <td colspan="4"><p align="center" style="font-style:italic;">Retrieving Stream Data...</p></td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -49,16 +53,34 @@ Tag="film"
                 </tr>
         </tbody>
 </table>
+
 <style>
 p.plexstream-title {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
     width: 240px;
-    padding-right:20px
+    padding: 0 0 0 0;
+    margin: 0 0 10px 0;
+}
+
+p.plexstream-user {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 150px;
+    padding: 0 0 0 0;
+    margin: 0 0 10px 0;
+}
+
+p.plexstream-time {
+    padding: 0 0 0 0;
+    margin: 0 0 10px 0;
+    width: 125px;
+    text-align: right;
 }
 </style>
-
+<script src="/plugins/plexstreams/js/plex.js"></script>
 <script async>
 $(function() {
     // append data from the table into the correct one
@@ -72,30 +94,7 @@ $(function() {
     sortTable($('#db-box2'),$.cookie('db-box2'));
     sortTable($('#db-box3'),$.cookie('db-box3'));
 
-    function checkStreams() {
-        $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
-            $('#plexstreams_count').html(streams.length);
-            if (streams.length > 0) {
-                $('#plexstreams_streams').html('');
-                streams.forEach(function(stream) {
-                    $('#plexstreams_streams').append('<tr style="display:table-row;">' +
-                        '<td><p class="plexstream-title">' +stream.title +  '</p></td>' +
-                        '<td align="center"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
-                        '<td align="center">' + stream.user + '</td>' +
-                        '<td align="center">' + stream.currentPositionDisplay + ' / ' + stream.lengthDisplay + '</td>' +
-                    '</tr>');
-                });
-            } else {
-                $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>There are currently no active streams</i></td></tr>');
-            }
-        }).fail(function(jqXHR) {
-            if (jqXHR.status == '500') {
-                $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</i></td></tr>');
-            }
-        });
-    }
-    checkStreams();
-
-    setInterval(checkStreams, 5000);
+    updateDashboardStreams();
+    setInterval(updateDashboardStreams, 5000)
 });
 </script>

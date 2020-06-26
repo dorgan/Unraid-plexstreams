@@ -170,7 +170,7 @@
     
     .details li .label {
         color: #aaa;
-        width:75px;
+        width:91px;
     }
 
     .details li .value {
@@ -179,6 +179,7 @@
         overflow: hidden;
         white-space: nowrap;
         flex-grow: 1;
+        min-width:165px;
         text-align: left;
         margin-left: 10px;
     }
@@ -206,12 +207,10 @@
         $streams = getStreams($cfg);
         
         $mergedStreams = mergeStreams($streams);
+        echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">Hover the stream for details</h4>');
         if (count($mergedStreams) > 0) {
-            echo('<h4 style="margin-bottom:0px;">Hover the stream for details</h4>');
             echo ('<div id="streams-container"><ul>');            
             foreach($mergedStreams as $idx => $stream) {
-                $loc = strtoupper($stream['location']);
-                $location = $loc . ' (' . $stream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($stream['address']) : '' ) . ')';
                 echo('
                     <li class="stream-container" id="' . $stream['id'] . '">
                         <div class="stream-subcontainer">
@@ -221,7 +220,7 @@
                                         <ul class="detail-list">
                                             <li><div class="label">Length</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
                                             <li><div class="label">Stream</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
-                                            <li><div class="label">Location</div><div class="value" title="' . $location . '" style="pointer:default;">' .$location .'</div></li>
+                                            <li><div class="label">Location</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>
                                             <li><div class="label">Bandwidth</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
                                             <li><div class="label">Audio</div><div class="audio value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
                 ');
@@ -249,11 +248,10 @@
                     </li>
                 ');
             }
-
-
             echo('</ul></div>');
+            echo('<script>$(\'#hover-message\').show();</script>');
         } else {
-            echo('<p align="center">There are currently no active streams</p>');
+            echo('<p style="text-align:center;font-style:italic;" id="no-streams">There are currently no active streams</p>');
         }
     } else {
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">Please provide server details under Settings -> Network Services -> Plex Streams or <a href="/Settings/PlexStreams">click here</a></div></div>');

@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.22a">
+  <!ENTITY version   "2020.06.26">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
-  <!ENTITY md5       "4aacda85629c85f371748b9025346cad">
+  <!ENTITY md5       "dd1c133a4c63b3aae91843a543331482">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2020.06.26
+ - Both the dashboard and th streams page now fully update with new/removed streams without having to reload
+ 
 ###2020.06.22
  - Updated streams page to update streams via ajax, still need to have it add streams as they come online
 

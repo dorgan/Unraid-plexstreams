@@ -1,5 +1,53 @@
 var serverList = [];
 
+function updateDashboardStreams() {
+    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+        $('#plexstreams_count').html(streams.length);
+        $('#retrieving_streams').remove();
+        if (streams.length > 0) {
+            $('.no_streams').remove();
+            var currentDate = new Date();
+            var lastUpdate = currentDate.getTime();
+            streams.forEach(function(stream) {
+                $container = $('#' + stream.id);
+                if ($container.length === 0) {
+                    $container = $('<tr style="display:table-row;" id="' + stream.id + '">' +
+                        '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.title + '">' + stream.title +  '</p></td>' +
+                        '<td align="center" style="padding: 0px;text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
+                        '<td align="center" style="padding: 0px;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</td>' +
+                        '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay + '</div></td>' +
+                    '</tr>').appendTo('#plexstreams_streams');
+                    var node = $container[0];
+                    updateDuration(node, stream);
+                } else {
+                    var node = $container[0];
+                    $cells = $container.find('td');
+                    $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
+                    updateDuration(node, stream);
+                }
+                $container.attr('updatedat', lastUpdate);
+                node.prevState = stream.state;
+            });
+            $('#plexstreams_streams tr[updatedat]').each(function() {
+                if ($(this).is('[updatedat]')) {
+                    if ($(this).attr('updatedat') !== lastUpdate.toString()) {
+                        if (this.timer) {
+                            clearInterval(this.timer)
+                        };
+                        $(this).remove();
+                    }
+                }
+            });
+        } else {
+            $('#plexstreams_streams').html('<tr class="no_streams"><td colspan="4" align="center" style="padding: 0 0 0 0;"><p style="text-align:center;font-style:italic;">There are currently no active streams</p></td></tr>');
+        }
+    }).fail(function(jqXHR) {
+        if (jqXHR.status == '500') {
+            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italic;">Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</p></td></tr>');
+        }
+    });
+}
+
 function uCWord(str) {
     return str.charAt(0).toUpperCase() + str.slice(1)
 }
@@ -9,6 +57,11 @@ function updateFullStreamInfo() {
         if (streams.length > 0) {
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
+            $streamHolder = $('#streams-container');
+            if ($streamHolder.length === 0) {
+                $('#no-streams').replaceWith('<div id="streams-container"><ul></ul>');
+                $streamHolder = $('#streams-container ul');
+            }
             streams.forEach(function(stream) {
                 var node = $('#' + stream.id + '.stream-container')[0];
                 console.log('Updating Stream ID:' + stream.id);
@@ -23,53 +76,19 @@ function updateFullStreamInfo() {
                     $status.attr('class', 'fa fa-' + stream.stateIcon);
                     $status.attr('title', uCWord(stream.state));
                     var $details = $container.find('.details');
-                    $details.find('.stream.value').html(stream.streamDecision);
+                    $details.find('.stream.value').html(uCWord(stream.streamDecision));
                     $details.find('.bandwidth.value').html(stream.bandwidth);
                     $details.find('.audio.value').html(uCWord(stream.streamInfo.audio['@attributes'].decision));
                     $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
                 } else {
-                    // var containerCount = $('.stream-container').length;
-                    // var isNewRow = containerCount % 3 === 0;
-                    // var $streamsContainer = $('#streams-container tbody');
-                    // var $currentRow;
-                    // if (isNewRow) {
-                    //     $currentRow = $streamsContainer.append('<tr></tr>');
-                    // } else {
-                    //     $currentRow = $streamsContainer.find('tr').last();
-                    // }
-                    
-                    // $container = $currentRow.append(newEntry);
-                    // node = $currentRow[0];
+                    $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">Length</div><div class="value">' + stream.duration + '</div></li><li><div class="label">Stream</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">Location</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">Bandwidth</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">Audio</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">Video</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
+                    node = $container[0];
                 }
-                if (stream.duration) {
-                    $hours = $container.find('.currentPositionHours');
-                    $minutes = $container.find('.currentPositionMinutes');
-                    $seconds = $container.find('.currentPositionSeconds');
-                }
-                if (node.prevState && node.prevState !== stream.state) {
-                    if (stream.duration) {
-                        $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
-                        $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
-                        $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
-                        if (stream.state === 'playing') {
-                            incrementTimer($hours, $minutes, $seconds);
-                        }
-                    }
-                }
-                if (stream.duration  && stream.state === 'playing' && !node.timer) {
-                    node.timer = setInterval(incrementTimer, 1000, $hours, $minutes, $seconds);
-                } else if(stream.state !== 'playing') {
-                    if (node.timer) {
-                        clearInterval(node.timer);
-                        node.timer = undefined;
-                    }
-                    $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
-                    $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
-                    $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
-                }
-                node.prevState = stream.state;
+                updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
+                node.prevState = stream.state;
             });
+
             $('.stream-container[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
@@ -79,15 +98,48 @@ function updateFullStreamInfo() {
                         $(this).remove();
                     }
                 }
-            })
+            });
         } else {
-            $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>There are currently no active streams</i></td></tr>');
+            if ($('#streams-container').length > 0) {
+                $('#streams-container').replaceWith('<p style="text-align:center;font-style:italic;">There are currently no active streams</p>');
+            }
         }
     }).fail(function(jqXHR) {
         if (jqXHR.status == '500') {
-            $('#plexstreams_streams').html('<tr><td colspan="3" align="center"><i>Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</i></td></tr>');
+            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italicl">Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</p></td></tr>');
         }
     });
+}
+
+function updateDuration(node, stream) {
+    var $container = $(node);
+
+    if (stream.duration) {
+        $hours = $container.find('.currentPositionHours');
+        $minutes = $container.find('.currentPositionMinutes');
+        $seconds = $container.find('.currentPositionSeconds');
+    }
+    if (node.prevState && node.prevState !== stream.state) {
+        if (stream.duration) {
+            $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
+            $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
+            $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
+            if (stream.state === 'playing') {
+                incrementTimer($hours, $minutes, $seconds);
+            }
+        }
+    }
+    if (stream.duration  && stream.state === 'playing' && !node.timer) {
+        node.timer = setInterval(incrementTimer, 1000, $hours, $minutes, $seconds);
+    } else if(stream.state !== 'playing') {
+        if (node.timer) {
+            clearInterval(node.timer);
+            node.timer = undefined;
+        }
+        $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
+        $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
+        $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
+    }
 }
 
 function incrementTimer($hours, $minutes, $seconds) {
