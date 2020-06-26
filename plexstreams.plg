@@ -27,7 +27,7 @@
     <CHANGES>
     ##&name;
 ###2020.06.26b
- - Both the dashboard and th streams page now fully update with new/removed streams without having to reload
+ - Both the dashboard and the streams page now fully update with new/removed streams without having to reload
  
 ###2020.06.22
  - Updated streams page to update streams via ajax, still need to have it add streams as they come online
