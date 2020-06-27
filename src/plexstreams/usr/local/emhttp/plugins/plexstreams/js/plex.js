@@ -39,11 +39,11 @@ function updateDashboardStreams() {
                 }
             });
         } else {
-            $('#plexstreams_streams').html('<tr class="no_streams"><td colspan="4" align="center" style="padding: 0 0 0 0;"><p style="text-align:center;font-style:italic;">There are currently no active streams</p></td></tr>');
+            $('#plexstreams_streams').html('<tr class="no_streams"><td colspan="4" align="center" style="padding: 0 0 0 0;"><p style="text-align:center;font-style:italic;">' + _('There are currently no active streams') + '</p></td></tr>');
         }
     }).fail(function(jqXHR) {
         if (jqXHR.status == '500') {
-            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italic;">Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</p></td></tr>');
+            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italic;">' + _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') + '</p></td></tr>');
         }
     });
 }
@@ -81,7 +81,7 @@ function updateFullStreamInfo() {
                     $details.find('.audio.value').html(uCWord(stream.streamInfo.audio['@attributes'].decision));
                     $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
                 } else {
-                    $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">Length</div><div class="value">' + stream.duration + '</div></li><li><div class="label">Stream</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">Location</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">Bandwidth</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">Audio</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">Video</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
+                    $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
                     node = $container[0];
                 }
                 updateDuration(node, stream);
@@ -101,12 +101,12 @@ function updateFullStreamInfo() {
             });
         } else {
             if ($('#streams-container').length > 0) {
-                $('#streams-container').replaceWith('<p style="text-align:center;font-style:italic;">There are currently no active streams</p>');
+                $('#streams-container').replaceWith('<p style="text-align:center;font-style:italic;">' + _('There are currently no active streams') + '</p>');
             }
         }
     }).fail(function(jqXHR) {
         if (jqXHR.status == '500') {
-            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italicl">Please make sure you have <a href="/Settings/PlexStreams">setup</a> the plugin first</p></td></tr>');
+            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italicl">' + _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') + '</p></td></tr>');
         }
     });
 }

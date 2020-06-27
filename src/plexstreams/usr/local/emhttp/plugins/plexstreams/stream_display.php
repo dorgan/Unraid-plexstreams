@@ -198,16 +198,29 @@
     }
 </script>
 <?php
+    $plugin = 'plexstreams';
+    $docroot = $docroot ?: $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+    $translations = file_exists("$docroot/webGui/include/Translations.php");
     include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
     include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
+
+    if ($translations) {
+        // add translations
+        $_SERVER['REQUEST_URI'] = 'plexstreams';
+        require_once "$docroot/webGui/include/Translations.php";
+    } else {
+        // legacy support (without javascript)
+        $noscript = true;
+        require_once "$docroot/plugins/$plugin/includes/Legacy.php";
+    }
+
     $mergedStreams = [];
-    
 
     if (!empty($cfg['TOKEN'])) {
         $streams = getStreams($cfg);
         
         $mergedStreams = mergeStreams($streams);
-        echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">Hover the stream for details</h4>');
+        echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">' . _('Hover the stream for details') . '</h4>');
         if (count($mergedStreams) > 0) {
             echo ('<div id="streams-container"><ul>');            
             foreach($mergedStreams as $idx => $stream) {
@@ -218,14 +231,14 @@
                                 <div class="blur">
                                     <div class="details">
                                         <ul class="detail-list">
-                                            <li><div class="label">Length</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
-                                            <li><div class="label">Stream</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
-                                            <li><div class="label">Location</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>
-                                            <li><div class="label">Bandwidth</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
-                                            <li><div class="label">Audio</div><div class="audio value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
+                                            <li><div class="label">' . _('Length') . '</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
+                                            <li><div class="label">' . _('Stream') . '</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
+                                            <li><div class="label">' . _('Location') . '</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>
+                                            <li><div class="label">' . _('Bandwidth') . '</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
+                                            <li><div class="label">' . _('Audio') . '</div><div class="audio value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
                 ');
                 if (isset($stream['streamInfo']['video'])) {
-                    echo('                  <li><div class="label">Video</div><div class="video value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
+                    echo('                  <li><div class="label">' . _('Video') . '</div><div class="video value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
                 }
 
                 echo('
@@ -251,10 +264,10 @@
             echo('</ul></div>');
             echo('<script>$(\'#hover-message\').show();</script>');
         } else {
-            echo('<p style="text-align:center;font-style:italic;" id="no-streams">There are currently no active streams</p>');
+            echo('<p style="text-align:center;font-style:italic;" id="no-streams">' . _('There are currently no active streams') . '</p>');
         }
     } else {
-        echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">Please provide server details under Settings -> Network Services -> Plex Streams or <a href="/Settings/PlexStreams">click here</a></div></div>');
+        echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">' . _('Please provide server details under Settings -> Network Services -> Plex Streams or') . ' <a href="/Settings/PlexStreams">' . _('click here') .'</a></div></div>');
     }
 ?>
 <script src="/plugins/plexstreams/js/plex.js"></script>

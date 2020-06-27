@@ -1,7 +1,7 @@
 <?php
     include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
     include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
-
+    
     header('Content-Type: application/json');
 
     $mergedStreams = [];
