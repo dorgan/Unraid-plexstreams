@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2020.06.30a">
+  <!ENTITY version   "2020.06.30b">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
-  <!ENTITY md5       "f74f0052dc872fa1ef669a75e91d6dd4">
+  <!ENTITY md5       "cebb638643249c801b9ca69f7dc090fd">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,11 +26,14 @@
 
     <CHANGES>
     ##&name;
+###2020.06.30b
+- Correct display issue for details page when there is no Director.
+
 ###2020.06.30a
-- Fix display issue for Legacy support
+ - Fix display issue for Legacy support
 
 ###2020.06.27
-- Add Multi language support
+ - Add Multi language support
 
 ###2020.06.26b
  - Both the dashboard and the streams page now fully update with new/removed streams without having to reload

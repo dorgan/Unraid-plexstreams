@@ -59,9 +59,10 @@ body {
             }
         }
         $director = [];
-        
-        foreach($video['Director'] as $director) {
-            array_push($directors, $director['@attributes']['tag']);
+        if (isset($video['Director'])) {
+            foreach($video['Director'] as $director) {
+                array_push($directors, $director['@attributes']['tag']);
+            }
         }
         echo('
             <h1>' . $title .'</h1>
