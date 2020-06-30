@@ -67,7 +67,7 @@ function clearToken() {
     <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_ON" value="1" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "1" ? "checked" : ""); ?>/>On
     <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_OFF" value="0" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "0" ? "checked" : ""); ?>/>Off
 </div>
-<input type="submit" value="SAVE"> <input type="button" value="_(Remove Token)" onclick="clearToken()"/>
+<input type="submit" value="SAVE"> <input type="button" value="Remove Token" onclick="clearToken()"/>
 </form>
 <script>
     var OS_VERSION = '<?php echo(OS_VERSION); ?>';

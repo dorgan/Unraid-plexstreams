@@ -272,6 +272,8 @@
 ?>
 <script src="/plugins/plexstreams/js/plex.js"></script>
 <script>
+    var title = $('title').html();
+    $('title').html(title.split('/')[0] + '/Plex Streams');
     updateFullStreamInfo();
     setInterval(updateFullStreamInfo, 5000);
 </script>
