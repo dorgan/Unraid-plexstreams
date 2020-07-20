@@ -72,11 +72,11 @@ function clearToken() {
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_OFF" value="0"  <?php echo( $cfg['DISPLAY_WIDGET'] === "0" ? "checked" : ""); ?>/>_(Off)_
 </div>
 <div>
-    _(Use SSL Connection):
-    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_ON" value="1" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "1" ? "checked" : ""); ?>/>_(On)
-    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_OFF" value="0" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "0" ? "checked" : ""); ?>/>_(Off)
+    _(Use SSL Connection)_:
+    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_ON" value="1" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "1" ? "checked" : ""); ?>/>_(On)_
+    <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_OFF" value="0" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "0" ? "checked" : ""); ?>/>_(Off)_
 </div>
-<input type="submit" value="SAVE"> <input type="button" value="_(Remove Token)" onclick="clearToken()"/>
+<input type="submit" value="SAVE"> <input type="button" value="_(Remove Token)_" onclick="clearToken()"/>
 </form>
 <script>
     var OS_VERSION = '<?php echo(OS_VERSION); ?>';
