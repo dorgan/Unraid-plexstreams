@@ -7,7 +7,7 @@ Tag="film"
     $translations = file_exists("$docroot/webGui/include/Translations.php");
     require_once "$docroot/plugins/$plugin/includes/Legacy.php";
 ?>
-<?if (!$translations):?>
+<?if (!$translations || isset($_GET['forcelegacy'])):?>
 <?eval('?>'.parse_file("$docroot/plugins/$plugin/Legacy/Dashboard.page"))?>
 <?else:?>
 ---
@@ -32,8 +32,8 @@ Tag="film"
                             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
                                 <div class="section" style="line-height:2rem;">_(Plex Streams)_<br><span><span id="plexstreams_count">0</span> _(Active Stream(s))_</span><br><br></div>
                                 <i class="fa fa-fw chevron mt0" id="dash_plexstreams_toggle" onclick="toggleChevron('dash_plexstreams_toggle',0)"></i>
-                                <a href="/Settings/PlexStreams" title="_(Plex Streams Setup page)"><i class="fa fa-fw fa-cog chevron mt0"></i></a>
-                                <a href="/Tools/PlexStreamsTools" title="_(View Streams)"><i class="fa fa-fw fa-film chevron mt0"></i></a>
+                                <a href="/Settings/PlexStreams" title="_(Plex Streams Setup page)_"><i class="fa fa-fw fa-cog chevron mt0"></i></a>
+                                <a href="/Tools/PlexStreamsTools" title="_(View Streams)_"><i class="fa fa-fw fa-film chevron mt0"></i></a>
                         </td>
                         <td></td>
                 </tr>
