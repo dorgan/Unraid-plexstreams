@@ -201,8 +201,9 @@
         $videoStreams = [];
         $schedules = [];
         foreach($allStreams as $idx=>$details) {
+            $urlParts = parse_url($details['url']);
             $source = $details['content'];
-            $source['@host'] = $details['url'];
+            $source['@host'] = $urlParts['scheme'] . '://' . $urlParts['host'] . ':' . $urlParts['port'];
             if (stripos($idx, 'streams-') !== false) {
                 $videoStreams[] = $source;
             } else if (stripos($idx, 'schedules-') !== false) {

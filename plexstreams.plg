@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name      "plexstreams">
   <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2021.02.09">
+  <!ENTITY version   "2021.02.09a">
   <!ENTITY launch    "Settings/PlexStreams">
   <!ENTITY branch    "master">
   <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH   "/boot/config/plugins/&name;">
   <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
-  <!ENTITY md5       "99a48157d21cfaa9faef86a15527db43">
+  <!ENTITY md5       "602af52ad9cc447cb904ba3d38295b71">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2021.02.09a
+- Fix issue with images not showing
+
 ###2021.02.09
 - Correcting some display issues where audio streams from plexamp were not showing
 - Adding details about transcoding sessions
