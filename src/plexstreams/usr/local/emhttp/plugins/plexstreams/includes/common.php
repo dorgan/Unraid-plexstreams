@@ -104,7 +104,7 @@
             }
         }
         $combined = $streams;
-        array_push($combined , ...$schedules);  
+        array_push($combined , ...$schedules);
         $responses = getUrl($combined);
 
         return $responses;
@@ -133,6 +133,7 @@
                 $multi[$id] = curl_init();
                 curl_setopt($multi[$id], CURLOPT_URL, $url);
                 curl_setopt($multi[$id], CURLOPT_HEADER, 0);
+                curl_setopt($multi[$id], CURLOPT_SSL_VERIFYHOST, 0);
                 curl_setopt($multi[$id], CURLOPT_SSL_VERIFYPEER, 0);
                 curl_setopt($multi[$id], CURLOPT_SSL_VERIFYSTATUS, 0);
                 curl_setopt($multi[$id], CURLOPT_CONNECTTIMEOUT, 30);
@@ -160,11 +161,14 @@
                 }
                 $urlParts = parse_url(curl_getinfo($multi[$idx],CURLINFO_EFFECTIVE_URL));
             
-                $rets[$idx]['url'] = $urlParts['scheme'] . '://' . $urlParts['host'] .':' . $urlParts['port'];
-                $rets[$idx]['content'] = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);
+                $url = $urlParts['scheme'] . '://' . $urlParts['host'] .':' . $urlParts['port'] . $urlParts['path'] . '?' . $urlParts['query'];
+                $rets[$idx]['url'] = $url;
+                $content = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);
+                $rets[$idx]['content'] = $content;
+
                 curl_multi_remove_handle($mh, $m);
             }
-
+            
             curl_multi_close($mh);
             return $rets;
         } else {
@@ -205,6 +209,7 @@
                 $schedules[] = $source;
             }
         }
+
         foreach($videoStreams as $streams) {
             if (isset($streams['Video'])) {
                 if (isset($streams['Video']) && isset($streams['Video']['@attributes'])) {
@@ -248,10 +253,12 @@
                             if (isset($media['@attributes']['channelThumb'])) {
                                 $artThumb = $media['@attributes']['channelThumb'];
                             }
+
                             $mergedStream = [
                                 '@host' => $streams['@host'],
                                 'id' => $media['@attributes']['id'],
                                 'type' => 'video',
+                                'player' => $video['Player']['@attributes']['product'],
                                 'title' => $title,
                                 'key' => $video['@attributes']['key'],
                                 'duration' => $duration,
@@ -310,12 +317,20 @@
                                 $mergedStream['streamDecision'] = 'Direct Play';
                             }
 
+                            if ($mergedStream['streamDecision'] === 'transcode') {
+                                if ($mergedStream['streamInfo']['video']['@attributes']['decision'] === 'transcode') {
+                                    $mergedStream['streamInfo']['video']['@attributes']['decision'] .= $video['TranscodeSession']['@attributes']['transcodeHwRequested'] === '1' ?  ' (HW)' : '' . '<br/>' . $mergedStream['streamInfo']['video']['@attributes']['displayTitle'] . ' -> ' . $media['@attributes']['videoResolution'];
+                                }
+                                if ($mergedStream['streamInfo']['audio']['@attributes']['decision'] === 'transcode') {
+                                    $mergedStream['streamInfo']['audio']['@attributes']['decision'] .= ' (' . $video['TranscodeSession']['@attributes']['sourceAudioCodec'] . ' -> ' . $video['TranscodeSession']['@attributes']['audioCodec'] .')';
+                                }
+                            }
+
                             $mergedStreams[] = $mergedStream;
                         }
                     }
                 }
             }
-        
             if (isset($streams['Track'])) {
                 if (isset($streams['Track']) && isset($streams['Track']['@attributes'])) {
                     $streams['Track'] = [$streams['Track']];
@@ -324,73 +339,93 @@
                     if (isset($audio['Media']['@attributes'])) {
                         $audio['Media'] = [$audio['Media']];
                     }
+                    
                     foreach($audio['Media'] as $media) {
-                        if ($media['@attributes']['selected'] === '1') {
-                            $title = $audio['@attributes']['title'] . ' - ' . $audio['@attributes']['originalTitle'] . '<br/><span style="font-size:8px;">' . $audio['@attributes']['parentTitle'] . '</span>';
-                            
-                            $duration = $media['Part']['@attributes']['duration'];
-                            $lengthInSeconds = $duration / 1000;
-                            $lengthInMinutes = ceil($lengthInSeconds / 60 );
-                            $lengthSeconds = floor($lengthInSeconds%60);
-                            $lengthMinutes = floor(($lengthInSeconds%3600)/60);
-                            $lengthHours = floor(($lengthInSeconds%86400)/3600);
-                            
-                            $currentPosition = floatval((int)$audio['@attributes']['viewOffset']);
-                            $currentPositionInSeconds = $audio['@attributes']['viewOffset'] / 1000;
-                            $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
-                            $currentPositionSeconds = floor($currentPositionInSeconds%60);
-                            $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
-                            $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
-
-                            $mergedStream = [
-                                'type' => 'audio',
-                                'title' => $title,
-                                'key' => $audio['@attributes']['key'],
-                                'duration' => $duration,
-                                'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($audio['@attributes']['art']) . '&host=' . urlencode($streams['@host']),
-                                'thumbUrl' => '/plugins/plexstreams/getImage.php?img=' .  urlencode($audio['@attributes']['grandparentThumb'] ?? $audio['@attributes']['thumb']) . '&host=' . urlencode($streams['@host']),
-                                'user' => $audio['User']['@attributes']['title'],
-                                'userAvatar' => $audio['User']['@attributes']['thumb'],
-                                'state' => $audio['Player']['@attributes']['state'],
-                                'stateIcon' => 'play',
-                                'length' => $duration,
-                                'lengthInSeconds' => $lengthInSeconds,
-                                'lengthInMinutes' => $lengthInMinutes,
-                                'lengthSeconds' => $lengthInSeconds,
-                                'lengthMinutes' => $lengthMinuites,
-                                'lengthHours' => $lengthHours,
-                                'currentPosition' => $currentPosition,
-                                'currentPositionInSeconds' =>  $currentPositionInSeconds,
-                                'currentPositionInMinutes' =>  $currentPositionInMinutes,
-                                'currentPositionHours' => $currentPositionHours,
-                                'currentPositionMinutes' => $currentPositionMinutes,
-                                'currentPositionSeconds' => $currentPositionSeconds,
-                                'percentPlayed' => round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0),
-                                'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
-                                'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
-                                'location' => $audio['Session']['@attributes']['location'],
-                                'address' => $audio['Player']['@attributes']['address'],
-                                'bandwidth' => round((int)$audio['Session']['@attributes']['bandwidth'] / 1000, 1),
-                                'streamInfo' => []
-                            ];
-
-                            if ($mergedStream['state'] === 'paused') {
-                                $mergedStream['stateIcon'] = 'pause';
-                            } else if ($mergedStream['state'] !== 'playing') {
-                                $mergedStream['stateIcon'] = 'buffer';
+                        if (isset($media['Part']) && isset($media['Part']['@attributes'])) {
+                            $media['Part'] = [$media['Part']];
+                        }
+                        foreach($media['Part'] as $part) {
+                            if (isset($part['Stream']) && isset($part['Stream']['@attributes'])) {
+                                $part['Stream'] = [$part['Stream']];
                             }
-                            foreach ($media['Part']['Stream'] as $stream) {
-                                if ($stream['streamType'] === '2') {
+                            foreach ($part['Stream'] as $stream) {
+                                if ($stream['@attributes']['selected'] === '1') {
+                                    $title = $audio['@attributes']['title'] . ' - ' . $audio['@attributes']['originalTitle'] . '<br/><span style="font-size:8px;">' . $audio['@attributes']['parentTitle'] . '</span>';
+                                    $duration = $part['@attributes']['duration'];
+                                    $lengthInSeconds = $duration / 1000;
+                                    $lengthInMinutes = ceil($lengthInSeconds / 60 );
+                                    $lengthSeconds = floor($lengthInSeconds%60);
+                                    $lengthMinutes = floor(($lengthInSeconds%3600)/60);
+                                    $lengthHours = floor(($lengthInSeconds%86400)/3600);
+                                    $currentPosition = floatval((int)$audio['@attributes']['viewOffset']);
+                                    $currentPositionInSeconds = $audio['@attributes']['viewOffset'] / 1000;
+                                    $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
+                                    $currentPositionSeconds = floor($currentPositionInSeconds%60);
+                                    $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
+                                    $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+
+                                    $mergedStream = [
+                                        '@host' => $streams['@host'],
+                                        'id' => $media['@attributes']['id'],
+                                        'type' => 'audio',
+                                        'player' => $audio['Player']['@attributes']['product'],
+                                        'title' => $title,
+                                        'key' => $audio['@attributes']['key'],
+                                        'duration' => $duration,
+                                        'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($audio['@attributes']['art']) . '&host=' . urlencode($streams['@host']),
+                                        'thumbUrl' => '/plugins/plexstreams/getImage.php?img=' .  urlencode($audio['@attributes']['grandparentThumb'] ?? $audio['@attributes']['thumb']) . '&host=' . urlencode($streams['@host']),
+                                        'user' => $audio['User']['@attributes']['title'],
+                                        'userAvatar' => $audio['User']['@attributes']['thumb'],
+                                        'state' => $audio['Player']['@attributes']['state'],
+                                        'stateIcon' => 'play',
+                                        'length' => $duration,
+                                        'lengthInSeconds' => $lengthInSeconds,
+                                        'lengthInMinutes' => $lengthInMinutes,
+                                        'lengthSeconds' => $lengthInSeconds,
+                                        'lengthMinutes' => $lengthMinuites,
+                                        'lengthHours' => $lengthHours,
+                                        'currentPosition' => $currentPosition,
+                                        'currentPositionInSeconds' =>  $currentPositionInSeconds,
+                                        'currentPositionInMinutes' =>  $currentPositionInMinutes,
+                                        'currentPositionHours' => $currentPositionHours,
+                                        'currentPositionMinutes' => $currentPositionMinutes,
+                                        'currentPositionSeconds' => $currentPositionSeconds,
+                                        'percentPlayed' => $lengthInMinutes > 0 ? round(($currentPositionInMinutes/ $lengthInMinutes) * 100, 0) : '',
+                                        'currentPositionDisplay' => str_pad($currentPositionHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($currentPositionSeconds, 2, '0', STR_PAD_LEFT),
+                                        'lengthDisplay' => str_pad($lengthHours, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthMinutes, 2, '0', STR_PAD_LEFT) . ':' . str_pad($lengthSeconds, 2, '0', STR_PAD_LEFT),
+                                        'location' => $audio['Session']['@attributes']['location'],
+                                        'address' => $audio['Player']['@attributes']['address'],
+                                        'bandwidth' => round((int)$audio['Session']['@attributes']['bandwidth'] / 1000, 1),
+                                        'streamInfo' => []
+                                    ];
+                                    if ($mergedStream['location'] === null) {
+                                        if ($audio['Player']['@attributes']['local'] == "1") {
+                                            $mergedStream['location'] = 'LAN';
+                                        }
+                                    }
+
+                                    $mergedStream['locationDisplay'] = $loc . ' (' . $mergedStream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($mergedStream['address']) : '' ) . ')';
+
+                                    if ($mergedStream['state'] === 'paused') {
+                                        $mergedStream['stateIcon'] = 'pause';
+                                    } else if ($mergedStream['state'] !== 'playing') {
+                                        $mergedStream['stateIcon'] = 'buffer';
+                                    }
+                                    if (isset($part['@attributes']['decision'])) {
+                                        $mergedStream['streamDecision'] = $part['@attributes']['decision'];
+                                    } else {
+                                        $mergedStream['streamDecision'] = 'Direct Play';
+                                    }
+                                    if ($mergedStream['streamDecision'] === 'directplay') {
+                                        $mergedStream['streamDecision'] = 'Direct Play';
+                                    }
+
                                     $mergedStream['streamInfo']['audio'] = $stream;
                                     $mergedStream['streamInfo']['audio']['@attributes']['decision'] = $mergedStream['streamInfo']['audio']['@attributes']['decision'] ?? 'direct play';
+
+                                    $mergedStreams[] = $mergedStream;
                                 }
                             }
-                            $mergedStream['streamDecision'] = $media['Part']['@attributes']['decision'];
-                            if ($mergedStream['streamDecision'] === 'directplay') {
-                                $mergedStream['streamDecision'] = 'Direct Play';
-                            }
-
-                            $mergedStreams[] = $mergedStream;
                         }
                     }
                 }

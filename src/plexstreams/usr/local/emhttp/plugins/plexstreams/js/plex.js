@@ -49,7 +49,7 @@ function updateDashboardStreams() {
 }
 
 function uCWord(str) {
-    return str.charAt(0).toUpperCase() + str.slice(1)
+    return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 }
 
 function updateFullStreamInfo() {
@@ -79,7 +79,9 @@ function updateFullStreamInfo() {
                     $details.find('.stream.value').html(uCWord(stream.streamDecision));
                     $details.find('.bandwidth.value').html(stream.bandwidth);
                     $details.find('.audio.value').html(uCWord(stream.streamInfo.audio['@attributes'].decision));
-                    $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
+                    if (stream.streamInfo.video) {
+                        $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
+                    }
                 } else {
                     $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
                     node = $container[0];
