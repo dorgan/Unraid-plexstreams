@@ -179,15 +179,19 @@ function getServers(containerSelector, selected) {
     $host.html('');
     $.get(url).done(function(data) {
         serverList = data.serverList;
-        for (var id in serverList) {
-            if (serverList.hasOwnProperty(id)) {
-                var server = serverList[id];
-                serverList[id].Connections.forEach(function(connection) {
-                    if (connection !== null) {
-                        $host.append('<input type="checkbox" onchange="updateServerList(\'HOST\')" name="hostbox" id="' + connection.uri + '" data-id="' + id + '"' + (selected.indexOf(connection.uri) > -1 ? ' checked="checked"' : '' ) + ' value="' + connection.uri + '"/> <label for="' + connection.uri + '"> ' + server.Name + ' (' +  connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</label><br/>');
-                    }
-                });
+        if (Object.keys(serverList).length > 0) {
+            for (var id in serverList) {
+                if (serverList.hasOwnProperty(id)) {
+                    var server = serverList[id];
+                    serverList[id].Connections.forEach(function(connection) {
+                        if (connection !== null) {
+                            $host.append('<input type="checkbox" onchange="updateServerList(\'HOST\')" name="hostbox" id="' + connection.uri + '" data-id="' + id + '"' + (selected.indexOf(connection.uri) > -1 ? ' checked="checked"' : '' ) + ' value="' + connection.uri + '"/> <label for="' + connection.uri + '"> ' + server.Name + ' (' +  connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</label><br/>');
+                        }
+                    });
+                }
             }
+        } else {
+            $host.html('<p>No Servers found, please enter server in Custom Servers Field');
         }
         $host.show();
         $('.lds-dual-ring').hide();
