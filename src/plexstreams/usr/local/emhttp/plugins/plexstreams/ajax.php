@@ -5,9 +5,8 @@
     header('Content-Type: application/json');
 
     $mergedStreams = [];
-
     if (!empty($cfg['TOKEN'])) {
-        if ($cfg['HOST'] !== '') {
+        if ($cfg['HOST'] !== '' || $cfg['CUSTOM_SERVERS'] !== '') {
             $streams = getStreams($cfg);
             $mergedStreams = mergeStreams($streams);
             

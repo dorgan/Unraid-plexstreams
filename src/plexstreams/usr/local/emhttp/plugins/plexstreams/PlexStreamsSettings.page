@@ -27,6 +27,11 @@ if (!isset($cfg['DISPLAY_NAV'])) {
 if (!isset($cfg['FORCE_PLEX_HTTPS'])) {
     $cfg['FORCE_PLEX_HTTPS'] = "0";
 }
+
+if (!isset($cfg['CUSTOM_SERVERS'])) {
+    $cfg['CUSTOM_SERVERS'] = "";
+}
+
 $pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
 
 if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page')) {
@@ -52,13 +57,17 @@ function clearToken() {
 <input type="hidden" name="#file" value="plexstreams/plexstreams.cfg" />
 <input type="hidden" id="COMMAND" name="#command" value="" />
 <input type="hidden" id="HOST" name="HOST" value="<?php echo($cfg['HOST']); ?>" />
-
 <input type="button" value="_(Get Plex Token)_" style="margin-right:0px;" onclick="PlexOAuth(function(token){document.getElementById('plex-token').value = token;});"/>
 <input type="input" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>" readonly="true"  style="height:25px;padding:5px;"/> 
 
 
 <div style="min-height:118px;vertical-align:top;overflow:scroll;position:relative;">
     _(Servers)_: <div class="lds-dual-ring"></div><br/><div id="hostcontainer"></div>
+</div>
+
+<div>
+    _(Custom Servers)_:
+    <input type="text" name="CUSTOM_SERVERS" id="CUSTOM_SERVERS" value="<?php echo( $cfg['CUSTOM_SERVERS'] ); ?>" />
 </div>
        
 <div>

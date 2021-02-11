@@ -93,6 +93,9 @@
 
     function getStreams($cfg) {        
         $hosts = explode(',', $cfg['HOST']);
+        $extraHosts = explode(',', $cfg['CUSTOM_SERVERS']);
+        $hosts = array_merge($hosts, $extraHosts);
+
         $streams = [];
         $schedules = [];
         foreach($hosts as $host) {
