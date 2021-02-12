@@ -18,6 +18,11 @@ if (!isset($cfg['DISPLAY_NAV'])) {
 if (!isset($cfg['FORCE_PLEX_HTTPS'])) {
     $cfg['FORCE_PLEX_HTTPS'] = "0";
 }
+
+if (!isset($cfg['CUSTOM_SERVERS'])) {
+    $cfg['CUSTOM_SERVERS'] = "";
+}
+
 $pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
 
 if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page')) {
@@ -50,6 +55,11 @@ function clearToken() {
 
 <div style="min-height:118px;vertical-align:top;overflow:scroll;position:relative;">
     Servers: <div class="lds-dual-ring"></div><br/><div id="hostcontainer"></div>
+</div>
+
+<div>
+    Custom Servers:
+    <input type="text" name="CUSTOM_SERVERS" id="CUSTOM_SERVERS" placeholder="Example: 192.168.1.2:32400" value="<?php echo( $cfg['CUSTOM_SERVERS'] ); ?>" />
 </div>
        
 <div>
