@@ -65,10 +65,7 @@ function clearToken() {
     _(Servers)_: <div class="lds-dual-ring"></div><br/><div id="hostcontainer"></div>
 </div>
 
-<div>
-    _(Custom Servers)_:
-    <input type="text" name="CUSTOM_SERVERS" id="CUSTOM_SERVERS" placeholder="Example: 192.168.1.2:32400" value="<?php echo( $cfg['CUSTOM_SERVERS'] ); ?>" />
-</div>
+<input type="hidden" name="CUSTOM_SERVERS" id="CUSTOM_SERVERS" value="<?php echo( $cfg['CUSTOM_SERVERS'] ); ?>" />
        
 <div>
     _(Display in Nav)_:
