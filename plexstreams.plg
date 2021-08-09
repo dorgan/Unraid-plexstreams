@@ -1,21 +1,22 @@
 <?xml version='1.0' standalone='yes'?>
 
 <!DOCTYPE PLUGIN [
-  <!ENTITY name      "plexstreams">
-  <!ENTITY author    "Donald Organ">
-  <!ENTITY version   "2021.08.09">
-  <!ENTITY launch    "Settings/PlexStreams">
-  <!ENTITY branch    "master">
-  <!ENTITY gitURL    "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
-  <!ENTITY vnstatURL "&gitURL;/deps/">
-  <!ENTITY pluginURL "&gitURL;/&name;.plg">
-  <!ENTITY emhttp    "/usr/local/emhttp/plugins/&name;">
-  <!ENTITY plgPATH   "/boot/config/plugins/&name;">
-  <!ENTITY plgNAME   "&name;-&version;-x86_64-1">
-  <!ENTITY md5       "8b5fc40ce0b49db02837117ebda2bcd8">
+  <!ENTITY name       "plexstreams">
+  <!ENTITY prettyname "Plex Streams">
+  <!ENTITY author     "Donald Organ">
+  <!ENTITY version    "2021.08.09a">
+  <!ENTITY launch     "Settings/PlexStreams">
+  <!ENTITY branch     "master">
+  <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
+  <!ENTITY vnstatURL  "&gitURL;/deps/">
+  <!ENTITY pluginURL  "&gitURL;/&name;.plg">
+  <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
+  <!ENTITY plgPATH    "/boot/config/plugins/&name;">
+  <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
+  <!ENTITY md5        "30f82ed606ea6bfe6763843fc21bf34b">
 ]>
 
-<PLUGIN  name="&name;"
+<PLUGIN  name="&prettyname;"
          author="&author;"
          version="&version;"
          pluginURL="&pluginURL;"
@@ -26,6 +27,9 @@
 
     <CHANGES>
     ##&name;
+###2021.08.09a
+-  just some adjustments to naming
+
 ###2021.08.09
 - Fixes for sorting of dashboard widget
 - Fix for collapsing/expanding of dashboard widget
