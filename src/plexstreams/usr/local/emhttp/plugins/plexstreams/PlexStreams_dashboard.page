@@ -24,7 +24,14 @@ Tag="film"
             padding-bottom: 0px;
         }
 </style>
-<table cellspacing="0" cellpadding="0" id="plex_streams_container" class="dashboard box<?php echo $dashboard_widget_pos ?>" style="display:none">
+<table cellspacing="0" cellpadding="0" id="db-box<?php echo $dashboard_widget_pos ?>" class="plex_streams_container dashboard box<?php echo $dashboard_widget_pos ?>" style="display:none">
+        <thead sort="10">
+            <tr class="hidden">
+                <td></td>
+                <td colspan="3"></td>
+                <td></td>
+            </tr>
+        </thead>
         <tbody id="plex_streams_dash_box" class="sortable" sort="10">
             <tr>
                 <td></td>
@@ -92,18 +99,66 @@ p.plexstream-time {
 <script async>
 $(function() {
     // append data from the table into the correct one
-    $("#db-box<?php echo $dashboard_widget_pos ?>").append($("#plex_streams_container").html());
+    $("#db-box<?php echo $dashboard_widget_pos ?>").append($(".plex_streams_container").html());
 
-    // reload toggle to get the correct state
-    toggleView('dash_plexstreams',true);
+    //setTimeout(function() {
+        // reload toggle to get the correct state
+        toggleView('dash_plexstreams', true);
 
-    // reload sorting to get the stored data (cookie)
-    sortTable($('#db-box1'),$.cookie('db-box1'));
-    sortTable($('#db-box2'),$.cookie('db-box2'));
-    sortTable($('#db-box3'),$.cookie('db-box3'));
+        // reload sorting to get the stored data (cookie)
+        var currentSortOrder1 = $.cookie('db-box1');
+        if (currentSortOrder1) {
+            currentSortOrder1 = currentSortOrder1.replace(';;', ';');
+            currentSortOrder1 = currentSortOrder1.replace(/^;/, '');
+            $.cookie('db-box1', currentSortOrder1);
+        }
 
-    updateDashboardStreams();
-    setInterval(updateDashboardStreams, 5000)
+        var currentSortOrder2 = $.cookie('db-box2');
+        if (currentSortOrder2) {
+            currentSortOrder2 = currentSortOrder2.replace(';;', ';');
+            currentSortOrder2 = currentSortOrder2.replace(/^;/, '');
+            $.cookie('db-box2', currentSortOrder2);
+        }
+
+        var currentSortOrder3 = $.cookie('db-box3');
+        if (currentSortOrder3) {
+            currentSortOrder3 = currentSortOrder3.replace(';;', ';');
+            currentSortOrder3 = currentSortOrder3.replace(/^;/, '');
+            $.cookie('db-box3', currentSortOrder3);
+        }
+
+        if (currentSortOrder1) {
+            sortTable($('#db-box1'), currentSortOrder1);
+        }
+        if (currentSortOrder2) {
+            sortTable($('#db-box2'), currentSortOrder2);
+        }
+        if (currentSortOrder3) {
+            sortTable($('#db-box3'), currentSortOrder3);
+        }
+
+        updateDashboardStreams();
+        setInterval(updateDashboardStreams, 5000);
+    //}, 3000);
+    setInterval(function() {
+        var currentSortOrder1 = $.cookie('db-box1');
+        if (currentSortOrder1) {
+            currentSortOrder1 = currentSortOrder1.replace(';;', ';');
+            $.cookie('db-box1', currentSortOrder1);
+        }
+
+        var currentSortOrder2 = $.cookie('db-box2');
+        if (currentSortOrder2) {
+            currentSortOrder2 = currentSortOrder2.replace(';;', ';');
+            $.cookie('db-box2', currentSortOrder2);
+        }
+
+        var currentSortOrder3 = $.cookie('db-box3');
+        if (currentSortOrder3) {
+            currentSortOrder3 = currentSortOrder3.replace(';;', ';');
+            $.cookie('db-box3', currentSortOrder3);
+        }
+    }, 300);
 });
 </script>
 <?endif;?>
