@@ -4,7 +4,7 @@
   <!ENTITY name       "plexstreams">
   <!ENTITY prettyname "Plex Streams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2021.08.09a">
+  <!ENTITY version    "2021.08.26">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -13,7 +13,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "30f82ed606ea6bfe6763843fc21bf34b">
+  <!ENTITY md5        "a6ae7b0da02396e0540250bc3f6e74a0">
 ]>
 
 <PLUGIN  name="&prettyname;"
@@ -27,8 +27,11 @@
 
     <CHANGES>
     ##&name;
+###2021.08.26
+- Fix file permissions issues
+
 ###2021.08.09a
--  just some adjustments to naming
+- just some adjustments to naming
 
 ###2021.08.09
 - Fixes for sorting of dashboard widget
