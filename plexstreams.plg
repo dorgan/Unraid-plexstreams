@@ -2,7 +2,6 @@
 
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
-  <!ENTITY prettyname "Plex Streams">
   <!ENTITY author     "Donald Organ">
   <!ENTITY version    "2021.08.26">
   <!ENTITY launch     "Settings/PlexStreams">
@@ -16,7 +15,7 @@
   <!ENTITY md5        "a6ae7b0da02396e0540250bc3f6e74a0">
 ]>
 
-<PLUGIN  name="&prettyname;"
+<PLUGIN  name="&name;"
          author="&author;"
          version="&version;"
          pluginURL="&pluginURL;"
