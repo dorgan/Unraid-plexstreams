@@ -264,6 +264,7 @@
                                 'type' => 'video',
                                 'player' => $video['Player']['@attributes']['product'],
                                 'title' => $title,
+                                'titleString' => $title,
                                 'key' => $video['@attributes']['key'],
                                 'duration' => $duration,
                                 'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($artThumb) . '&host=' . urlencode($streams['@host']),
@@ -355,6 +356,7 @@
                             foreach ($part['Stream'] as $stream) {
                                 if ($stream['@attributes']['selected'] === '1') {
                                     $title = $audio['@attributes']['title'] . ' - ' . $audio['@attributes']['originalTitle'] . '<br/><span style="font-size:8px;">' . $audio['@attributes']['parentTitle'] . '</span>';
+                                    $titleString = $audio['@attributes']['title'] . ' - ' . $audio['@attributes']['originalTitle'] . ' - ' . $audio['@attributes']['parentTitle'];
                                     $duration = $part['@attributes']['duration'];
                                     $lengthInSeconds = $duration / 1000;
                                     $lengthInMinutes = ceil($lengthInSeconds / 60 );
@@ -374,6 +376,7 @@
                                         'type' => 'audio',
                                         'player' => $audio['Player']['@attributes']['product'],
                                         'title' => $title,
+                                        'titleString' => $titleString,
                                         'key' => $audio['@attributes']['key'],
                                         'duration' => $duration,
                                         'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($audio['@attributes']['art']) . '&host=' . urlencode($streams['@host']),

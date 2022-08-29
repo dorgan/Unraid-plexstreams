@@ -12,7 +12,7 @@ function updateDashboardStreams() {
                 $container = $('#' + stream.id);
                 if ($container.length === 0) {
                     $container = $('<tr style="display:table-row;" id="' + stream.id + '">' +
-                        '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.title + '">' + stream.title +  '</p></td>' +
+                        '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></td>' +
                         '<td align="center" style="padding: 0px;text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
                         '<td align="center" style="padding: 0px;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</td>' +
                         '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay + '</div></td>' +

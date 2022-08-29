@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2021.08.26">
+  <!ENTITY version    "2022.08.29">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "a6ae7b0da02396e0540250bc3f6e74a0">
+  <!ENTITY md5        "9d997416fce980d94296cf464424cb9d">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2022.08.29
+- Fix issue for audio files where title attribute contained html
+
 ###2021.08.26
 - Fix file permissions issues
 
