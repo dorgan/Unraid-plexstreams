@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2022.08.31">
+  <!ENTITY version    "2023.03.21">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "94c32cc8f3fcb2b1febe39780406bde0">
+  <!ENTITY md5        "28debe3c25ab6807a52aea4b89f44146">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,11 @@
 
     <CHANGES>
     ##&name;
+###2023.03.21
+- Add compatability for Unraid 6.12
+- Fix bug with livestreams
+- Update nav/dashboard module to use conditions for whether to display instead of renaming files
+
 ###2022.08.31
 - Fix permissions issues
 

@@ -1,5 +1,54 @@
 var serverList = [];
 
+function updateDashboardStreamsNew() {
+    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+        $('#plexstreams_count').html(streams.length);
+        $('#retrieving_streams').remove();
+        if (streams.length > 0) {
+            $('.no_streams').remove();
+            var currentDate = new Date();
+            var lastUpdate = currentDate.getTime();
+            streams.forEach(function(stream) {
+                $container = $('#' + stream.id);
+                if ($container.length === 0) {
+                    $container = $('<div id="' + stream.id + '">' +
+                        '<span class="w44"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></span>' +
+                        '<span class="w18" style="text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></span>' +
+                        '<span class="w18" style="text-align:center;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</p></span>' +
+                        '<span class="w18" style="text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A' ) + '</p></span>' +
+                    '</div').appendTo('#plexstreams_streams');
+                    var node = $container[0];
+                    updateDuration(node, stream);
+                } else {
+                    var node = $container[0];
+                    $cells = $container.find('span');
+                    $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
+                    updateDuration(node, stream);
+                }
+                $container.attr('updatedat', lastUpdate);
+                $(node).attr('prevStat', stream.state);
+            });
+            $('#plexstreams_streams tr[updatedat]').each(function() {
+                if ($(this).is('[updatedat]')) {
+                    if ($(this).attr('updatedat') !== lastUpdate.toString()) {
+                        if (this.timer) {
+                            clearInterval(this.timer)
+                        };
+                        $(this).remove();
+                    }
+                }
+            });
+        } else {
+            $('#plexstreams_streams').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></span></div>');
+        }
+    }).fail(function(jqXHR) {
+        if (jqXHR.status == '500') {
+            $('#plexstreams_streams').html('<span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') + '</p></span>');
+        }
+    });
+}
+
+
 function updateDashboardStreams() {
     $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
@@ -15,7 +64,7 @@ function updateDashboardStreams() {
                         '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></td>' +
                         '<td align="center" style="padding: 0px;text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
                         '<td align="center" style="padding: 0px;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</td>' +
-                        '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay + '</div></td>' +
+                        '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A') + '</p></td>' +
                     '</tr>').appendTo('#plexstreams_streams');
                     var node = $container[0];
                     updateDuration(node, stream);

@@ -41,9 +41,9 @@ if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page'
 }
 
 if ($cfg['DISPLAY_WIDGET'] === '0' && file_exists($pluginPath . 'PlexStreams_dashboard.page')) {
-    rename($pluginPath .'PlexStreams_dashboard.page', $pluginPath .'PlexStreams_dashboard.page.off');
+    //rename($pluginPath .'PlexStreams_dashboard.page', $pluginPath .'PlexStreams_dashboard.page.off');
 } else if ($cfg['DISPLAY_WIDGET'] === '1' && file_exists($pluginPath . 'PlexStreams_dashboard.page.off')) {
-    rename($pluginPath .'PlexStreams_dashboard.page.off', $pluginPath .'PlexStreams_dashboard.page');
+    //rename($pluginPath .'PlexStreams_dashboard.page.off', $pluginPath .'PlexStreams_dashboard.page');
 }
 ?>
 

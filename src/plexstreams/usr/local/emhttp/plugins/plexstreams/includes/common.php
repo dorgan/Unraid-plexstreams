@@ -99,7 +99,7 @@
         $streams = [];
         $schedules = [];
         foreach($hosts as $host) {
-            $streams[] = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .mktime();
+            $streams[] = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .time();
             $schedules[] = $host ."/media/subscriptions/scheduled?X-Plex-Token=" .$cfg['TOKEN'];
             if (isset($_REQUEST['dbg'])) {
                 v_d($streams);
