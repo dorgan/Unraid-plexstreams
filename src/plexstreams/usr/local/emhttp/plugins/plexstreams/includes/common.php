@@ -1,6 +1,6 @@
 <?php
     define('OS_VERSION', 'Unraid ' . $GLOBALS['unRaidSettings']['version']);
-    define('PLUGIN_VERSION', 'v1.1.1');
+    define('PLUGIN_VERSION', '2023.03.22');
 
     function getGeo($ip) {
         $url = 'https://plex.tv/api/v2/geoip?ip_address=' . $ip;
@@ -44,7 +44,9 @@
                             $identifier = $device['@attributes']['clientIdentifier'];
                             if (isset($serverList[$identifier])) {
                                 foreach($device['Connection'] as $connection) {
-                                    array_push($serverList[$identifier]['Connections'], $connection['@attributes']);
+                                    if (isset($connection['@attributes'])) {
+                                        array_push($serverList[$identifier]['Connections'], $connection['@attributes']);
+                                    }
                                 }
                             }
                         }
@@ -163,13 +165,15 @@
                     v_d(curl_multi_getcontent($multi[$idx]));
                 }
                 $urlParts = parse_url(curl_getinfo($multi[$idx],CURLINFO_EFFECTIVE_URL));
+                if ($urlParts !== false) {
             
-                $url = $urlParts['scheme'] . '://' . $urlParts['host'] .':' . $urlParts['port'] . $urlParts['path'] . '?' . $urlParts['query'];
-                $rets[$idx]['url'] = $url;
-                $content = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);
-                $rets[$idx]['content'] = $content;
+                    $url = $urlParts['scheme'] . '://' . $urlParts['host'] .':' . $urlParts['port'] . $urlParts['path'] . '?' . $urlParts['query'];
+                    $rets[$idx]['url'] = $url;
+                    $content = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);
+                    $rets[$idx]['content'] = $content;
 
-                curl_multi_remove_handle($mh, $m);
+                    curl_multi_remove_handle($mh, $m);
+                }
             }
             
             curl_multi_close($mh);
@@ -205,12 +209,14 @@
         $schedules = [];
         foreach($allStreams as $idx=>$details) {
             $urlParts = parse_url($details['url']);
-            $source = $details['content'];
-            $source['@host'] = $urlParts['scheme'] . '://' . $urlParts['host'] . ':' . $urlParts['port'];
-            if (stripos($idx, 'streams-') !== false) {
-                $videoStreams[] = $source;
-            } else if (stripos($idx, 'schedules-') !== false) {
-                $schedules[] = $source;
+            if ($urlParts !== false) {
+                $source = $details['content'];
+                $source['@host'] = $urlParts['scheme'] . '://' . $urlParts['host'] . ':' . $urlParts['port'];
+                if (stripos($idx, 'streams-') !== false) {
+                    $videoStreams[] = $source;
+                } else if (stripos($idx, 'schedules-') !== false) {
+                    $schedules[] = $source;
+                }
             }
         }
 

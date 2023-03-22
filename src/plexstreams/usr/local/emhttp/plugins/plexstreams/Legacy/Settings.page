@@ -24,18 +24,6 @@ if (!isset($cfg['CUSTOM_SERVERS'])) {
 }
 
 $pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
-
-if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page')) {
-    rename($pluginPath .'Plex_Streams.page', $pluginPath .'Plex_Streams.page.off');
-} else if ($cfg['DISPLAY_NAV'] === '1' && file_exists($pluginPath . 'Plex_Streams.page.off')) {
-    rename($pluginPath .'Plex_Streams.page.off', $pluginPath .'Plex_Streams.page');
-}
-
-if ($cfg['DISPLAY_WIDGET'] === '0' && file_exists($pluginPath . 'PlexStreams_dashboard.page')) {
-    rename($pluginPath .'PlexStreams_dashboard.page', $pluginPath .'PlexStreams_dashboard.page.off');
-} else if ($cfg['DISPLAY_WIDGET'] === '1' && file_exists($pluginPath . 'PlexStreams_dashboard.page.off')) {
-    rename($pluginPath .'PlexStreams_dashboard.page.off', $pluginPath .'PlexStreams_dashboard.page');
-}
 ?>
 
 <script>
