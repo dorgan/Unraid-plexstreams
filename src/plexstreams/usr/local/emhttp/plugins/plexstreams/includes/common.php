@@ -1,6 +1,8 @@
 <?php
-    define('OS_VERSION', 'Unraid ' . $GLOBALS['unRaidSettings']['version']);
-    define('PLUGIN_VERSION', '2023.03.22');
+    if (isset($GLOBALS['unRaidSettings'])) {
+        define('OS_VERSION', 'Unraid ' . $GLOBALS['unRaidSettings']['version']);
+    }
+    define('PLUGIN_VERSION', '2023.03.26');
 
     function getGeo($ip) {
         $url = 'https://plex.tv/api/v2/geoip?ip_address=' . $ip;
@@ -165,8 +167,7 @@
                     v_d(curl_multi_getcontent($multi[$idx]));
                 }
                 $urlParts = parse_url(curl_getinfo($multi[$idx],CURLINFO_EFFECTIVE_URL));
-                if ($urlParts !== false) {
-            
+                if ($urlParts !== false && isset($urlParts['scheme'])) {
                     $url = $urlParts['scheme'] . '://' . $urlParts['host'] .':' . $urlParts['port'] . $urlParts['path'] . '?' . $urlParts['query'];
                     $rets[$idx]['url'] = $url;
                     $content = json_decode(json_encode(simplexml_load_string(curl_multi_getcontent($multi[$idx]))), TRUE);

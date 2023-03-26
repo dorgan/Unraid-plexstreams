@@ -1,5 +1,6 @@
 var serverList = [];
 
+
 function updateDashboardStreamsNew() {
     $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
