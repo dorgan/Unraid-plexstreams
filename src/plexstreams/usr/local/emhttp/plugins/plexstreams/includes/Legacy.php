@@ -20,5 +20,5 @@
     if (!function_exists('parse_plugin')) {
         function parse_plugin($plugin) {return;}
     }
-    if (!isset($noscript)) echo "<script>if (typeof _ != 'function') function _(t) {return t;}</script>";
+    if (isset($noscript)) echo "<script>if (typeof _ != 'function') function _(t) {return t;}</script>";
 ?>
