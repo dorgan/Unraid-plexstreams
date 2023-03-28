@@ -98,7 +98,7 @@ $mytiles[$pluginname]['column1'] =
     <tr>
         <td>
             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
-            <div class="section" style="line-height:2rem;">_(Plex Streams)_<br><span><span id="plexstreams_count">0</span> _(Active Stream(s))_</span><br><br></div>
+            <div class="section" style="line-height:2rem;">_(Plex Streams)_<br><span id="stream_count_container"><span id="plexstreams_count">0</span> _(Active Stream(s))_</span><br><br></div>
             <a href="/Settings/PlexStreams" title="_(Plex Streams Setup page)_"><i class="fa fa-fw fa-cog control"></i></a>
             <a href="/Tools/PlexStreamsTools" title="_(View Streams)_"><i class="fa fa-fw fa-film control"></i></a>
         </td>

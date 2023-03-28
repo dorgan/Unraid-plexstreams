@@ -73,6 +73,7 @@
         background: rgb(70,67,67,0.55);
         color: #fff;
         font-weight: bolder;
+        height: 63px;
         z-index: 998;
     }
 
@@ -219,10 +220,11 @@
     if (!empty($cfg['TOKEN'])) {
         $streams = getStreams($cfg);
         
-        $mergedStreams = mergeStreams($streams);
+        $mergedStreams = mergeStreams($streams, $cfg);
         echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">' . _('Hover the stream for details') . '</h4>');
         if (count($mergedStreams) > 0) {
-            echo ('<div id="streams-container"><ul>');            
+            echo ('<div id="streams-container"><ul>');     
+               
             foreach($mergedStreams as $idx => $stream) {
                 echo('
                     <li class="stream-container" id="' . $stream['id'] . '">
@@ -231,6 +233,7 @@
                                 <div class="blur">
                                     <div class="details">
                                         <ul class="detail-list">
+                                            <li><div class="label">' . _('Server') . '</div><div class="value">' . (!empty($stream['alias']) ? $stream['alias'] : $stream['address']) .'</div></li>
                                             <li><div class="label">' . _('Length') . '</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
                                             <li><div class="label">' . _('Stream') . '</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
                                             <li><div class="label">' . _('Location') . '</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>

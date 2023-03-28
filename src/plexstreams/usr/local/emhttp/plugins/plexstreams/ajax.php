@@ -8,7 +8,7 @@
     if (!empty($cfg['TOKEN'])) {
         if ($cfg['HOST'] !== '' || $cfg['CUSTOM_SERVERS'] !== '') {
             $streams = getStreams($cfg);
-            $mergedStreams = mergeStreams($streams);
+            $mergedStreams = mergeStreams($streams, $cfg);
             
             if (isset($_REQUEST['dbg'])) {
                 v_d($mergedStreams);

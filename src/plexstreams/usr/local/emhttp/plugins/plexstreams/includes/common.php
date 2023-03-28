@@ -203,7 +203,7 @@
         return $rets;
     }
 
-    function mergeStreams($allStreams) {
+    function mergeStreams($allStreams, $cfg) {
         $mergedStreams = [];
         
         $videoStreams = [];
@@ -213,6 +213,7 @@
             if ($urlParts !== false) {
                 $source = $details['content'];
                 $source['@host'] = $urlParts['scheme'] . '://' . $urlParts['host'] . ':' . $urlParts['port'];
+                $source['shortHost'] = $urlParts['host'];
                 if (stripos($idx, 'streams-') !== false) {
                     $videoStreams[] = $source;
                 } else if (stripos($idx, 'schedules-') !== false) {
@@ -231,9 +232,9 @@
                         $video['Media'] = [$video['Media']];
                     }
                     foreach($video['Media'] as $media) {
-                        if ($media['@attributes']['selected'] === '1') {
+                        if (isset($media['@attributes']['selected']) && $media['@attributes']['selected'] === '1') {
                             if (!isset($media['@attributes']['channelCallSign'])) {
-                                $title = $video['@attributes']['title'] . ' (' . $video['@attributes']['year'] . ')';
+                                $title = $video['@attributes']['title'] . (isset($video['@attributes']['year']) ? ' (' . $video['@attributes']['year'] . ')' : '' );
                                 if (isset($video['@attributes']['parentTitle'])) {
                                     $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
                                 }
@@ -247,9 +248,9 @@
                                 $duration = $media['Part']['@attributes']['duration'];
                                 $lengthInSeconds = $duration / 1000;
                                 $lengthInMinutes = ceil($lengthInSeconds / 60 );
-                                $lengthSeconds = floor($lengthInSeconds%60);
-                                $lengthMinutes = floor(($lengthInSeconds%3600)/60);
-                                $lengthHours = floor(($lengthInSeconds%86400)/3600);
+                                $lengthSeconds = floor(intval($lengthInSeconds)%60);
+                                $lengthMinutes = floor((intval($lengthInSeconds)%3600)/60);
+                                $lengthHours = floor((intval($lengthInSeconds)%86400)/3600);
                                 
                                 $currentPosition = floatval((int)$video['@attributes']['viewOffset']);
                                 $currentPositionInSeconds = $video['@attributes']['viewOffset'] / 1000;
@@ -265,8 +266,17 @@
                                 $artThumb = $media['@attributes']['channelThumb'];
                             }
 
+                            $addr = str_replace('.', '_', $streams['shortHost']);
+                            $alias = '';
+                            $aliasKey = 'ALIAS-' . $addr;
+                            
+                            if (isset($cfg[$aliasKey])) {
+                                $alias = $cfg[$aliasKey];
+                            }
+
                             $mergedStream = [
                                 '@host' => $streams['@host'],
+                                'alias' => $alias,
                                 'id' => $media['@attributes']['id'],
                                 'type' => 'video',
                                 'player' => $video['Player']['@attributes']['product'],
@@ -297,6 +307,10 @@
                                 'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
                                 'streamInfo' => []
                             ];
+
+                            if (isset($alias)) {
+                                $mergedStream['alias'] = $alias;
+                            }
                             $loc = strtoupper($mergedStream['location']);
                             $mergedStream['locationDisplay'] = $loc . ' (' . $mergedStream['address'] . ($loc !== 'LAN' ? ' - ' .getGeo($mergedStream['address']) : '' ) . ')';
                             
@@ -376,9 +390,14 @@
                                     $currentPositionSeconds = floor($currentPositionInSeconds%60);
                                     $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                                     $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
-
+                                    $addr = str_replace('.', '_', $streams['shortHost']);
+                                    $alias = '';
+                                    if (isset($cfg['ALIAS-' . $addr])) {
+                                        $alias = $cfg['ALIAS-' . $addr];
+                                    }
                                     $mergedStream = [
                                         '@host' => $streams['@host'],
+                                        'alias'=> $alias,
                                         'id' => $media['@attributes']['id'],
                                         'type' => 'audio',
                                         'player' => $audio['Player']['@attributes']['product'],

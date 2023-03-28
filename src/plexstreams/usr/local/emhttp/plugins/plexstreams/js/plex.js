@@ -5,12 +5,19 @@ function updateDashboardStreamsNew() {
     $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
+        var hostStreams = [];
         if (streams.length > 0) {
             $('.no_streams').remove();
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
+            var hostStreams = [];
             streams.forEach(function(stream) {
                 $container = $('#' + stream.id);
+                if (hostStreams[stream['alias']] === undefined) {
+                    hostStreams[stream['alias']] = 1;
+                } else {
+                    hostStreams[stream['alias']] = hostStreams[stream['alias']]++;
+                }
                 if ($container.length === 0) {
                     $container = $('<div id="' + stream.id + '">' +
                         '<span class="w44"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></span>' +
@@ -29,6 +36,12 @@ function updateDashboardStreamsNew() {
                 $container.attr('updatedat', lastUpdate);
                 $(node).attr('prevStat', stream.state);
             });
+            $('#stream_count_container').html('');
+            for (var host in hostStreams) {
+                if(hostStreams.hasOwnProperty(host)) {
+                    $('#stream_count_container').append('<div><strong>' + host + ':</strong> ' + hostStreams[host] + ' ' +  _('Active Stream(s)') + '</div>');
+                }
+            }
             $('#plexstreams_streams tr[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
@@ -52,14 +65,20 @@ function updateDashboardStreamsNew() {
 
 function updateDashboardStreams() {
     $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
-        $('#plexstreams_count').html(streams.length);
+        //$('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
         if (streams.length > 0) {
             $('.no_streams').remove();
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
+            var hostStreams = [];
             streams.forEach(function(stream) {
                 $container = $('#' + stream.id);
+                if (hostStreams[stream['@host']] === undefined) {
+                    hostStreams[stream['@host']] = 1;
+                } else {
+                    hostStreams[stream['@host']] = hostStreams[stream['@host']]++;
+                }
                 if ($container.length === 0) {
                     $container = $('<tr style="display:table-row;" id="' + stream.id + '">' +
                         '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></td>' +
@@ -78,6 +97,12 @@ function updateDashboardStreams() {
                 $container.attr('updatedat', lastUpdate);
                 node.prevState = stream.state;
             });
+            $('#stream_count_container').html('');
+            for (var host in hostStreams) {
+                if(hostStreams.hasOwnProperty(host)) {
+                    $('#stream_count_container').append('<div><strong>' + host + ':</strong> ' + hostStreams[host] + ' ' +  _('Active Stream(s)') + '</div>');
+                }
+            }
             $('#plexstreams_streams tr[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
@@ -114,7 +139,6 @@ function updateFullStreamInfo() {
             }
             streams.forEach(function(stream) {
                 var node = $('#' + stream.id + '.stream-container')[0];
-                console.log('Updating Stream ID:' + stream.id);
                 $container = $(node);
                 if ($container.length > 0) {
                     $status = $container.find('.status i');
@@ -133,7 +157,7 @@ function updateFullStreamInfo() {
                         $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
                     }
                 } else {
-                    $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
+                    $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Server') + '</div><div class="value">' + stream.alias + '</div></li><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
                     node = $container[0];
                 }
                 updateDuration(node, stream);
@@ -235,7 +259,13 @@ function getServers(containerSelector, selected) {
                     var server = serverList[id];
                     serverList[id].Connections.forEach(function(connection) {
                         if (connection !== null) {
-                            $host.append('<input type="checkbox" onchange="updateServerList(\'HOST\')" name="hostbox" id="' + connection.uri + '" data-id="' + id + '"' + (selected.indexOf(connection.uri) > -1 ? ' checked="checked"' : '' ) + ' value="' + connection.uri + '"/> <label for="' + connection.uri + '"> ' + server.Name + ' (' +  connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</label><br/>');
+                            var shortHost = connection.uri;
+                            shortHost = shortHost.replace(connection.protocol  + '://', '');
+                            if (connection.port) {
+                                shortHost = shortHost.replace(':' + connection.port, '');
+                            }
+                            $host.append('<input type="hidden" name="ALIAS-' + shortHost + '" value="' + server.Name + '"/>');
+                            $host.append('<input type="checkbox" onchange="updateServerList(\'HOST\')" name="hostbox" id="' + connection.uri + '" data-id="' + id + '"' + (selected.indexOf(connection.uri) > -1 ? ' checked="checked"' : '' ) + ' value="' + connection.uri + '" data-address="' + connection.address + '" data-name="' + server.Name + '"/> <label for="' + connection.uri + '"> ' + server.Name + ' (' +  connection.address + ':' + connection.port + ')' + (connection.local === '0' ? ' - Remote' : '') + '</label><br/>');
                         }
                     });
                 }
