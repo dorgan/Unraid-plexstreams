@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2023.03.28a">
+  <!ENTITY version    "2023.03.28b">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "2a698ed9951b12f7cd729471221c8d43">
+  <!ENTITY md5        "9ef6f4198d2c2939bc962da23eccf29e">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2023.03.28b
+- Fixing bug with unRaid less than 6.12
+
 ###2023.03.28a
 -  Correcting a typo for legacy support
 
