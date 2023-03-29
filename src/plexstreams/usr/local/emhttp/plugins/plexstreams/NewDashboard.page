@@ -125,7 +125,7 @@ $mytiles[$pluginname]['column1'] =
 </tbody>
 EOT;
 ?>
-<script src="/plugins/plexstreams/js/plex.js"></script>
+<script src="<?autov('/plugins/plexstreams/js/plex.js')?>"></script>
 <script async>
     $(function() {
         updateDashboardStreamsNew();

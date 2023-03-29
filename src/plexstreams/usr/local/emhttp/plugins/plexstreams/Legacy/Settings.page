@@ -71,7 +71,7 @@ function clearToken() {
     var OS_VERSION = '<?php echo(OS_VERSION); ?>';
     var PLUGIN_VERSION = '<?php echo(PLUGIN_VERSION); ?>';
 </script>
-<script src="/plugins/plexstreams/js/plex.js"></script>
+<script src="<?autov('/plugins/plexstreams/js/plex.js')?>"></script>
 <script>
   getServers('#hostcontainer', '<?php echo($cfg['HOST']) ?>');
 </script>

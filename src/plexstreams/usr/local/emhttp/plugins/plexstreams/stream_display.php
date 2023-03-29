@@ -273,7 +273,7 @@
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">' . _('Please provide server details under Settings -> Network Services -> Plex Streams or') . ' <a href="/Settings/PlexStreams">' . _('click here') .'</a></div></div>');
     }
 ?>
-<script src="/plugins/plexstreams/js/plex.js"></script>
+<script src="<?autov('/plugins/plexstreams/js/plex.js')?>"></script>
 <script>
     var title = $('title').html();
     $('title').html(title.split('/')[0] + '/Plex Streams');

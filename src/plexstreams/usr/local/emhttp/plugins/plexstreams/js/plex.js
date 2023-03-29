@@ -26,13 +26,12 @@ function updateDashboardStreamsNew() {
                         '<span class="w18" style="text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A' ) + '</p></span>' +
                     '</div').appendTo('#plexstreams_streams');
                     var node = $container[0];
-                    updateDuration(node, stream);
                 } else {
                     var node = $container[0];
                     $cells = $container.find('span');
                     $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
-                    updateDuration(node, stream);
                 }
+                updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
                 $(node).attr('prevStat', stream.state);
             });
@@ -74,10 +73,10 @@ function updateDashboardStreams() {
             var hostStreams = [];
             streams.forEach(function(stream) {
                 $container = $('#' + stream.id);
-                if (hostStreams[stream['@host']] === undefined) {
-                    hostStreams[stream['@host']] = 1;
+                if (hostStreams[stream['alias']] === undefined) {
+                    hostStreams[stream['alias']] = 1;
                 } else {
-                    hostStreams[stream['@host']] = hostStreams[stream['@host']]++;
+                    hostStreams[stream['alias']] = hostStreams[stream['alias']]++;
                 }
                 if ($container.length === 0) {
                     $container = $('<tr style="display:table-row;" id="' + stream.id + '">' +
@@ -87,15 +86,14 @@ function updateDashboardStreams() {
                         '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A') + '</p></td>' +
                     '</tr>').appendTo('#plexstreams_streams');
                     var node = $container[0];
-                    updateDuration(node, stream);
                 } else {
                     var node = $container[0];
                     $cells = $container.find('td');
                     $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
-                    updateDuration(node, stream);
                 }
                 $container.attr('updatedat', lastUpdate);
                 node.prevState = stream.state;
+                updateDuration(node, stream);
             });
             $('#stream_count_container').html('');
             for (var host in hostStreams) {
@@ -134,7 +132,7 @@ function updateFullStreamInfo() {
             var lastUpdate = currentDate.getTime();
             $streamHolder = $('#streams-container');
             if ($streamHolder.length === 0) {
-                $('#no-streams').replaceWith('<div id="streams-container"><ul></ul>');
+                $('.no_streams').replaceWith('<div id="streams-container"><ul></ul>');
                 $streamHolder = $('#streams-container ul');
             }
             streams.forEach(function(stream) {
@@ -177,7 +175,7 @@ function updateFullStreamInfo() {
             });
         } else {
             if ($('#streams-container').length > 0) {
-                $('#streams-container').replaceWith('<p style="text-align:center;font-style:italic;">' + _('There are currently no active streams') + '</p>');
+                $('#streams-container').replaceWith('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></div>');
             }
         }
     }).fail(function(jqXHR) {

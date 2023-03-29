@@ -96,7 +96,7 @@ p.plexstream-time {
     text-align: right;
 }
 </style>
-<script src="/plugins/plexstreams/js/plex.js"></script>
+<script src="<?autov('/plugins/plexstreams/js/plex.js')?>"></script>
 <script async>
 $(function() {
     // append data from the table into the correct one
