@@ -52,6 +52,7 @@ function updateDashboardStreamsNew() {
                 }
             });
         } else {
+            $('#stream_count_container').html('<span id="plexstreams_count">0</span> ' + _('Active Stream(s)') + '</span>');
             $('#plexstreams_streams').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></span></div>');
         }
     }).fail(function(jqXHR) {
@@ -112,6 +113,7 @@ function updateDashboardStreams() {
                 }
             });
         } else {
+            $('#stream_count_container').html('<span id="plexstreams_count">0</span> ' + _('Active Stream(s)') + '</span>');
             $('#plexstreams_streams').html('<tr class="no_streams"><td colspan="4" align="center" style="padding: 0 0 0 0;"><p style="text-align:center;font-style:italic;">' + _('There are currently no active streams') + '</p></td></tr>');
         }
     }).fail(function(jqXHR) {
