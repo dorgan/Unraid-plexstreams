@@ -33,7 +33,7 @@
 - Minor adjustment
 
 ###2023.03.29
-- Fix a bunch of issues for UnRaid versions < 6.12rc2
+- Fix a bunch of issues for UnRaid versions less than 6.12rc2
 
 ###2023.03.28b
 - Fixing bug with unRaid less than 6.12
