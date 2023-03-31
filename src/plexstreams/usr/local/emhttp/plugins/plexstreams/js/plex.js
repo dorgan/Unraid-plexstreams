@@ -16,7 +16,7 @@ function updateDashboardStreamsNew() {
                 if (hostStreams[stream['alias']] === undefined) {
                     hostStreams[stream['alias']] = 1;
                 } else {
-                    hostStreams[stream['alias']] = hostStreams[stream['alias']]++;
+                    hostStreams[stream['alias']] = hostStreams[stream['alias']] + 1;
                 }
                 if ($container.length === 0) {
                     $container = $('<div id="' + stream.id + '">' +
@@ -77,7 +77,7 @@ function updateDashboardStreams() {
                 if (hostStreams[stream['alias']] === undefined) {
                     hostStreams[stream['alias']] = 1;
                 } else {
-                    hostStreams[stream['alias']] = hostStreams[stream['alias']]++;
+                    hostStreams[stream['alias']] = hostStreams[stream['alias']] + 1;
                 }
                 if ($container.length === 0) {
                     $container = $('<tr style="display:table-row;" id="' + stream.id + '">' +
