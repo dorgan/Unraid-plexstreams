@@ -105,7 +105,7 @@ $mytiles[$pluginname]['column1'] =
     </tr>
     <tr>
         <td>            
-            <span class="w44">_(Name)_</span>
+            <span class="w36">_(Name)_</span>
             <span class="w18" align="center">_(Status)_</span>
             <span class="w18">_(User)_</span>
             <span class="w18" align="right">_(Time)_</span>
@@ -115,9 +115,7 @@ $mytiles[$pluginname]['column1'] =
         <td>
             <div id="plexstreams_streams">
                 <div id="retrieving_streams">
-                    <span class="w100">
-                        <p align="center" style="font-style:italic;text-align:center;">_(Retrieving Stream Data...)_</p>
-                    </span>
+                    <p align="center" style="font-style:italic;text-align:center;">_(Retrieving Stream Data...)_</p>
                 </div>
             </div>
         </td>

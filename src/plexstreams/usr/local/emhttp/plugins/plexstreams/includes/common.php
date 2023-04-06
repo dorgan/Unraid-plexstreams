@@ -258,6 +258,8 @@
                                 $currentPositionSeconds = floor($currentPositionInSeconds%60);
                                 $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                                 $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+                                $endSecondsFromNow = ceil($lengthInSeconds - $currentPositionInSeconds);
+                                $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                             } else {
                                 $duration = null;
                             }
@@ -305,6 +307,8 @@
                                 'location' => $video['Session']['@attributes']['location'],
                                 'address' => $video['Player']['@attributes']['address'],
                                 'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
+                                'endSecondsFromNow' => ceil($endSecondsFromNow),
+                                'endTime' => $endTime,
                                 'streamInfo' => []
                             ];
 
@@ -390,6 +394,8 @@
                                     $currentPositionSeconds = floor($currentPositionInSeconds%60);
                                     $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                                     $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+                                    $endSecondsFromNow = $lengthInSeconds - $currentPositionInSeconds;
+                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                                     $addr = str_replace('.', '_', $streams['shortHost']);
                                     $alias = '';
                                     if (isset($cfg['ALIAS-' . $addr])) {
@@ -429,6 +435,7 @@
                                         'location' => $audio['Session']['@attributes']['location'],
                                         'address' => $audio['Player']['@attributes']['address'],
                                         'bandwidth' => round((int)$audio['Session']['@attributes']['bandwidth'] / 1000, 1),
+                                        'endTime' => $endTime,
                                         'streamInfo' => []
                                     ];
                                     if ($mergedStream['location'] === null) {

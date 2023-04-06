@@ -20,10 +20,10 @@ function updateDashboardStreamsNew() {
                 }
                 if ($container.length === 0) {
                     $container = $('<div id="' + stream.id + '">' +
-                        '<span class="w44"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></span>' +
+                        '<span class="w36"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></span>' +
                         '<span class="w18" style="text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></span>' +
                         '<span class="w18" style="text-align:center;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</p></span>' +
-                        '<span class="w18" style="text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A' ) + '</p></span>' +
+                        '<span class="w18" style="text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay + ' (<span class="endTime">' + stream.endTime + '</span>)' : 'N/A' ) + '</p></span>' +
                     '</div').appendTo('#plexstreams_streams');
                     var node = $container[0];
                 } else {
@@ -215,6 +215,9 @@ function updateDuration(node, stream) {
         $hours.html(stream.currentPositionHours.toString().padStart(2, 0));
         $minutes.html(stream.currentPositionMinutes.toString().padStart(2, 0));
         $seconds.html(stream.currentPositionSeconds.toString().padStart(2, 0));
+    }
+    if (stream.endTime) {
+        $container.find('.endTime').text(stream.endTime);
     }
 }
 
