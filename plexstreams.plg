@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2023.03.31a">
+  <!ENTITY version    "2023.04.06a">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "60bc47a3f55d9ce4c4deb5a9a26dd5d5">
+  <!ENTITY md5        "1c019870eced51d73672e9a232ccdecb">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2023.04.06a
+- Add estimated end time to dashboard widget for unraid  6.12rc2+
+
 ###2023.03.31a
 - Bug fix for desktop widget when displaying stream count per server
 
