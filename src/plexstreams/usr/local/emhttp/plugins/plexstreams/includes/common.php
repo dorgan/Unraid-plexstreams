@@ -8,7 +8,7 @@
         $url = 'https://plex.tv/api/v2/geoip?ip_address=' . $ip;
         $resp = getUrl($url);
         if (isset($resp['@attributes'])) {
-            return $resp['@attributes']['city'] . ', ' . $resp['@attributes']['subdivision'] . ' ' . $resp['@attributes']['code'];
+            return $resp['@attributes']['city'] . ', ' . (isset($resp['@attributes']['subdivision']) ? $resp['@attributes']['subdivision'] . ' ' : '' ) . $resp['@attributes']['code'];
         }
     }
     function getServers($cfg) {
