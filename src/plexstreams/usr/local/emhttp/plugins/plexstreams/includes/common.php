@@ -103,16 +103,22 @@
         $streams = [];
         $schedules = [];
         foreach($hosts as $host) {
-            $streams[] = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .time();
-            $schedules[] = $host ."/media/subscriptions/scheduled?X-Plex-Token=" .$cfg['TOKEN'];
-            if (isset($_REQUEST['dbg'])) {
-                v_d($streams);
-                v_d($schedules);
+            if (isset($cfg['TOKEN']) && !empty($cfg['TOKEN'])) {
+                $streams[] = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] .'&_m=' .time();
+                $schedules[] = $host ."/media/subscriptions/scheduled?X-Plex-Token=" .$cfg['TOKEN'];
+                if (isset($_REQUEST['dbg'])) {
+                    v_d($streams);
+                    v_d($schedules);
+                }
             }
         }
         $combined = $streams;
         array_push($combined , ...$schedules);
-        $responses = getUrl($combined);
+        if (isset($cfg['TOKEN']) && !empty($cfg['TOKEN'])) {
+            $responses = getUrl($combined);
+        } else {
+            $responses = [];
+        }
 
         return $responses;
     }
