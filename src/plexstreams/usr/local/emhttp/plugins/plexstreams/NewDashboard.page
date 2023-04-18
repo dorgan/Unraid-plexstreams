@@ -92,7 +92,7 @@ p.plexstream-time {
         }
 </style>
 <?php
-$mytiles[$pluginname]['column1'] =
+$mytiles[$plugin]['column1'] =
 <<<EOT
 <tbody class="sortable" title="_(Plex Streams)_">
     <tr>

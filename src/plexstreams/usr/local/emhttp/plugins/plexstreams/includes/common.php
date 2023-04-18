@@ -261,9 +261,9 @@
                                 $currentPosition = floatval((int)$video['@attributes']['viewOffset']);
                                 $currentPositionInSeconds = $video['@attributes']['viewOffset'] / 1000;
                                 $currentPositionInMinutes = ceil($currentPositionInSeconds / 60);
-                                $currentPositionSeconds = floor($currentPositionInSeconds%60);
-                                $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
-                                $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
+                                $currentPositionSeconds = floor((int)$currentPositionInSeconds%60);
+                                $currentPositionMinutes = floor(((int)$currentPositionInSeconds%3600)/60);
+                                $currentPositionHours = floor(((int)$currentPositionInSeconds%86400)/3600);
                                 $endSecondsFromNow = ceil($lengthInSeconds - $currentPositionInSeconds);
                                 $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                             } else {
