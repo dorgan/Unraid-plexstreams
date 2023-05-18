@@ -234,21 +234,22 @@
                     $streams['Video'] = [$streams['Video']];
                 }
                 foreach($streams['Video'] as $idx=>$video) {
+                    
                     if (isset($video['Media']['@attributes'])) {
                         $video['Media'] = [$video['Media']];
                     }
                     foreach($video['Media'] as $media) {
                         if (isset($media['@attributes']['selected']) && $media['@attributes']['selected'] === '1') {
-                            if (!isset($media['@attributes']['channelCallSign'])) {
+                            if (!isset($media['@attributes']['origin'])) {
                                 $title = $video['@attributes']['title'] . (isset($video['@attributes']['year']) ? ' (' . $video['@attributes']['year'] . ')' : '' );
                                 if (isset($video['@attributes']['parentTitle'])) {
                                     $title = $video['@attributes']['parentTitle'] . ' - ' . $title;
                                 }
-                                if (isset($video['@attributes']['grandparentTitle'])) {
+                                if (isset($video['@attributes']['grandparentTitle']) && $video['@attributes']['grandparentTitle'] !== $title) {
                                     $title = $video['@attributes']['grandparentTitle'] . ' - ' . $title;
                                 }
                             } else  {
-                                $title = $media['@attributes']['channelCallSign'] . ' (' . $media['@attributes']['channelIdentifier'] .') - ' . $video['@attributes']['grandparentTitle'];
+                                $title = $video['@attributes']['title'];
                             }
                             if (isset($media['Part']['@attributes']['duration'])) {
                                 $duration = $media['Part']['@attributes']['duration'];
@@ -269,9 +270,14 @@
                             } else {
                                 $duration = null;
                             }
-                            $artThumb = $video['@attributes']['art'];
-                            if (isset($media['@attributes']['channelThumb'])) {
-                                $artThumb = $media['@attributes']['channelThumb'];
+                            if (isset($video['@attributes']['art'])) {
+                                $artThumb = $video['@attributes']['art'];
+                            } else {
+                                if (isset($media['@attributes']['channelThumb'])) {
+                                    $artThumb = $media['@attributes']['channelThumb'];
+                                } else {
+                                    $artThumb = '';
+                                }
                             }
 
                             $addr = str_replace('.', '_', $streams['shortHost']);
@@ -313,8 +319,8 @@
                                 'location' => $video['Session']['@attributes']['location'],
                                 'address' => $video['Player']['@attributes']['address'],
                                 'bandwidth' => round((int)$video['Session']['@attributes']['bandwidth'] / 1000, 1),
-                                'endSecondsFromNow' => ceil($endSecondsFromNow),
-                                'endTime' => $endTime,
+                                'endSecondsFromNow' => (isset($endSecondsFromNow) ? ceil($endSecondsFromNow) : null),
+                                'endTime' => (isset($endTime) ? $endTime : null),
                                 'streamInfo' => []
                             ];
 

@@ -234,7 +234,7 @@
                                     <div class="details">
                                         <ul class="detail-list">
                                             <li><div class="label">' . _('Server') . '</div><div class="value">' . (!empty($stream['alias']) ? $stream['alias'] : $stream['address']) .'</div></li>
-                                            <li><div class="label">' . _('Length') . '</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>
+                                            ' . (isset($stream['lengthDisplay']) ? '<li><div class="label">' . _('Length') . '</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>' : '' ) .'
                                             <li><div class="label">' . _('Stream') . '</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
                                             <li><div class="label">' . _('Location') . '</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>
                                             <li><div class="label">' . _('Bandwidth') . '</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
