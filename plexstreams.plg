@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2023.05.18">
+  <!ENTITY version    "2023.05.23">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "0bca901afa674ce51e6b5b371793ba86">
+  <!ENTITY md5        "0c14af3ab3037da2dfe34fe9a3334a7b">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,9 @@
 
     <CHANGES>
     ##&name;
+###2023.05.23
+- Adding a fix to surpress issues during plugin install
+
 ###2023.05.18
 - Add more fixes for PHP notices
 - Fix for display of Live TV streams
@@ -283,15 +286,15 @@
             WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
             WIDGET_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_WIDGET"]);'`
             if [[ -f "$WIDGET_OFF_FILE" || "$WIDGET_SETTING" == "0" ]]; then
-                rm /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
-                mv /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+                rm -f /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
+                mv -f /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
             fi
             
             NAV_OFF=/usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
             NAV_SETTING=`php -r 'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg", false)["DISPLAY_NAV"]);'`
             if [[ -f "$NAV_OFF" || "$NAV_SETTING" == "0" ]]; then
-                rm /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
-                mv /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+                rm -f /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
+                mv -f /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
             fi
 
             echo ""
