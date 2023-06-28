@@ -3,7 +3,7 @@
 <!DOCTYPE PLUGIN [
   <!ENTITY name       "plexstreams">
   <!ENTITY author     "Donald Organ">
-  <!ENTITY version    "2023.05.23">
+  <!ENTITY version    "2023.06.28">
   <!ENTITY launch     "Settings/PlexStreams">
   <!ENTITY branch     "master">
   <!ENTITY gitURL     "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -12,7 +12,7 @@
   <!ENTITY emhttp     "/usr/local/emhttp/plugins/&name;">
   <!ENTITY plgPATH    "/boot/config/plugins/&name;">
   <!ENTITY plgNAME    "&name;-&version;-x86_64-1">
-  <!ENTITY md5        "0c14af3ab3037da2dfe34fe9a3334a7b">
+  <!ENTITY md5        "ab4f161420d69e40d8d8c7dee5dd73d4">
 ]>
 
 <PLUGIN  name="&name;"
@@ -26,6 +26,10 @@
 
     <CHANGES>
     ##&name;
+###2023.06.28
+- Making end time respect time display settings
+- Fix for deprecated warning
+
 ###2023.05.23
 - Adding a fix to surpress issues during plugin install
 

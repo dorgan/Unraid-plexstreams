@@ -11,6 +11,7 @@
             return $resp['@attributes']['city'] . ', ' . (isset($resp['@attributes']['subdivision']) ? $resp['@attributes']['subdivision'] . ' ' : '' ) . $resp['@attributes']['code'];
         }
     }
+
     function getServers($cfg) {
         $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
         $url2 = 'https://plex.tv/api/resources?X-Plex-Token=' .$cfg['TOKEN'] . ($cfg['FORCE_PLEX_HTTPS'] === '1' ? '&includeHttps=1' : '');
@@ -210,6 +211,7 @@
     }
 
     function mergeStreams($allStreams, $cfg) {
+        global $display;
         $mergedStreams = [];
         
         $videoStreams = [];
@@ -217,7 +219,7 @@
         foreach($allStreams as $idx=>$details) {
             $urlParts = parse_url($details['url']);
             if ($urlParts !== false) {
-                $source = $details['content'];
+                $source = (is_array($details['content'])) ? $details['content'] : [];
                 $source['@host'] = $urlParts['scheme'] . '://' . $urlParts['host'] . ':' . $urlParts['port'];
                 $source['shortHost'] = $urlParts['host'];
                 if (stripos($idx, 'streams-') !== false) {
@@ -266,7 +268,11 @@
                                 $currentPositionMinutes = floor(((int)$currentPositionInSeconds%3600)/60);
                                 $currentPositionHours = floor(((int)$currentPositionInSeconds%86400)/3600);
                                 $endSecondsFromNow = ceil($lengthInSeconds - $currentPositionInSeconds);
-                                $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                if ($display['time'] == '%R') {
+                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                } else {
+                                    $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                }
                             } else {
                                 $duration = null;
                             }
@@ -407,7 +413,11 @@
                                     $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                                     $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
                                     $endSecondsFromNow = $lengthInSeconds - $currentPositionInSeconds;
-                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                    if ($display['time'] == '%R') {
+                                        $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                    } else {
+                                        $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                    }
                                     $addr = str_replace('.', '_', $streams['shortHost']);
                                     $alias = '';
                                     if (isset($cfg['ALIAS-' . $addr])) {
