@@ -269,9 +269,9 @@
                                 $currentPositionHours = floor(((int)$currentPositionInSeconds%86400)/3600);
                                 $endSecondsFromNow = ceil($lengthInSeconds - $currentPositionInSeconds);
                                 if ($display['time'] == '%R') {
-                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
-                                } else {
                                     $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                } else {
+                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                                 }
                             } else {
                                 $duration = null;
@@ -414,9 +414,9 @@
                                     $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
                                     $endSecondsFromNow = $lengthInSeconds - $currentPositionInSeconds;
                                     if ($display['time'] == '%R') {
-                                        $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
-                                    } else {
                                         $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                    } else {
+                                        $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                                     }
                                     $addr = str_replace('.', '_', $streams['shortHost']);
                                     $alias = '';
