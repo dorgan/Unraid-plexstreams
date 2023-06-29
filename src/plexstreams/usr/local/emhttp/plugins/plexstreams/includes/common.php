@@ -212,8 +212,8 @@
 
     function mergeStreams($allStreams, $cfg) {
         global $display;
+
         $mergedStreams = [];
-        
         $videoStreams = [];
         $schedules = [];
         foreach($allStreams as $idx=>$details) {
@@ -268,10 +268,10 @@
                                 $currentPositionMinutes = floor(((int)$currentPositionInSeconds%3600)/60);
                                 $currentPositionHours = floor(((int)$currentPositionInSeconds%86400)/3600);
                                 $endSecondsFromNow = ceil($lengthInSeconds - $currentPositionInSeconds);
-                                if ($display['time'] == '%R') {
+                                
+                                $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                if ($display['time'] == '%R' && $display['date'] != '%c') {
                                     $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
-                                } else {
-                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                                 }
                             } else {
                                 $duration = null;
@@ -413,10 +413,9 @@
                                     $currentPositionMinutes = floor(($currentPositionInSeconds%3600)/60);
                                     $currentPositionHours = floor(($currentPositionInSeconds%86400)/3600);
                                     $endSecondsFromNow = $lengthInSeconds - $currentPositionInSeconds;
-                                    if ($display['time'] == '%R') {
+                                    $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
+                                    if ($display['time'] == '%R' && $display['date'] != '%c') {
                                         $endTime = date('H:i', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
-                                    } else {
-                                        $endTime = date('h:i A', strtotime('+ ' . $endSecondsFromNow . ' seconds'));
                                     }
                                     $addr = str_replace('.', '_', $streams['shortHost']);
                                     $alias = '';

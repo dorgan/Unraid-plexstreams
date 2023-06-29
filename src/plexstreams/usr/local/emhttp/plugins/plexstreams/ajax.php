@@ -3,10 +3,15 @@
     include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
     
     header('Content-Type: application/json');
+    global $display;
 
     $mergedStreams = [];
     if (!empty($cfg['TOKEN'])) {
         if ($cfg['HOST'] !== '' || $cfg['CUSTOM_SERVERS'] !== '') {
+            $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
+            require_once "$docroot/webGui/include/Wrappers.php";
+            extract(parse_plugin_cfg('dynamix',true));
+
             $streams = getStreams($cfg);
             $mergedStreams = mergeStreams($streams, $cfg);
             
