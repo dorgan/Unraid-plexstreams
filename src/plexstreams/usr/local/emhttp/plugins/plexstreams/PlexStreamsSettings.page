@@ -88,7 +88,7 @@ function clearToken() {
 <input type="submit" value="SAVE"> <input type="button" value="_(Remove Token)_" onclick="clearToken()"/>
 </form>
 <script>
-    var OS_VERSION = '<?php echo(OS_VERSION); ?>';
+    var OS_VERSION = '<?php echo($GLOBALS['unRaidSettings']['version']); ?>';
     var PLUGIN_VERSION = '<?php echo(PLUGIN_VERSION); ?>';
 </script>
 <script src="<?autov('/plugins/plexstreams/js/plex.js')?>"></script>
