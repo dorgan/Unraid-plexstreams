@@ -5,12 +5,7 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
 ---
 <?php
     $plugin = "plexstreams";
-    $translations = file_exists("$docroot/webGui/include/Translations.php");
-    require_once "$docroot/plugins/$plugin/includes/Legacy.php";
 ?>
-<?if (!$translations || isset($_GET['forcelegacy'])):?>
-<?eval('?>'.parse_file("$docroot/plugins/$plugin/Legacy/Dashboard.page"))?>
-<?else:?>
 ---
 <?php
     $dashboard_widget_pos = 1;
@@ -162,4 +157,3 @@ $(function() {
     }, 300);
 });
 </script>
-<?endif;?>

@@ -4,17 +4,14 @@ Tag="film"
 ---
 <?php
     $plugin = "plexstreams";
-    $translations = file_exists("$docroot/webGui/include/Translations.php");
-    require_once "$docroot/plugins/$plugin/includes/Legacy.php";
 ?>
-<?if (!$translations):?>
-<?eval('?>'.parse_file("$docroot/plugins/$plugin/Legacy/Settings.page"))?>
-<?else:?>
 ---
 <link type="text/css" rel="stylesheet" href="/plugins/plexstreams/spinner.css">
 <?php
 include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
 include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
+
+global $serverTypes;
 
 if (!isset($cfg['DISPLAY_WIDGET'])) {
     $cfg['DISPLAY_WIDGET'] = "1";
@@ -22,14 +19,6 @@ if (!isset($cfg['DISPLAY_WIDGET'])) {
 
 if (!isset($cfg['DISPLAY_NAV'])) {
     $cfg['DISPLAY_NAV'] = "1";
-}
-
-if (!isset($cfg['FORCE_PLEX_HTTPS'])) {
-    $cfg['FORCE_PLEX_HTTPS'] = "0";
-}
-
-if (!isset($cfg['CUSTOM_SERVERS'])) {
-    $cfg['CUSTOM_SERVERS'] = "";
 }
 
 $pluginPath = '/usr/local/emhttp/plugins/plexstreams/';
@@ -40,23 +29,39 @@ if ($cfg['DISPLAY_NAV'] === '0' && file_exists($pluginPath . 'Plex_Streams.page'
     rename($pluginPath .'Plex_Streams.page.off', $pluginPath .'Plex_Streams.page');
 }
 
-if ($cfg['DISPLAY_WIDGET'] === '0' && file_exists($pluginPath . 'PlexStreams_dashboard.page')) {
-    //rename($pluginPath .'PlexStreams_dashboard.page', $pluginPath .'PlexStreams_dashboard.page.off');
-} else if ($cfg['DISPLAY_WIDGET'] === '1' && file_exists($pluginPath . 'PlexStreams_dashboard.page.off')) {
-    //rename($pluginPath .'PlexStreams_dashboard.page.off', $pluginPath .'PlexStreams_dashboard.page');
-}
 ?>
 
 <script>
-function clearToken() {
-    document.getElementById('plex-token').value = '';
-    document.getElementById('plexstreams_settings').submit();
+function clearToken(tokenIndex) {
+    document.getElementById('plex-token' + tokenIndex).value = '';
+    document.getElementById('plexstreams_settings' + tokenIndex).submit();
 }
 </script>
 <form markdown="1" name="plexstreams_settings" id="plexstreams_settings" method="POST" action="/update.php" target="progressFrame">
 <input type="hidden" name="#file" value="plexstreams/plexstreams.cfg" />
 <input type="hidden" id="COMMAND" name="#command" value="" />
 <input type="hidden" id="HOST" name="HOST" value="<?php echo($cfg['HOST']); ?>" />
+
+<?php
+foreach($serverTypes as $serverType) {
+    $typeIdx = strtolower($serverType);
+    echo <<<EOF
+        <fieldset id="{$typeIdx}-servers">
+            <legend>{$serverType}</legend>
+            <button class="psAddServerIcon" onclick="addServer('{$typeIdx}');">+ Add Server</button>
+    EOF;
+    if (isset($cfg[$typeIdx])) {
+        foreach($cfg[$typeIdx] as $mediaServerSettings) {
+            $server = new MediaServer($mediaServerSettings);
+        }
+    }
+    echo <<<EOF
+        </fieldset>
+    EOF;
+}
+?>
+
+
 <input type="button" value="_(Get Plex Token)_" style="margin-right:0px;" onclick="PlexOAuth(function(token){document.getElementById('plex-token').value = token;});"/>
 <input type="input" id="plex-token" name="TOKEN" value="<?php echo($cfg['TOKEN']) ?>" readonly="true"  style="height:25px;padding:5px;"/> 
 
@@ -95,4 +100,3 @@ function clearToken() {
 <script>
   getServers('#hostcontainer', '<?php echo($cfg['HOST']) ?>');
 </script>
-<?endif;?>
