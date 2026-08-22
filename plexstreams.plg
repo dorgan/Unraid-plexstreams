@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22c">
+    <!ENTITY version "2026.08.22d">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "198210ce5a71f45124c5816f47b71749">
+    <!ENTITY md5 "3e307a5a646ed33a6840e431092af8e9">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,21 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.22d
+        - feeat: Enhance PlexStreams Dashboard with Live TV and Server Details
+        - feat: enhance user display in stream dashboard with unknown user handling and styling
+        - fix: Updated the JavaScript logic in plex.js to improve stream display, including live
+        status indicators and enhanced quality labels.
+        - feat: Introduced new functions for better handling of connection and client labels, as
+        well as episode information.
+        - feat: Added server details fetching functionality in server_details.php, ensuring server
+        information is dynamically loaded and displayed.
+        - feat: Enhanced the CSS in stream_display.php for improved visual presentation of server
+        details, including transitions and hover effects.
+        - feat: Implemented animations for new and exiting stream cards to enhance user experience.
+        - fix: Improved handling of empty states in the stream display to provide clearer messaging
+        when no streams are active.
+
         ###2026.08.22c
         - feat: Add Server details to the plex streams page
         - feat: enhance user display in stream dashboard with unknown user handling and styling
