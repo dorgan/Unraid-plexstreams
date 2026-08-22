@@ -30,6 +30,15 @@ function renderHostStreamCounts(hostStreams) {
     });
 }
 
+function formatPlaybackTime(stream, includeEndTime) {
+    if (!Number.isFinite(stream.currentPositionHours) || !Number.isFinite(stream.currentPositionMinutes) || !Number.isFinite(stream.currentPositionSeconds)) {
+        return 'N/A';
+    }
+
+    var time = '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span> / ' + (stream.lengthDisplay || 'N/A');
+    return includeEndTime && stream.endTime ? time + ' (<span class="endTime">' + stream.endTime + '</span>)' : time;
+}
+
 function updateDashboardStreamsNew() {
     return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
@@ -44,7 +53,7 @@ function updateDashboardStreamsNew() {
                     var videoDetails = stream.streamInfo.video && stream.streamInfo.video['@attributes'];
                     var quality = videoDetails ? videoDetails.height || videoDetails.displayTitle : '';
                     var location = stream.location === 'lan' ? _('LAN') : stream.locationDisplay;
-                    var playbackTime = stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span> / ' + stream.lengthDisplay + ' (<span class="endTime">' + stream.endTime + '</span>)' : 'N/A';
+                    var playbackTime = formatPlaybackTime(stream, true);
                     $container = $('<div class="plexstreams-modern-stream" id="' + stream.id + '">' +
                         '<div class="plexstreams-modern-poster" style="background-image:url(' + stream.thumbUrl + ');"></div>' +
                         '<div class="plexstreams-modern-content">' +
@@ -114,7 +123,7 @@ function updateDashboardStreams() {
                         '<td width="40%" style="padding: 0px;"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></td>' +
                         '<td align="center" style="padding: 0px;text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></td>' +
                         '<td align="center" style="padding: 0px;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</td>' +
-                        '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay : 'N/A') + '</p></td>' +
+                        '<td align="center" style="padding: 0px;text-align:right;"><p class="plexstream-time">' + formatPlaybackTime(stream, false) + '</p></td>' +
                     '</tr>').appendTo('#plexstreams_streams');
                     var node = $container[0];
                 } else {
@@ -152,21 +161,139 @@ function uCWord(str) {
     return str ? str.charAt(0).toUpperCase() + str.slice(1) : '';
 }
 
+function getServerGroupId(host) {
+    return 'plexstreams-server-' + String(host || 'unknown').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
+}
+
+function getServerActivitySummary(server, streams) {
+    var counts = { directPlay: 0, directStream: 0, transcode: 0, hardwareTranscode: 0, liveTv: 0, remote: 0 };
+    var bandwidth = 0;
+
+    streams.forEach(function(stream) {
+        var decision = String(stream.streamDecision || '').toLowerCase().replace(/\s/g, '');
+        bandwidth += Number(stream.bandwidth || 0);
+        if (decision === 'directplay') {
+            counts.directPlay += 1;
+        } else if (decision === 'directstream') {
+            counts.directStream += 1;
+        } else if (decision === 'transcode') {
+            counts.transcode += 1;
+            if (stream.streamInfo.video && String(stream.streamInfo.video['@attributes'].decision || '').indexOf('(HW)') !== -1) {
+                counts.hardwareTranscode += 1;
+            }
+        }
+        if (stream.type === 'video' && !Number.isFinite(stream.currentPositionHours)) {
+            counts.liveTv += 1;
+        }
+        if (String(stream.location || '').toLowerCase() !== 'lan') {
+            counts.remote += 1;
+        }
+    });
+
+    var summary = [streams.length + ' ' + _('Active')];
+    if (counts.directPlay) {
+        summary.push(_('Direct Play') + ' ' + counts.directPlay);
+    }
+    if (counts.directStream) {
+        summary.push(_('Direct Stream') + ' ' + counts.directStream);
+    }
+    if (counts.transcode) {
+        summary.push(_('Transcode') + (counts.hardwareTranscode ? ' (HW)' : '') + ' ' + counts.transcode);
+    }
+    if (counts.liveTv) {
+        summary.push(_('Live TV') + ' ' + counts.liveTv);
+    }
+    if (counts.remote) {
+        summary.push(_('Remote') + ' ' + counts.remote);
+    }
+    summary.push(bandwidth.toFixed(1) + ' Mbps');
+    return summary.join(' · ');
+}
+
+function renderFullStreamServerGroups(serverStatuses, streams) {
+    var $container = $('#streams-container');
+    if ($container.length === 0) {
+        $('#streams-root').html('<div id="streams-container"></div>');
+        $container = $('#streams-container');
+    }
+
+    var servers = {};
+    (serverStatuses || []).forEach(function(server) {
+        servers[server.host] = server;
+    });
+    streams.forEach(function(stream) {
+        if (!servers[stream.serverHost]) {
+            servers[stream.serverHost] = {
+                host: stream.serverHost,
+                alias: stream.alias || stream.serverHost,
+                name: stream.alias || stream.serverHost,
+                online: true,
+                version: '',
+                claimed: false,
+                liveTv: false,
+                tuners: false
+            };
+        }
+    });
+
+    Object.keys(servers).forEach(function(host) {
+        var server = servers[host];
+        var groupId = getServerGroupId(host);
+        var $group = $('#' + groupId);
+        if ($group.length === 0) {
+            $group = $('<section class="plexstreams-server-group" id="' + groupId + '"><header class="plexstreams-server-header"><div class="plexstreams-server-identity"></div><div class="plexstreams-server-summary"></div></header><ul></ul></section>').appendTo($container);
+        }
+
+        var serverStreams = streams.filter(function(stream) {
+            return stream.serverHost === host;
+        });
+        var state = server.online ? _('Online') : _('Unavailable');
+        var facts = [state];
+        if (server.version) {
+            facts.push('PMS ' + server.version);
+        }
+        if (server.online && server.claimed !== null) {
+            facts.push(server.claimed ? _('Claimed') : _('Unclaimed'));
+        }
+        if (server.liveTv) {
+            facts.push(_('Live TV'));
+        }
+        $group.find('.plexstreams-server-identity').html('<strong>' + $('<div>').text(server.name).html() + '</strong><span>' + facts.join(' · ') + '</span>');
+        $group.find('.plexstreams-server-summary').text(getServerActivitySummary(server, serverStreams));
+    });
+}
+
+function getFullStreamHolder(host) {
+    return $('#' + getServerGroupId(host) + ' > ul');
+}
+
 function updateFullStreamInfo() {
-    return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+    return $.when(
+        $.ajax('/plugins/plexstreams/ajax.php'),
+        $.ajax('/plugins/plexstreams/server_status.php')
+    ).done(function(streamResponse, serverResponse){
+        var streams = streamResponse[0];
+        var serverStatuses = serverResponse[0] || [];
         if (streams.length > 0) {
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
-            var $streamHolder = $('#streams-container ul');
-            if ($streamHolder.length === 0) {
-                $('#streams-root').html('<div id="streams-container"><ul></ul></div>');
-                $streamHolder = $('#streams-container ul');
-            }
+            renderFullStreamServerGroups(serverStatuses, streams);
             $('#hover-message').hide();
             streams.forEach(function(stream) {
+                var $streamHolder = getFullStreamHolder(stream.serverHost);
+                var hasPlaybackTimeline = Number.isFinite(stream.currentPositionHours) && Number.isFinite(stream.currentPositionMinutes) && Number.isFinite(stream.currentPositionSeconds);
+                if (!hasPlaybackTimeline) {
+                    stream = $.extend({}, stream, {
+                        currentPositionHours: 0,
+                        currentPositionMinutes: 0,
+                        currentPositionSeconds: 0,
+                        lengthDisplay: _('Live')
+                    });
+                }
                 var node = $('#' + stream.id + '.stream-container')[0];
                 var $container = $(node);
                 if ($container.length > 0) {
+                    $container.appendTo($streamHolder);
                     var $status = $container.find('.plexstreams-card-status i, .status i');
                     var $progressBar = $container.find('.progressBar');
                     $progressBar.css({
@@ -204,6 +331,10 @@ function updateFullStreamInfo() {
                     $container.find('.position').remove();
                     $('<div class="playback-status"><div class="position">' + playbackTime + '</div><div class="ends-at">' + _('Ends') + ' <span class="endTime">' + (stream.endTime || '') + '</span></div></div>').appendTo($footer);
                 }
+                $container.find('.ends-at').toggle(hasPlaybackTimeline);
+                if (!hasPlaybackTimeline) {
+                    $container.find('.playback-status .position').text(_('Live'));
+                }
                 var $streamUser = $container.find('.stream-user');
                 if ($streamUser.length === 0) {
                     $streamUser = $('<span class="stream-user"></span>').appendTo($footer);
@@ -227,7 +358,9 @@ function updateFullStreamInfo() {
             });
         } else {
             $('#hover-message').hide();
-            $('#streams-root').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></div>');
+            renderFullStreamServerGroups(serverStatuses, streams);
+            $('.plexstreams-empty-state').remove();
+            $('#streams-container').prepend('<div class="no_streams plexstreams-empty-state"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></div>');
         }
     }).fail(function(jqXHR) {
         var message = jqXHR.status === 500 ? _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') : _('Unable to retrieve stream information.');

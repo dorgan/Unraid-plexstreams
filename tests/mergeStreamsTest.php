@@ -76,6 +76,29 @@ $allStreams = [
                 ]
             ]
         ]
+    ],
+    'streams-2' => [
+        'url' => 'http://plex.test:32400/status/sessions',
+        'content' => [
+            'Video' => [
+                '@attributes' => [
+                    'title' => 'Live Channel',
+                    'viewOffset' => '0',
+                    'key' => '/library/metadata/300',
+                    'grandparentThumb' => 'https://metadata-static.plex.tv/channel.jpg'
+                ],
+                'Player' => ['@attributes' => ['product' => 'Plex Web', 'state' => 'playing', 'address' => '192.168.1.12']],
+                'User' => ['@attributes' => ['title' => 'Test User', 'thumb' => 'https://plex.test/avatar']],
+                'Session' => ['@attributes' => ['location' => 'lan', 'bandwidth' => '1800']],
+                'Media' => [
+                    '@attributes' => ['selected' => '1', 'id' => 'live-media'],
+                    'Part' => [
+                        '@attributes' => ['decision' => 'directplay'],
+                        'Stream' => ['@attributes' => ['streamType' => '2', 'decision' => 'direct play']]
+                    ]
+                ]
+            ]
+        ]
     ]
 ];
 
@@ -97,12 +120,15 @@ assertSameValue(true, isConfiguredPlexHost('https://plex.example:32400/', ['HOST
 assertSameValue(false, isConfiguredPlexHost('https://external.example', ['HOST' => 'https://plex.example:32400']), 'external image host');
 assertSameValue('https://plex.example:32400/library/metadata/1/thumb?X-Plex-Token=token', buildPlexImageUrl('https://plex.example:32400', '/library/metadata/1/thumb', 'token'), 'image URL');
 assertSameValue(false, buildPlexImageUrl('https://plex.example:32400', 'https://external.example/image', 'token'), 'absolute image URL');
+assertSameValue('/plugins/plexstreams/getImage.php?img=%2Flibrary%2Fmetadata%2F1%2Fthumb&host=https%3A%2F%2Fplex.example%3A32400', buildStreamImageUrl('https://plex.example:32400', '/library/metadata/1/thumb'), 'relative stream image URL');
+assertSameValue('https://metadata-static.plex.tv/channel.jpg', buildStreamImageUrl('https://plex.example:32400', 'https://metadata-static.plex.tv/channel.jpg'), 'external channel image URL');
 assertSameValue('Live Event', getVideoTitle(
     ['@attributes' => ['title' => 'Live Event', 'parentTitle' => 'Channel']],
     ['@attributes' => ['origin' => 'livetv']]
 ), 'live-origin video title');
-assertSameValue(2, count($streams), 'stream count');
+assertSameValue(3, count($streams), 'stream count');
 assertSameValue('Test Plex', $video['alias'], 'video alias');
+assertSameValue('http://plex.test:32400', $video['serverHost'], 'video server host');
 assertSameValue('Example Show - Season 1 - Episode (2026)', $video['title'], 'video title');
 assertSameValue('transcode', $video['streamDecision'], 'video stream decision');
 assertSameValue('playing', $video['state'], 'video state');
@@ -114,5 +140,20 @@ assertSameValue('Direct Play', $audio['streamDecision'], 'audio stream decision'
 assertSameValue('pause', $audio['stateIcon'], 'audio state icon');
 assertSameValue('LAN (192.168.1.11)', $audio['locationDisplay'], 'audio location');
 assertSameValue('direct play', $audio['streamInfo']['audio']['@attributes']['decision'], 'audio decision');
+
+$live = null;
+foreach ($streams as $stream) {
+    if ($stream['title'] === 'Live Channel') {
+        $live = $stream;
+        break;
+    }
+}
+if ($live === null) {
+    throw new RuntimeException('Missing Live TV stream.');
+}
+assertSameValue(null, $live['currentPositionHours'], 'live timing hours');
+assertSameValue(null, $live['lengthDisplay'], 'live timing display');
+assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['thumbUrl'], 'live channel thumbnail fallback');
+assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['artUrl'], 'live channel background fallback');
 
 echo "mergeStreams fixtures passed\n";

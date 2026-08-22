@@ -156,6 +156,67 @@
         return rtrim($host, '/') . $imagePath . (strpos($imagePath, '?') === false ? '?' : '&') . 'X-Plex-Token=' . urlencode($token);
     }
 
+    function buildStreamImageUrl($host, $imagePath) {
+        if (!is_string($imagePath) || $imagePath === '') {
+            return '';
+        }
+
+        $parts = parse_url($imagePath);
+        if ($parts !== false && isset($parts['scheme']) && in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return $imagePath;
+        }
+
+        return '/plugins/plexstreams/getImage.php?img=' . urlencode($imagePath) . '&host=' . urlencode($host);
+    }
+
+    function getLiveTvChannelThumb($source, $cfg, $ratingKey) {
+        static $cache = null;
+        $cacheFile = '/boot/config/plugins/plexstreams/livetv-art-cache.json';
+        $cacheKey = ($source['@host'] ?? '') . ':' . $ratingKey;
+
+        if ($ratingKey === '' || empty($source['@host']) || empty($cfg['TOKEN'])) {
+            return '';
+        }
+
+        if ($cache === null) {
+            $savedCache = @file_get_contents($cacheFile);
+            $cache = is_string($savedCache) ? json_decode($savedCache, true) : [];
+            if (!is_array($cache)) {
+                $cache = [];
+            }
+        }
+
+        if (isset($cache[$cacheKey]) && $cache[$cacheKey]['expiresAt'] >= time()) {
+            return $cache[$cacheKey]['thumb'];
+        }
+
+        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey) . '?X-Plex-Token=' . urlencode($cfg['TOKEN']);
+        $metadata = getXml($url, 2);
+        $attributes = $metadata['MediaContainer']['Metadata']['@attributes']
+            ?? $metadata['MediaContainer']['Video']['@attributes']
+            ?? $metadata['Metadata']['@attributes']
+            ?? $metadata['Video']['@attributes']
+            ?? [];
+        $thumb = $attributes['channelThumb'] ?? '';
+
+        if ($thumb === '') {
+            $mediaItems = $metadata['MediaContainer']['Video']['Media'] ?? $metadata['Video']['Media'] ?? [];
+            foreach (normalizeXmlList($mediaItems) as $mediaItem) {
+                $thumb = $mediaItem['@attributes']['channelThumb'] ?? '';
+                if ($thumb !== '') {
+                    break;
+                }
+            }
+        }
+
+        if ($thumb !== '') {
+            $cache[$cacheKey] = ['expiresAt' => time() + 3600, 'thumb' => $thumb];
+            @file_put_contents($cacheFile, json_encode($cache), LOCK_EX);
+        }
+
+        return $thumb;
+    }
+
     function setPluginPageVisibility($pagePath, $visible) {
         $disabledPath = $pagePath . '.off';
         if (!$visible && file_exists($pagePath)) {
@@ -182,6 +243,62 @@
         $mergedStreams = mergeStreams(getStreams($cfg), $cfg);
         debugLog($cfg, 'Retrieved active Plex streams', ['streams' => $mergedStreams]);
         return $mergedStreams;
+    }
+
+    function getServerHost($url) {
+        $urlParts = parse_url($url);
+        if ($urlParts === false || !isset($urlParts['scheme'], $urlParts['host'])) {
+            return '';
+        }
+
+        return $urlParts['scheme'] . '://' . $urlParts['host'] . (isset($urlParts['port']) ? ':' . $urlParts['port'] : '');
+    }
+
+    function getServerSummaries($cfg) {
+        $servers = [];
+        $urls = [];
+        $identityUrls = [];
+
+        foreach (getConfiguredHosts($cfg) as $host) {
+            $normalizedHost = rtrim($host, '/');
+            $shortHost = parse_url($normalizedHost, PHP_URL_HOST) ?: $normalizedHost;
+            $servers[$normalizedHost] = [
+                'host' => $normalizedHost,
+                'alias' => getServerAlias($shortHost, $cfg) ?: $shortHost,
+                'name' => getServerAlias($shortHost, $cfg) ?: $shortHost,
+                'online' => false,
+                'version' => '',
+                'claimed' => null,
+                'liveTv' => false,
+                'tuners' => false
+            ];
+            $urls[] = $normalizedHost . '/?X-Plex-Token=' . urlencode($cfg['TOKEN']);
+            $identityUrls[] = $normalizedHost . '/identity?X-Plex-Token=' . urlencode($cfg['TOKEN']);
+        }
+
+        foreach (getXmlBatch($urls, $cfg) as $response) {
+            $host = getServerHost($response['url']);
+            if ($host === '' || !isset($servers[$host])) {
+                continue;
+            }
+
+            $attributes = $response['content']['@attributes'] ?? [];
+            $servers[$host]['name'] = $attributes['friendlyName'] ?? $servers[$host]['name'];
+            $servers[$host]['online'] = true;
+            $servers[$host]['version'] = $attributes['version'] ?? '';
+            $servers[$host]['claimed'] = ($attributes['claimed'] ?? '') === '1';
+            $servers[$host]['liveTv'] = (int)($attributes['livetv'] ?? 0) > 0;
+            $servers[$host]['tuners'] = ($attributes['allowTuners'] ?? '') === '1';
+        }
+
+        foreach (getXmlBatch($identityUrls, $cfg) as $response) {
+            $host = getServerHost($response['url']);
+            if ($host !== '' && isset($servers[$host])) {
+                $servers[$host]['claimed'] = ($response['content']['@attributes']['claimed'] ?? '') === '1';
+            }
+        }
+
+        return array_values($servers);
     }
 
     function parseXml($response) {
@@ -396,6 +513,7 @@
 
         return [
             '@host' => $source['@host'],
+            'serverHost' => $source['@host'],
             'alias' => getServerAlias($source['shortHost'], $cfg),
             'id' => $media['@attributes']['id'],
             'type' => $type,
@@ -404,8 +522,8 @@
             'titleString' => $titleString,
             'key' => $item['@attributes']['key'],
             'duration' => $duration,
-            'artUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($artPath) . '&host=' . urlencode($source['@host']),
-            'thumbUrl' => '/plugins/plexstreams/getImage.php?img=' . urlencode($thumbPath) . '&host=' . urlencode($source['@host']),
+            'artUrl' => buildStreamImageUrl($source['@host'], $artPath),
+            'thumbUrl' => buildStreamImageUrl($source['@host'], $thumbPath),
             'user' => $user['title'],
             'userAvatar' => $user['thumb'],
             'state' => $player['state'],
@@ -480,15 +598,18 @@
                             $title = getVideoTitle($video, $media);
                             $duration = $media['Part']['@attributes']['duration'] ?? null;
                             $timing = formatPlaybackTiming($duration, $video['@attributes']['viewOffset'], $display, true, 0);
-                            if (isset($video['@attributes']['art'])) {
-                                $artThumb = $video['@attributes']['art'];
-                            } else {
-                                if (isset($media['@attributes']['channelThumb'])) {
-                                    $artThumb = $media['@attributes']['channelThumb'];
-                                } else {
-                                    $artThumb = '';
-                                }
+                            $channelThumb = $video['@attributes']['channelThumb']
+                                ?? $media['@attributes']['channelThumb']
+                                ?? $media['Part']['@attributes']['channelThumb']
+                                ?? '';
+                            if ($channelThumb === '' && $duration === null) {
+                                $channelThumb = $video['@attributes']['grandparentThumb']
+                                    ?? $video['@attributes']['thumb']
+                                    ?? '';
+                                $metadataThumb = getLiveTvChannelThumb($streams, $cfg, $video['@attributes']['ratingKey'] ?? '');
+                                $channelThumb = $metadataThumb ?: $channelThumb;
                             }
+                            $artThumb = $channelThumb ?: ($video['@attributes']['art'] ?? '');
 
                             $mergedStream = array_merge(
                                 createStreamBase(
@@ -501,7 +622,7 @@
                                     $title,
                                     $duration,
                                     $artThumb,
-                                    $video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb']
+                                    $video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb'] ?? $artThumb
                                 ),
                                 [
                                 'endSecondsFromNow' => $timing['endSecondsFromNow']
@@ -512,7 +633,7 @@
 
                             $mergedStream['locationDisplay'] = getLocationDisplay($mergedStream['location'], $mergedStream['address']);
                             
-                            foreach ($media['Part']['Stream'] as $stream) {
+                            foreach (normalizeXmlList($media['Part']['Stream'] ?? []) as $stream) {
                                 if ($stream['@attributes']['streamType'] === '2') {
                                     $mergedStream['streamInfo']['audio'] = $stream;
                                     $mergedStream['streamInfo']['audio']['@attributes']['decision'] = $mergedStream['streamInfo']['audio']['@attributes']['decision'] ?? 'direct play';

@@ -27,6 +27,50 @@
         justify-content: center;
     }
 
+    #streams-container {
+        display: grid;
+        gap: 28px;
+    }
+
+    .plexstreams-server-group {
+        display: grid;
+        gap: 12px;
+    }
+
+    .plexstreams-server-header {
+        align-items: end;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.14);
+        display: flex;
+        gap: 16px;
+        justify-content: space-between;
+        padding: 0 2px 10px;
+    }
+
+    .plexstreams-server-identity {
+        color: #a9b2b3;
+        display: grid;
+        font-size: 12px;
+        gap: 4px;
+        min-width: 0;
+    }
+
+    .plexstreams-server-identity strong {
+        color: #f1f4f0;
+        font-size: 18px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-server-summary {
+        color: #8dbb7f;
+        font-size: 12px;
+        font-weight: 700;
+        text-align: right;
+        white-space: nowrap;
+    }
+
     #streams-container ul {
         display: flex;
         flex-wrap: wrap;
@@ -237,6 +281,17 @@
     }
 
     @media (max-width: 760px) {
+        .plexstreams-server-header {
+            align-items: start;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .plexstreams-server-summary {
+            text-align: left;
+            white-space: normal;
+        }
+
         .details ul {
             grid-template-columns: 1fr;
         }
@@ -282,6 +337,10 @@
 
 </style>
 <script>
+    $(function() {
+        $('.content > div.title').remove();
+    });
+
     function openBox(cmd,title,height,width,load,func,id) {
     // open shadowbox window (run in foreground)
     var run = cmd.split('?')[0].substr(-4)=='.php' ? cmd : '/logging.htm?cmd='+cmd+'&csrf_token=91E90CB5E22139F9';

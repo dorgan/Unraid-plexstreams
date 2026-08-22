@@ -61,6 +61,11 @@ function clearToken() {
     <input type="radio" name="DISPLAY_WIDGET" id="DISPLAY_WIDGET_OFF" value="0"  <?php echo( $cfg['DISPLAY_WIDGET'] === "0" ? "checked" : ""); ?>/>_(Off)_
 </div>
 <div>
+    _(Dashboard Widget Layout)_:
+    <input type="radio" name="DASHBOARD_LAYOUT" id="DASHBOARD_LAYOUT_DEFAULT" value="default" <?php echo($cfg['DASHBOARD_LAYOUT'] === 'default' ? 'checked' : ''); ?>/>_(Default)_
+    <input type="radio" name="DASHBOARD_LAYOUT" id="DASHBOARD_LAYOUT_CONDENSED" value="condensed" <?php echo($cfg['DASHBOARD_LAYOUT'] === 'condensed' ? 'checked' : ''); ?>/>_(Condensed)_
+</div>
+<div>
     _(Use SSL Connection)_:
     <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_ON" value="1" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "1" ? "checked" : ""); ?>/>_(On)_
     <input type="radio" name="FORCE_PLEX_HTTPS" id="FORCE_PLEX_HTTPS_OFF" value="0" onchange="getServers('#hostcontainer','<?php echo($cfg['HOST']) ?>')" <?php echo( $cfg['FORCE_PLEX_HTTPS'] === "0" ? "checked" : ""); ?>/>_(Off)_

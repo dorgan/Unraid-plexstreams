@@ -15,6 +15,7 @@
         'CUSTOM_SERVERS' => '',
         'DISPLAY_NAV' => '1',
         'DISPLAY_WIDGET' => '1',
+        'DASHBOARD_LAYOUT' => 'default',
         'FORCE_PLEX_HTTPS' => '0',
         'DEBUG_LOGGING' => '0'
     );

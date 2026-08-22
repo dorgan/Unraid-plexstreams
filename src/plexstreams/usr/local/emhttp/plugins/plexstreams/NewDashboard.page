@@ -97,6 +97,28 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
         color: #bdbdbd;
         font-size: 14px;
     }
+
+    .plexstreams-widget--condensed .plexstreams-modern-stream {
+        gap: 8px;
+        grid-template-columns: minmax(0, 1fr) 26px;
+        padding: 8px 0;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-poster,
+    .plexstreams-widget--condensed .plexstreams-modern-badge,
+    .plexstreams-widget--condensed .plexstreams-modern-location,
+    .plexstreams-widget--condensed .plexstreams-modern-progress-track {
+        display: none;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-title {
+        font-size: 14px;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-meta,
+    .plexstreams-widget--condensed .plexstreams-modern-progress {
+        margin-top: 3px;
+    }
 </style>
 <?PHP
     /*
@@ -125,6 +147,8 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
     $dashboard_widget_pos = 1;
     $dashboard_widget_colspan = 3;
     $streamCount = 0;
+    include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
+    $widgetLayoutClass = $cfg['DASHBOARD_LAYOUT'] === 'condensed' ? ' plexstreams-widget--condensed' : '';
 ?>
 
 <style type="text/css">
@@ -162,7 +186,7 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
 <?php
 $mytiles[$plugin]['column1'] =
 <<<EOT
-<tbody class="sortable" title="_(Plex Streams)_">
+<tbody class="sortable$widgetLayoutClass" title="_(Plex Streams)_">
     <tr>
         <td>
             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
