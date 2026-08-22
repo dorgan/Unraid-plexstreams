@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22">
+    <!ENTITY version "2026.08.22a">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "0c636141a948aa501661b13ddbde3a00">
+    <!ENTITY md5 "709bcbbfbdcea743a17027b3e5ab87a6">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,22 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.22a
+        - feat: harden Plex stream discovery and modernize live rendering
+        - use the transient OAuth token for server discovery before settings are saved
+        - add non-overlapping, visibility-aware stream polling for dashboard and detail views
+        - replace dedicated-page server rendering with an AJAX-first spinner and client-rendered
+        cards
+        - add opt-in, redacted debug logging with OAuth/discovery events, log viewer, copy action,
+        and rotation
+        - classify Plex transport failures and ignore blank configured hosts during polling
+        - cache remote GeoIP lookups and bound external request timeouts
+        - harden the image proxy to configured Plex hosts and relative image paths
+        - consolidate stream normalization, XML handling, timing, settings visibility, and dashboard
+        helpers
+        - add video/audio normalization regression fixtures while excluding tests from sync and
+        release archives
+        - improve media-detail XML handling and cleanup legacy dashboard/settings behavior
         ###2026.08.22
         - Fix server discovery immediately after obtaining a Plex token
         - Show server discovery errors when a token is missing or Unraid cannot reach plex.tv
