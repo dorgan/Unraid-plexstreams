@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22a">
+    <!ENTITY version "2026.08.22b">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "709bcbbfbdcea743a17027b3e5ab87a6">
+    <!ENTITY md5 "7e9b8f99bfd99d6f83bd62fc87e73a9c">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,9 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.22b
+        - feet: new look and feel
+
         ###2026.08.22a
         - feat: harden Plex stream discovery and modernize live rendering
         - use the transient OAuth token for server discovery before settings are saved

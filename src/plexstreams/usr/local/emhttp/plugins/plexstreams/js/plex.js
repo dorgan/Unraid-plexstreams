@@ -34,37 +34,45 @@ function updateDashboardStreamsNew() {
     return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
-        var hostStreams = {};
         if (streams.length > 0) {
             $('.no_streams').remove();
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
             streams.forEach(function(stream) {
-            var $container = $('#' + stream.id);
-                if (hostStreams[stream['alias']] === undefined) {
-                    hostStreams[stream['alias']] = 1;
-                } else {
-                    hostStreams[stream['alias']] = hostStreams[stream['alias']] + 1;
-                }
+                var $container = $('#' + stream.id);
                 if ($container.length === 0) {
-                    $container = $('<div id="' + stream.id + '">' +
-                        '<span class="w36"><p class="plexstream-title" title="' + stream.titleString + '">' + stream.title +  '</p></span>' +
-                        '<span class="w18" style="text-align:center;"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></span>' +
-                        '<span class="w18" style="text-align:center;"><p class="plexstream-user" title="' + stream.user + '">' + stream.user + '</p></span>' +
-                        '<span class="w18" style="text-align:right;"><p class="plexstream-time">' + (stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) +  '</span> / ' + stream.lengthDisplay + ' (<span class="endTime">' + stream.endTime + '</span>)' : 'N/A' ) + '</p></span>' +
+                    var videoDetails = stream.streamInfo.video && stream.streamInfo.video['@attributes'];
+                    var quality = videoDetails ? videoDetails.height || videoDetails.displayTitle : '';
+                    var location = stream.location === 'lan' ? _('LAN') : stream.locationDisplay;
+                    var playbackTime = stream.currentPositionHours !== null ? '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span> / ' + stream.lengthDisplay + ' (<span class="endTime">' + stream.endTime + '</span>)' : 'N/A';
+                    $container = $('<div class="plexstreams-modern-stream" id="' + stream.id + '">' +
+                        '<div class="plexstreams-modern-poster" style="background-image:url(' + stream.thumbUrl + ');"></div>' +
+                        '<div class="plexstreams-modern-content">' +
+                            '<div class="plexstreams-modern-title" title="' + stream.titleString + '">' + stream.title + '</div>' +
+                            '<div class="plexstreams-modern-meta"><span>' + stream.user + ' · ' + (stream.alias || stream.address) + '</span><span class="plexstreams-modern-badge decision">' + stream.streamDecision + '</span>' + (quality ? '<span class="plexstreams-modern-badge">' + quality + '</span>' : '') + '<span class="plexstreams-modern-badge bandwidth">' + stream.bandwidth + ' Mbps</span></div>' +
+                            '<div class="plexstreams-modern-progress"><span class="plexstreams-modern-location" title="' + stream.locationDisplay + '">' + location + '</span><span><i class="fa fa-clock-o"></i> ' + playbackTime + '</span></div>' +
+                            '<div class="plexstreams-modern-progress-track"><div class="plexstreams-modern-progress-value"></div></div>' +
+                        '</div>' +
+                        '<div class="plexstreams-modern-state"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.state + '"></i></div>' +
                     '</div').appendTo('#plexstreams_streams');
                     var node = $container[0];
                 } else {
                     var node = $container[0];
-                    var $cells = $container.find('span');
-                    $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
+                    $container.find('.plexstreams-modern-state i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
+                    $container.find('.plexstreams-modern-title').text(stream.title).attr('title', stream.titleString);
+                    $container.find('.bandwidth').text(stream.bandwidth + ' Mbps');
+                    $container.find('.plexstreams-modern-location').text(stream.location === 'lan' ? _('LAN') : stream.locationDisplay).attr('title', stream.locationDisplay);
                 }
+                $container.find('.plexstreams-modern-progress-value').css('width', stream.percentPlayed + '%');
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
-                $(node).attr('prevStat', stream.state);
+                node.prevState = stream.state;
             });
-            renderHostStreamCounts(hostStreams);
-            $('#plexstreams_streams tr[updatedat]').each(function() {
+            var totalBandwidth = streams.reduce(function(total, stream) {
+                return total + Number(stream.bandwidth || 0);
+            }, 0);
+            $('#plexstreams_summary').html('<span id="plexstreams_count">' + streams.length + '</span> ' + _('Active Stream(s)') + ' · ' + totalBandwidth.toFixed(1) + ' Mbps');
+            $('#plexstreams_streams .plexstreams-modern-stream[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
                         if (this.timer) {
@@ -75,13 +83,12 @@ function updateDashboardStreamsNew() {
                 }
             });
         } else {
-            $('#stream_count_container').html('<span id="plexstreams_count">0</span> ' + _('Active Stream(s)') + '</span>');
+            $('#plexstreams_summary').html('<span id="plexstreams_count">0</span> ' + _('Active Stream(s)'));
             $('#plexstreams_streams').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></span></div>');
         }
     }).fail(function(jqXHR) {
-        if (jqXHR.status == '500') {
-            $('#plexstreams_streams').html('<span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') + '</p></span>');
-        }
+        var message = jqXHR.status === 500 ? _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') : _('Unable to retrieve stream information.');
+        $('#plexstreams_streams').html('<span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + message + '</p></span>');
     });
 }
 
@@ -155,22 +162,22 @@ function updateFullStreamInfo() {
                 $('#streams-root').html('<div id="streams-container"><ul></ul></div>');
                 $streamHolder = $('#streams-container ul');
             }
-            $('#hover-message').show();
+            $('#hover-message').hide();
             streams.forEach(function(stream) {
                 var node = $('#' + stream.id + '.stream-container')[0];
                 var $container = $(node);
                 if ($container.length > 0) {
-                    var $status = $container.find('.status i');
+                    var $status = $container.find('.plexstreams-card-status i, .status i');
                     var $progressBar = $container.find('.progressBar');
                     $progressBar.css({
                         width: stream.percentPlayed + '%'
                     });
                     
                     $status.attr('class', 'fa fa-' + stream.stateIcon);
-                    $status.attr('title', uCWord(stream.state));
+                    $status.attr('title', uCWord(stream.state || stream.stateIcon));
                     var $details = $container.find('.details');
                     $details.find('.stream.value').html(uCWord(stream.streamDecision));
-                    $details.find('.bandwidth.value').html(stream.bandwidth);
+                    $details.find('.bandwidth.value').text(stream.bandwidth + ' Mbps');
                     $details.find('.audio.value').html(uCWord(stream.streamInfo.audio['@attributes'].decision));
                     if (stream.streamInfo.video) {
                         $details.find('.video.value').html(uCWord(stream.streamInfo.video['@attributes'].decision));
@@ -179,6 +186,29 @@ function updateFullStreamInfo() {
                     $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Server') + '</div><div class="value">' + stream.alias + '</div></li><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
                     node = $container[0];
                 }
+                $container.find('.detail-list li').eq(1).find('.value').text(stream.lengthDisplay || 'N/A');
+                $container.find('.stream.value').text(uCWord(stream.streamDecision));
+                $container.find('.bandwidth.value').text(stream.bandwidth + ' Mbps');
+                $container.find('.audio.value').text(uCWord(stream.streamInfo.audio['@attributes'].decision));
+                $container.find('.video.value').text(stream.streamInfo.video ? uCWord(stream.streamInfo.video['@attributes'].decision) : '');
+                var $artwork = $container.find('.stream-subcontainer > .stream');
+                var $footer = $container.find('.bottom-box').first();
+                if ($footer.length === 0) {
+                    $footer = $artwork.children('.plexstreams-card-footer').first();
+                }
+                $footer.removeClass('bottom-box').addClass('plexstreams-card-footer').appendTo($artwork);
+                $footer.find('.title').removeClass('title').addClass('plexstreams-card-title');
+                $footer.find('.status').removeClass('status').addClass('plexstreams-card-status');
+                if ($container.find('.playback-status').length === 0) {
+                    var playbackTime = stream.currentPositionHours !== null ? '<span class="playback-current"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span></span><span class="playback-total"> / ' + stream.lengthDisplay + '</span>' : 'N/A';
+                    $container.find('.position').remove();
+                    $('<div class="playback-status"><div class="position">' + playbackTime + '</div><div class="ends-at">' + _('Ends') + ' <span class="endTime">' + (stream.endTime || '') + '</span></div></div>').appendTo($footer);
+                }
+                var $streamUser = $container.find('.stream-user');
+                if ($streamUser.length === 0) {
+                    $streamUser = $('<span class="stream-user"></span>').appendTo($footer);
+                }
+                $streamUser.text(stream.user);
                 $container.find('.progressBar').css('width', stream.percentPlayed + '%');
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);

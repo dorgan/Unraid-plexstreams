@@ -4,31 +4,99 @@ Tag="film"
 Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLAY_WIDGET'] == '1' && version_compare(parse_ini_file('/etc/unraid-version')['version'],'6.12.0-beta5', '>')"
 ---
 <style>
-p.plexstream-title {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 200px;
-    padding: 0 0 0 0;
-    margin: 0 0 10px 0;
-}
+    #plexstreams_streams {
+        margin-top: 10px;
+    }
 
-p.plexstream-user {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    width: 104px;
-    padding: 0 0 0 0;
-    margin: 0 0 10px 0;
-}
+    .plexstreams-modern-stream {
+        border-top: 1px solid rgba(255, 255, 255, 0.12);
+        display: grid;
+        gap: 12px;
+        grid-template-columns: 70px minmax(0, 1fr) 26px;
+        padding: 12px 0;
+    }
 
-p.plexstream-time {
-    padding: 0 0 0 0;
-    margin: 0 0 10px 0;
-    font-size:10px;
-    width: 125px;
-    text-align: right;
-}
+    .plexstreams-modern-stream:first-child {
+        border-top: 0;
+        padding-top: 0;
+    }
+
+    .plexstreams-modern-poster {
+        background: #1c1c1c center / cover no-repeat;
+        border-radius: 3px;
+        height: 105px;
+        width: 70px;
+    }
+
+    .plexstreams-modern-content {
+        min-width: 0;
+    }
+
+    .plexstreams-modern-title {
+        color: inherit;
+        font-size: 15px;
+        font-weight: 700;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-modern-meta,
+    .plexstreams-modern-progress {
+        align-items: center;
+        color: #a5a5a5;
+        display: flex;
+        flex-wrap: wrap;
+        font-size: 12px;
+        gap: 6px 10px;
+        margin-top: 5px;
+    }
+
+    .plexstreams-modern-badge {
+        border: 1px solid rgba(255, 255, 255, 0.23);
+        border-radius: 3px;
+        color: #bdbdbd;
+        font-size: 10px;
+        font-weight: 700;
+        letter-spacing: 0;
+        padding: 2px 6px;
+    }
+
+    .plexstreams-modern-badge.decision {
+        border-color: #5b9458;
+        color: #79b876;
+    }
+
+    .plexstreams-modern-location {
+        border: 1px solid #5b9458;
+        border-radius: 3px;
+        color: #79b876;
+        padding: 2px 6px;
+    }
+
+    .plexstreams-modern-progress-track {
+        background: rgba(255, 255, 255, 0.15);
+        height: 4px;
+        margin-top: 9px;
+        overflow: hidden;
+    }
+
+    .plexstreams-modern-progress-value {
+        background: #8dbb7f;
+        height: 100%;
+    }
+
+    .plexstreams-modern-state {
+        align-self: center;
+        color: #79b876;
+        font-size: 20px;
+        text-align: center;
+    }
+
+    #plexstreams_summary {
+        color: #bdbdbd;
+        font-size: 14px;
+    }
 </style>
 <?PHP
     /*
@@ -98,17 +166,8 @@ $mytiles[$plugin]['column1'] =
     <tr>
         <td>
             <i style="font-size:32px;vertical-align:top;" class="fa fa-film icon"></i>
-            <div class="section" style="line-height:2rem;">_(Plex Streams)_<br><span id="stream_count_container"><span id="plexstreams_count">0</span> _(Active Stream(s))_</span></div>
+            <div class="section" style="line-height:2rem;">_(Plex Streams)_<br><span id="plexstreams_summary"><span id="plexstreams_count">0</span> _(Active Stream(s))_</span></div>
             <a href="/Settings/PlexStreams" title="_(Plex Streams Setup page)_"><i class="fa fa-fw fa-cog control"></i></a>
-            <a href="/Tools/PlexStreamsTools" title="_(View Streams)_"><i class="fa fa-fw fa-film control"></i></a>
-        </td>
-    </tr>
-    <tr>
-        <td>            
-            <span class="w36">_(Name)_</span>
-            <span class="w18" align="center">_(Status)_</span>
-            <span class="w18">_(User)_</span>
-            <span class="w18" align="right">_(Time)_</span>
         </td>
     </tr>
     <tr>

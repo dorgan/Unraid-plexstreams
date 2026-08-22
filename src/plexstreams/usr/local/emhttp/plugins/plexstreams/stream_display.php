@@ -20,182 +20,258 @@
         padding-left: 7px;
     }
 
-    #streams-container {
-        display: inline;
+    #streams-loading {
+        align-items: center;
+        display: flex;
+        height: 160px;
+        justify-content: center;
     }
 
-    #streams-container ul{
+    #streams-container ul {
         display: flex;
         flex-wrap: wrap;
+        gap: 20px;
+        list-style: none;
+        margin: 0;
+        padding: 0;
     }
 
     .stream-container {
+        background: rgba(0, 0, 0, 0.28);
+        border: 1px solid rgba(255, 255, 255, 0.12);
+        box-sizing: border-box;
+        flex: 1 1 640px;
+        height: 440px;
         list-style: none;
-        flex: 0 0 30%;
+        max-width: 820px;
+        overflow: hidden;
         position: relative;
-        margin-right: 10px;
-        margin-bottom: 10px;
+        width: min(100%, 820px);
     }
 
     .stream-subcontainer {
-        width: 500px;
-        background-color: #000;
+        height: 100%;
+        width: 100%;
     }
 
     .stream {
         background-position: center;
         background-repeat: no-repeat;
-        background-size: contain;
+        background-size: cover;
+        height: 100%;
+        position: relative;
     }
 
     .blur {
-        backdrop-filter: blur(3px);
-    }
-
-    .stream .blur {
-        width: 100%;
+        background: rgba(0, 0, 0, 0.42);
         height: 100%;
     }
 
     .stream .poster {
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
-        width: 150px;
-        height: 225px;
-        z-index: 997;
-    }
-
-    .stream-container .bottom-box {
-        width: 500px;
-        position:absolute;
-        bottom: 0;
-        background: rgb(70,67,67,0.55);
-        color: #fff;
-        font-weight: bolder;
-        height: 63px;
-        z-index: 998;
-    }
-
-    .stream-container .bottom-box .progressBar {
-        height: 5px;
-        background-color: #cc0000;
-    }
-
-    .stream-container .bottom-box .progressBar .position {
+        background: #1c1c1c center / cover no-repeat;
+        border-radius: 3px;
+        height: calc(100% - 110px);
+        left: 20px;
         position: absolute;
-        right: 5px;
-        top: 0;
-        width: 100px;
-        font-size:9px;
-        color: #fff;
-        text-align:right;
-    }
-
-    .stream-container .bottom-box .title {
-        padding: 10px;
-        z-index: 999;
-    }
-
-    .stream-container .bottom-box .title a {
-        text-decoration: none;
-        color: #fff;
-    }
-
-    .stream-container .bottom-box .title a:hover {
-        text-decoration: none;
-    }
-
-    .stream-container .title .status {
-        float:right;
-        color: #fff;
-    }
-
-    .userIcon {
-        border-radius: 50%;
-        overflow: hidden;
-        position: absolute;
-        top: 5px;
-        right: 5px;
-        margin: 0;
-        height: 75px;
-        width: 75px;
-        background-position: center;
-        background-repeat: no-repeat;
-        background-size: cover;
+        top: 18px;
+        width: 180px;
     }
 
     .details {
-        opacity: 0;
-        transition: visibility 0s, opacity 0.5s ease-out ;
+        background: rgba(10, 14, 16, 0.38);
+        border-left: 2px solid rgba(121, 184, 118, 0.72);
+        box-sizing: border-box;
+        color: #c4c4c4;
+        left: 224px;
+        padding: 14px 16px;
         position: absolute;
-        opacity: 0;
-        left: 160px;
-        top: 5px;
-        background: rgb(34, 34, 34, 0.80);
-        color: #fff;
-        width: 244px;
-        height: 175px;
-        font-weight:bold;
-    }
-
-    .details:hover {
-        opacity: 1;
+        right: 20px;
+        top: 20px;
     }
 
     .details ul {
-        margin-top: 0;
-        padding-left: 0;
+        display: grid;
+        gap: 8px 14px;
+        grid-template-columns: repeat(2, minmax(190px, 1fr));
         list-style: none;
-        font-size:14px;
-    }
-    
-    .details li {
-        display: flex;
-        flex-direction: row;
-        flex-wrap: nowrap;
-        align-items: baseline;
-        width:100%;
-        margin-bottom:5px;
-        box-sizing: border-box;
-        color: #fff;
-        font-size: 12px;
-        line-height: 17px;
+        margin: 0;
+        padding: 0;
     }
 
-    .details li div {
-        color: #aaa;
-        text-align: right;
-        line-height: 14px;
+    .details li {
+        align-items: center;
+        display: flex;
+        font-size: 12px;
+        gap: 8px;
+        line-height: 18px;
+        min-width: 0;
     }
-    
+
+    .details li:nth-child(odd) {
+        grid-column: 1;
+    }
+
+    .details li:nth-child(even) {
+        grid-column: 2;
+    }
+
     .details li .label {
-        color: #aaa;
-        width:91px;
+        color: #9d9d9d;
+        min-width: 64px;
+        text-align: left;
     }
 
     .details li .value {
-        color: #fff;
-        text-overflow: ellipsis;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        border-radius: 3px;
+        color: #e2e2e2;
+        font-size: 10px;
+        font-weight: 700;
+        padding: 1px 6px;
         overflow: hidden;
+        text-overflow: ellipsis;
         white-space: nowrap;
-        flex-grow: 1;
-        min-width:165px;
-        text-align: left;
-        margin-left: 10px;
+        max-width: 100%;
     }
 
-    .sb-overlay {
-        backdrop-filter: blur(7px);
+    .details .stream.value,
+    .details li:nth-child(4) .value,
+    .details .video.value,
+    .details .audio.value {
+        border-color: #5b9458;
+        color: #79b876;
     }
 
-    #streams-loading {
-        align-items: center;
-        background: #000;
-        display: flex;
-        height: 225px;
-        justify-content: center;
-        width: 500px;
+    .plexstreams-card-footer {
+        background: linear-gradient(to top, rgba(8, 12, 14, 0.96), rgba(8, 12, 14, 0.86) 44%, rgba(8, 12, 14, 0.58) 76%, rgba(8, 12, 14, 0.16));
+        bottom: 0;
+        box-sizing: border-box;
+        color: #fff;
+        height: 82px;
+        left: 0;
+        position: absolute;
+        right: 0;
+        z-index: 1;
+    }
+
+    .plexstreams-card-footer .plexstreams-card-title {
+        font-size: 19px;
+        font-weight: 700;
+        overflow: hidden;
+        padding: 25px 115px 0 70px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-card-footer .stream-user {
+        bottom: 12px;
+        color: #a5a5a5;
+        font-size: 12px;
+        left: 70px;
+        max-width: calc(100% - 200px);
+        position: absolute;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-card-footer .plexstreams-card-title a {
+        color: #fff;
+        text-decoration: none;
+    }
+
+    .plexstreams-card-footer .plexstreams-card-title a:hover {
+        text-decoration: underline;
+    }
+
+    .plexstreams-card-footer .progressBar {
+        background: #8dbb7f;
+        height: 4px;
+        left: 0;
+        top: 0;
+    }
+
+    .plexstreams-card-footer .position {
+        color: #e1e1e1;
+        font-size: 13px;
+        font-weight: 500;
+        position: absolute;
+        right: 60px;
+        top: 31px;
+    }
+
+    .plexstreams-card-footer .playback-total {
+        color: #9d9d9d;
+        font-size: 13px;
+        font-weight: 400;
+    }
+
+    .plexstreams-card-footer .ends-at {
+        color: #9d9d9d;
+        font-size: 11px;
+        position: absolute;
+        right: 60px;
+        top: 51px;
+    }
+
+    .stream-container .plexstreams-card-title .plexstreams-card-status {
+        color: #79b876;
+        font-size: 24px;
+        position: absolute;
+        right: 20px;
+        top: 30px;
+    }
+
+    .userIcon {
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+        border: 1px solid rgba(255, 255, 255, 0.26);
+        border-radius: 3px;
+        bottom: 16px;
+        height: 44px;
+        left: 14px;
+        position: absolute;
+        top: auto;
+        width: 44px;
+        z-index: 2;
+    }
+
+    @media (max-width: 760px) {
+        .details ul {
+            grid-template-columns: 1fr;
+        }
+
+        .details li:nth-child(odd),
+        .details li:nth-child(even) {
+            grid-column: auto;
+        }
+
+        .details li {
+            font-size: 11px;
+        }
+    }
+
+    @media (max-width: 560px) {
+        .stream-container {
+            height: 430px;
+        }
+
+        .stream .poster {
+            height: 180px;
+            width: 120px;
+        }
+
+        .details {
+            left: 156px;
+        }
+
+        .plexstreams-card-footer .position {
+            display: none;
+        }
+
+        .plexstreams-card-footer .ends-at {
+            display: none;
+        }
     }
 
     #streams-loading .lds-dual-ring {
@@ -231,7 +307,6 @@
     }
 
     if (!empty($cfg['TOKEN'])) {
-        echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">' . _('Hover the stream for details') . '</h4>');
         echo('<div id="streams-root"><div id="streams-loading"><div class="lds-dual-ring"></div></div></div>');
     } else {
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">' . _('Please provide server details under Settings -> Network Services -> Plex Streams or') . ' <a href="/Settings/PlexStreams">' . _('click here') .'</a></div></div>');
