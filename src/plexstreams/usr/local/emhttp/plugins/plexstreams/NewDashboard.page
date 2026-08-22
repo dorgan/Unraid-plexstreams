@@ -107,7 +107,8 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
     .plexstreams-widget--condensed .plexstreams-modern-poster,
     .plexstreams-widget--condensed .plexstreams-modern-badge,
     .plexstreams-widget--condensed .plexstreams-modern-location,
-    .plexstreams-widget--condensed .plexstreams-modern-progress-track {
+    .plexstreams-widget--condensed .plexstreams-modern-progress-track,
+    .plexstreams-widget--condensed .plexstreams-modern-end-time {
         display: none;
     }
 
@@ -115,9 +116,38 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
         font-size: 14px;
     }
 
+    .plexstreams-widget--condensed .plexstreams-modern-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-title {
+        grid-column: 1 / -1;
+    }
+
     .plexstreams-widget--condensed .plexstreams-modern-meta,
     .plexstreams-widget--condensed .plexstreams-modern-progress {
-        margin-top: 3px;
+        margin-top: 2px;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-meta {
+        min-width: 0;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-meta > span:first-child {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-widget--condensed .plexstreams-modern-progress {
+        flex-wrap: nowrap;
+        grid-column: 2;
+        grid-row: 2;
+        margin-left: 10px;
+        white-space: nowrap;
     }
 </style>
 <?PHP

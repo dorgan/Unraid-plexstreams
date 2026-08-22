@@ -218,6 +218,10 @@
         white-space: nowrap;
     }
 
+    .plexstreams-unknown-user {
+        font-style: italic;
+    }
+
     .plexstreams-card-footer .plexstreams-card-title a {
         color: #fff;
         text-decoration: none;

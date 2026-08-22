@@ -88,7 +88,7 @@ $allStreams = [
                     'grandparentThumb' => 'https://metadata-static.plex.tv/channel.jpg'
                 ],
                 'Player' => ['@attributes' => ['product' => 'Plex Web', 'state' => 'playing', 'address' => '192.168.1.12']],
-                'User' => ['@attributes' => ['title' => 'Test User', 'thumb' => 'https://plex.test/avatar']],
+                'User' => [],
                 'Session' => ['@attributes' => ['location' => 'lan', 'bandwidth' => '1800']],
                 'Media' => [
                     '@attributes' => ['selected' => '1', 'id' => 'live-media'],
@@ -155,5 +155,7 @@ assertSameValue(null, $live['currentPositionHours'], 'live timing hours');
 assertSameValue(null, $live['lengthDisplay'], 'live timing display');
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['thumbUrl'], 'live channel thumbnail fallback');
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['artUrl'], 'live channel background fallback');
+assertSameValue('Unknown', $live['user'], 'missing user fallback');
+assertSameValue(true, $live['userIsUnknown'], 'missing user flag');
 
 echo "mergeStreams fixtures passed\n";

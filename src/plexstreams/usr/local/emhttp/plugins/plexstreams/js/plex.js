@@ -36,7 +36,7 @@ function formatPlaybackTime(stream, includeEndTime) {
     }
 
     var time = '<span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span> / ' + (stream.lengthDisplay || 'N/A');
-    return includeEndTime && stream.endTime ? time + ' (<span class="endTime">' + stream.endTime + '</span>)' : time;
+    return includeEndTime && stream.endTime ? time + ' <span class="plexstreams-modern-end-time">(<span class="endTime">' + stream.endTime + '</span>)</span>' : time;
 }
 
 function updateDashboardStreamsNew() {
@@ -54,11 +54,12 @@ function updateDashboardStreamsNew() {
                     var quality = videoDetails ? videoDetails.height || videoDetails.displayTitle : '';
                     var location = stream.location === 'lan' ? _('LAN') : stream.locationDisplay;
                     var playbackTime = formatPlaybackTime(stream, true);
+                    var user = stream.userIsUnknown ? '<em class="plexstreams-unknown-user">' + _('Unknown') + '</em>' : stream.user;
                     $container = $('<div class="plexstreams-modern-stream" id="' + stream.id + '">' +
                         '<div class="plexstreams-modern-poster" style="background-image:url(' + stream.thumbUrl + ');"></div>' +
                         '<div class="plexstreams-modern-content">' +
                             '<div class="plexstreams-modern-title" title="' + stream.titleString + '">' + stream.title + '</div>' +
-                            '<div class="plexstreams-modern-meta"><span>' + stream.user + ' · ' + (stream.alias || stream.address) + '</span><span class="plexstreams-modern-badge decision">' + stream.streamDecision + '</span>' + (quality ? '<span class="plexstreams-modern-badge">' + quality + '</span>' : '') + '<span class="plexstreams-modern-badge bandwidth">' + stream.bandwidth + ' Mbps</span></div>' +
+                            '<div class="plexstreams-modern-meta"><span>' + user + ' · ' + (stream.alias || stream.address) + '</span><span class="plexstreams-modern-badge decision">' + stream.streamDecision + '</span>' + (quality ? '<span class="plexstreams-modern-badge">' + quality + '</span>' : '') + '<span class="plexstreams-modern-badge bandwidth">' + stream.bandwidth + ' Mbps</span></div>' +
                             '<div class="plexstreams-modern-progress"><span class="plexstreams-modern-location" title="' + stream.locationDisplay + '">' + location + '</span><span><i class="fa fa-clock-o"></i> ' + playbackTime + '</span></div>' +
                             '<div class="plexstreams-modern-progress-track"><div class="plexstreams-modern-progress-value"></div></div>' +
                         '</div>' +
@@ -69,6 +70,7 @@ function updateDashboardStreamsNew() {
                     var node = $container[0];
                     $container.find('.plexstreams-modern-state i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
                     $container.find('.plexstreams-modern-title').text(stream.title).attr('title', stream.titleString);
+                    $container.find('.plexstreams-modern-meta > span:first-child').html((stream.userIsUnknown ? '<em class="plexstreams-unknown-user">' + _('Unknown') + '</em>' : stream.user) + ' · ' + (stream.alias || stream.address));
                     $container.find('.bandwidth').text(stream.bandwidth + ' Mbps');
                     $container.find('.plexstreams-modern-location').text(stream.location === 'lan' ? _('LAN') : stream.locationDisplay).attr('title', stream.locationDisplay);
                 }
@@ -340,6 +342,7 @@ function updateFullStreamInfo() {
                     $streamUser = $('<span class="stream-user"></span>').appendTo($footer);
                 }
                 $streamUser.text(stream.user);
+                $streamUser.toggleClass('plexstreams-unknown-user', Boolean(stream.userIsUnknown));
                 $container.find('.progressBar').css('width', stream.percentPlayed + '%');
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);

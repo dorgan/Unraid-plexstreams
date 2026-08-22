@@ -508,8 +508,10 @@
 
     function createStreamBase($source, $cfg, $media, $item, $type, $title, $titleString, $duration, $artPath, $thumbPath) {
         $player = $item['Player']['@attributes'];
-        $user = $item['User']['@attributes'];
+        $user = $item['User']['@attributes'] ?? [];
         $session = $item['Session']['@attributes'];
+        $userTitle = $user['title'] ?? '';
+        $userIsUnknown = $userTitle === '';
 
         return [
             '@host' => $source['@host'],
@@ -524,8 +526,9 @@
             'duration' => $duration,
             'artUrl' => buildStreamImageUrl($source['@host'], $artPath),
             'thumbUrl' => buildStreamImageUrl($source['@host'], $thumbPath),
-            'user' => $user['title'],
-            'userAvatar' => $user['thumb'],
+            'user' => $userIsUnknown ? 'Unknown' : $userTitle,
+            'userIsUnknown' => $userIsUnknown,
+            'userAvatar' => $user['thumb'] ?? '',
             'state' => $player['state'],
             'stateIcon' => getStateIcon($player['state']),
             'length' => $duration,
