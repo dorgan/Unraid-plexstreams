@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22d">
+    <!ENTITY version "2026.08.22e">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "3e307a5a646ed33a6840e431092af8e9">
+    <!ENTITY md5 "184c67924fc3306106626c35c2633af0">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,10 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.22e
+        - feat: expand/collapse: server details and server sections and browser will remember their
+        state
+        - feat: enhance stream management with session termination and health indicators
         ###2026.08.22d
         - feeat: Enhance PlexStreams Dashboard with Live TV and Server Details
         - feat: enhance user display in stream dashboard with unknown user handling and styling
