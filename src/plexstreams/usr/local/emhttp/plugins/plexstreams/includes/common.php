@@ -284,6 +284,31 @@
         return $mergedStreams;
     }
 
+    function terminatePlexSession($host, $sessionId, $reason, $token) {
+        $query = http_build_query([
+            'sessionId' => $sessionId,
+            'reason' => $reason,
+            'X-Plex-Token' => $token
+        ]);
+        $handle = curl_init(rtrim($host, '/') . '/status/sessions/terminate?' . $query);
+        curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYHOST, 0);
+        curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, 0);
+        curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
+        curl_setopt($handle, CURLOPT_TIMEOUT, 15);
+
+        $response = curl_exec($handle);
+        $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($handle);
+        curl_close($handle);
+
+        return [
+            'success' => $response !== false && $statusCode >= 200 && $statusCode < 300,
+            'statusCode' => $statusCode,
+            'error' => $error
+        ];
+    }
+
     function getServerHost($url) {
         $urlParts = parse_url($url);
         if ($urlParts === false || !isset($urlParts['scheme'], $urlParts['host'])) {
@@ -634,7 +659,8 @@
                 'product' => $player['product'] ?? 'Plex',
                 'name' => $player['title'] ?? '',
                 'platform' => $player['platform'] ?? '',
-                'device' => $player['device'] ?? ''
+                'device' => $player['device'] ?? '',
+                'machineIdentifier' => $player['machineIdentifier'] ?? ''
             ],
             'connection' => [
                 'location' => $session['location'] ?? '',
@@ -660,7 +686,9 @@
             'length' => $duration,
             'location' => $session['location'] ?? '',
             'address' => $player['address'] ?? '',
-            'bandwidth' => round((int)($session['bandwidth'] ?? 0) / 1000, 1)
+            'bandwidth' => round((int)($session['bandwidth'] ?? 0) / 1000, 1),
+            'clientIdentifier' => $player['machineIdentifier'] ?? '',
+            'sessionId' => $session['id'] ?? $session['sessionKey'] ?? $itemAttributes['sessionKey'] ?? null
         ];
     }
 

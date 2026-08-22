@@ -13,6 +13,10 @@
             extract(parse_plugin_cfg('dynamix',true));
 
             $mergedStreams = getMergedStreams($cfg);
+            foreach ($mergedStreams as &$stream) {
+                unset($stream['sessionId']);
+            }
+            unset($stream);
             echo(json_encode($mergedStreams));
         } else {
             http_response_code(500);

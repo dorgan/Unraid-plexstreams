@@ -47,6 +47,12 @@
         padding: 0 2px 10px;
     }
 
+    .plexstreams-server-actions {
+        display: flex;
+        flex: 0 0 auto;
+        gap: 8px;
+    }
+
     .plexstreams-server-identity {
         color: #a9b2b3 !important;
         display: grid;
@@ -72,7 +78,7 @@
         white-space: nowrap;
     }
 
-    .plexstreams-server-details-toggle {
+    .plexstreams-server-streams-toggle {
         appearance: none;
         background: transparent !important;
         border: 1px solid transparent !important;
@@ -91,9 +97,36 @@
         width: 28px;
     }
 
-    .plexstreams-server-details-toggle:hover {
+    .plexstreams-server-streams-toggle:hover {
         background: rgba(121, 184, 118, 0.12) !important;
         color: #8dbb7f !important;
+    }
+
+    .plexstreams-server-streams-toggle:focus-visible {
+        border-color: #8dbb7f !important;
+        outline: 0;
+    }
+
+    .plexstreams-server-details-toggle {
+        appearance: none;
+        background: rgba(121, 184, 118, 0.08) !important;
+        border: 1px solid rgba(121, 184, 118, 0.38) !important;
+        border-radius: 4px;
+        color: #a9b2b3;
+        cursor: pointer;
+        font-size: 11px;
+        font-weight: 700;
+        height: 28px;
+        margin: 0;
+        padding: 0 8px !important;
+        transition: background-color 160ms ease, border-color 160ms ease, color 160ms ease;
+        white-space: nowrap;
+    }
+
+    .plexstreams-server-details-toggle:hover {
+        background: rgba(121, 184, 118, 0.16) !important;
+        border-color: #79b876 !important;
+        color: #d6e4d1 !important;
     }
 
     .plexstreams-server-details-toggle:focus-visible {
@@ -101,11 +134,11 @@
         outline: 0;
     }
 
-    .plexstreams-server-details-toggle i {
+    .plexstreams-server-streams-toggle i {
         transition: transform 220ms ease;
     }
 
-    .plexstreams-server-group--expanded .plexstreams-server-details-toggle i {
+    .plexstreams-server-group--streams-collapsed .plexstreams-server-streams-toggle i {
         transform: rotate(180deg);
     }
 
@@ -176,6 +209,18 @@
         padding: 0;
     }
 
+    .plexstreams-server-streams-viewport {
+        overflow: clip;
+    }
+
+    .plexstreams-server-streams {
+        min-height: 0;
+    }
+
+    .plexstreams-server-group--streams-collapsed .plexstreams-server-streams-viewport {
+        pointer-events: none;
+    }
+
     .plexstreams-empty-state {
         align-items: center;
         color: #a9b2b3;
@@ -217,6 +262,26 @@
         opacity: 0;
         pointer-events: none;
         transform: translateY(-8px) scale(0.98);
+    }
+
+    .stream-container.plexstreams-is-paused {
+        box-shadow: inset 3px 0 #88969a;
+    }
+
+    .stream-container.plexstreams-is-remote {
+        box-shadow: inset 3px 0 #4ba7ae;
+    }
+
+    .stream-container.plexstreams-is-relayed {
+        box-shadow: inset 3px 0 #d17d87;
+    }
+
+    .stream-container.plexstreams-is-transcoding {
+        box-shadow: inset 3px 0 #d89a52;
+    }
+
+    .stream-container.plexstreams-is-buffering {
+        box-shadow: inset 3px 0 #e2b257;
     }
 
     .stream-subcontainer {
@@ -426,6 +491,93 @@
         top: 31px;
     }
 
+    .plexstreams-card-actions {
+        opacity: 0;
+        pointer-events: none;
+        position: absolute;
+        right: 14px;
+        top: 14px;
+        transform: translateY(-5px);
+        transition: opacity 180ms ease, transform 180ms ease;
+        z-index: 4;
+    }
+
+    .stream-container:hover .plexstreams-card-actions,
+    .stream-container:focus-within .plexstreams-card-actions,
+    .plexstreams-card-actions:focus-within,
+    .stream-container.plexstreams-card-action-focused .plexstreams-card-actions,
+    .stream-container.plexstreams-stream-stopping .plexstreams-card-actions,
+    .stream-container.plexstreams-stop-failed .plexstreams-card-actions {
+        opacity: 1;
+        pointer-events: auto;
+        transform: translateY(0);
+    }
+
+    .plexstreams-stop-stream {
+        align-items: center;
+        appearance: none;
+        background: rgba(111, 35, 45, 0.94) !important;
+        border: 1px solid rgba(239, 154, 165, 0.78) !important;
+        border-radius: 4px;
+        color: #fff3f4;
+        cursor: pointer;
+        display: inline-flex;
+        font-size: 12px;
+        font-weight: 700;
+        gap: 6px;
+        height: 32px;
+        margin: 0;
+        padding: 0 10px !important;
+        transition: background-color 160ms ease, border-color 160ms ease, transform 160ms ease;
+    }
+
+    .plexstreams-stop-stream:hover {
+        background: #8f3d49 !important;
+        border-color: #ffd0d5 !important;
+        transform: translateY(-1px);
+    }
+
+    .plexstreams-stop-stream:focus-visible {
+        border-color: #ef9aa5 !important;
+        outline: 0;
+    }
+
+    .plexstreams-stop-stream:disabled {
+        cursor: wait;
+        opacity: 0.7;
+    }
+
+    .plexstreams-stop-status {
+        background: rgba(20, 9, 11, 0.9);
+        border: 1px solid rgba(239, 154, 165, 0.46);
+        border-radius: 3px;
+        color: #f1c2c8;
+        font-size: 10px;
+        margin-top: 6px;
+        max-width: 220px;
+        overflow: hidden;
+        padding: 4px 6px;
+        text-align: right;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .plexstreams-stop-status:empty {
+        display: none;
+    }
+
+    @media (hover: none) {
+        .plexstreams-card-actions {
+            opacity: 1;
+            pointer-events: auto;
+            transform: none;
+        }
+    }
+
+    .stream-container.plexstreams-stream-stopping {
+        opacity: 0.58;
+    }
+
     .plexstreams-card-footer .playback-total {
         color: #9d9d9d;
         font-size: 13px;
@@ -509,7 +661,7 @@
             white-space: normal;
         }
 
-        .plexstreams-server-details-toggle {
+        .plexstreams-server-actions {
             grid-column: 2;
             grid-row: 1;
         }

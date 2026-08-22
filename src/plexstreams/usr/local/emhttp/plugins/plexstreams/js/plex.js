@@ -94,6 +94,7 @@ function updateDashboardStreamsNew() {
                 if (!node) {
                     return;
                 }
+                applyStreamHealthClasses($container, stream);
                 $container.find('.plexstreams-modern-progress-value').css('width', stream.percentPlayed + '%');
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
@@ -209,6 +210,22 @@ function getQualityTransform(source, output, transcoded) {
     return transcoded ? quality + ' (' + _('Transcoded') + ')' : quality;
 }
 
+function applyStreamHealthClasses($container, stream) {
+    var connection = stream.connection || {};
+    var quality = stream.playbackQuality || {};
+    var location = String(connection.location || stream.location || '').toLowerCase();
+    var decision = String(stream.streamDecision || '').toLowerCase().replace(/\s/g, '');
+    var isRelayed = Boolean(connection.relayed);
+    var isRemote = isRelayed || (location !== '' && location !== 'lan');
+    var isTranscoding = decision === 'transcode' || Boolean(quality.videoTranscoded || quality.audioTranscoded);
+
+    $container.toggleClass('plexstreams-is-buffering', stream.state === 'buffering');
+    $container.toggleClass('plexstreams-is-paused', stream.state === 'paused');
+    $container.toggleClass('plexstreams-is-transcoding', isTranscoding);
+    $container.toggleClass('plexstreams-is-remote', isRemote);
+    $container.toggleClass('plexstreams-is-relayed', isRelayed);
+}
+
 function getEpisodeLabel(stream) {
     var identity = stream.mediaIdentity || {};
     if (!identity.seriesTitle || identity.season === null || identity.season === undefined || identity.episode === null || identity.episode === undefined) {
@@ -266,11 +283,109 @@ function updateStreamPresentation($container, stream) {
     }
 }
 
+function requestStreamTermination($button) {
+    if ($button.prop('disabled')) {
+        return;
+    }
+    var reason = window.prompt(_('Reason shown to the Plex client:'), _('Stream stopped by server administrator.'));
+    if (reason === null) {
+        return;
+    }
+
+    var $card = $button.closest('.stream-container');
+    var $status = $card.find('.plexstreams-stop-status');
+    $card.removeClass('plexstreams-stop-failed');
+    $button.prop('disabled', true).addClass('is-stopping').find('i').attr('class', 'fa fa-spinner fa-spin');
+    $status.text(_('Stopping stream...'));
+    $.ajax({
+        url: '/plugins/plexstreams/terminate_stream.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+            host: $button.data('server-host'),
+            streamId: $button.data('stream-id'),
+            clientIdentifier: $button.data('client-identifier'),
+            reason: reason,
+            csrf_token: typeof csrf_token === 'undefined' ? '' : csrf_token
+        }
+    }).done(function() {
+        var $streamHolder = $card.closest('.plexstreams-server-streams');
+        if ($card[0].timer) {
+            clearInterval($card[0].timer);
+        }
+        $card.addClass('plexstreams-stream-stopping plexstreams-stream-exiting');
+        setTimeout(function() {
+            $card.remove();
+            if ($streamHolder.find('.stream-container').length === 0) {
+                $streamHolder.find('.plexstreams-empty-state').remove();
+                $streamHolder.append('<li class="plexstreams-empty-state"><p>' + _('There are currently no active streams') + '</p></li>');
+            }
+            updateFullStreamInfo();
+        }, 440);
+    }).fail(function(jqXHR) {
+        var message = jqXHR.responseJSON && jqXHR.responseJSON.error ? jqXHR.responseJSON.error : _('Unable to stop this stream.');
+        $card.addClass('plexstreams-stop-failed');
+        $button.prop('disabled', false).removeClass('is-stopping').find('i').attr('class', 'fa fa-stop-circle');
+        $status.text(message);
+    });
+}
+
+function ensureStopStreamControl($container, $footer, stream) {
+    var $actions = $container.find('.plexstreams-card-actions');
+    var $button = $actions.find('.plexstreams-stop-stream');
+    if ($button.length === 0) {
+        $actions = $('<div class="plexstreams-card-actions"></div>').appendTo($container);
+        $button = $('<button class="plexstreams-stop-stream" type="button" title="' + _('End stream') + '"><i class="fa fa-stop-circle"></i><span>' + _('End Stream') + '</span></button>').appendTo($actions);
+        $('<span class="plexstreams-stop-status" aria-live="polite"></span>').appendTo($actions);
+        $button.on('click', function() {
+            requestStreamTermination($(this));
+        }).on('focusin', function() {
+            $container.addClass('plexstreams-card-action-focused');
+        }).on('focusout', function() {
+            $container.removeClass('plexstreams-card-action-focused');
+        });
+    }
+    $button.data('server-host', stream.serverHost).data('stream-id', stream.id).data('client-identifier', stream.clientIdentifier).data('stream-title', stream.titleString || stream.title);
+}
+
 function getServerGroupId(host) {
     return 'plexstreams-server-' + String(host || 'unknown').replace(/[^a-z0-9]+/gi, '-').replace(/^-|-$/g, '');
 }
 
 var serverDetailsState = {};
+var serverDetailsStorageKey = 'plexstreams.serverDisclosureState';
+
+function getPersistedServerDisclosureState(host) {
+    try {
+        var persistedState = JSON.parse(localStorage.getItem(serverDetailsStorageKey) || '{}');
+        return persistedState[host] || {};
+    } catch (error) {
+        return {};
+    }
+}
+
+function persistServerDisclosureState(host, state) {
+    try {
+        var persistedState = JSON.parse(localStorage.getItem(serverDetailsStorageKey) || '{}');
+        persistedState[host] = {
+            expanded: Boolean(state.expanded),
+            streamsCollapsed: Boolean(state.streamsCollapsed)
+        };
+        localStorage.setItem(serverDetailsStorageKey, JSON.stringify(persistedState));
+    } catch (error) {
+    }
+}
+
+function getServerDetailsState(host) {
+    if (!serverDetailsState[host]) {
+        var persistedState = getPersistedServerDisclosureState(host);
+        serverDetailsState[host] = {
+            expanded: persistedState === true || Boolean(persistedState.expanded),
+            streamsCollapsed: Boolean(persistedState.streamsCollapsed)
+        };
+    }
+    return serverDetailsState[host];
+}
 
 function getServerActivitySummary(server, streams) {
     var counts = { directPlay: 0, directStream: 0, transcode: 0, hardwareTranscode: 0, liveTv: 0, remote: 0 };
@@ -368,7 +483,7 @@ function renderServerDetailsLoading($details) {
 
 function loadServerDetails($group, host) {
     var $details = $group.find('.plexstreams-server-details');
-    var state = serverDetailsState[host] || (serverDetailsState[host] = {});
+    var state = getServerDetailsState(host);
     if (state.details) {
         renderServerDetails($group, state.details);
         return;
@@ -428,16 +543,37 @@ function renderFullStreamServerGroups(serverStatuses, streams) {
         var server = servers[host];
         var groupId = getServerGroupId(host);
         var $group = $('#' + groupId);
-        var detailState = serverDetailsState[host];
+        var detailState = getServerDetailsState(host);
         if ($group.length === 0) {
-            $group = $('<section class="plexstreams-server-group" id="' + groupId + '"><header class="plexstreams-server-header"><div class="plexstreams-server-identity"></div><div class="plexstreams-server-summary"></div><button class="plexstreams-server-details-toggle" type="button" title="' + _('Show server details') + '" aria-expanded="false"><i class="fa fa-chevron-down"></i></button></header><div class="plexstreams-server-details" aria-live="polite"></div><ul></ul></section>').appendTo($container);
+            $group = $('<section class="plexstreams-server-group" id="' + groupId + '"><header class="plexstreams-server-header"><div class="plexstreams-server-identity"></div><div class="plexstreams-server-summary"></div><div class="plexstreams-server-actions"><button class="plexstreams-server-details-toggle" type="button" title="' + _('Show server details') + '" aria-expanded="false">' + _('Show Server Details') + '</button><button class="plexstreams-server-streams-toggle" type="button" title="' + _('Collapse streams') + '" aria-expanded="true"><i class="fa fa-chevron-up"></i></button></div></header><div class="plexstreams-server-details" aria-live="polite"></div><div class="plexstreams-server-streams-viewport"><ul class="plexstreams-server-streams"></ul></div></section>').appendTo($container);
+            $group.find('.plexstreams-server-streams-toggle').on('click', function() {
+                var $toggle = $(this);
+                var willExpand = $toggle.attr('aria-expanded') !== 'true';
+                var detailState = getServerDetailsState(host);
+                var $viewport = $group.find('.plexstreams-server-streams-viewport');
+                detailState.streamsCollapsed = !willExpand;
+                persistServerDisclosureState(host, detailState);
+                $toggle.attr('aria-expanded', String(willExpand)).attr('title', willExpand ? _('Collapse streams') : _('Expand streams'));
+                $group.toggleClass('plexstreams-server-group--streams-collapsed', !willExpand);
+                if (willExpand) {
+                    var expandedHeight = $viewport[0].scrollHeight;
+                    $viewport.stop(true).css({ height: 0, opacity: 0 }).animate({ height: expandedHeight, opacity: 1 }, 280, function() {
+                        if (!$group.hasClass('plexstreams-server-group--streams-collapsed')) {
+                            $viewport.css('height', '');
+                        }
+                    });
+                } else {
+                    $viewport.stop(true).css('height', $viewport.outerHeight()).animate({ height: 0, opacity: 0 }, 280);
+                }
+            });
             $group.find('.plexstreams-server-details-toggle').on('click', function() {
                 var $toggle = $(this);
                 var isExpanded = $toggle.attr('aria-expanded') === 'true';
                 var willExpand = !isExpanded;
-                var detailState = serverDetailsState[host] || (serverDetailsState[host] = {});
+                var detailState = getServerDetailsState(host);
                 detailState.expanded = willExpand;
-                $toggle.attr('aria-expanded', String(willExpand)).attr('title', willExpand ? _('Hide server details') : _('Show server details'));
+                persistServerDisclosureState(host, detailState);
+                $toggle.attr('aria-expanded', String(willExpand)).attr('title', willExpand ? _('Hide server details') : _('Show server details')).text(willExpand ? _('Hide Server Details') : _('Show Server Details'));
                 $group.toggleClass('plexstreams-server-group--expanded', willExpand);
                 if (willExpand) {
                     loadServerDetails($group, host);
@@ -446,7 +582,7 @@ function renderFullStreamServerGroups(serverStatuses, streams) {
         }
         if (detailState && detailState.expanded) {
             $group.addClass('plexstreams-server-group--expanded');
-            $group.find('.plexstreams-server-details-toggle').attr('aria-expanded', 'true').attr('title', _('Hide server details'));
+            $group.find('.plexstreams-server-details-toggle').attr('aria-expanded', 'true').attr('title', _('Hide server details')).text(_('Hide Server Details'));
             if (detailState.details) {
                 renderServerDetails($group, detailState.details);
             } else if (detailState.error) {
@@ -454,6 +590,11 @@ function renderFullStreamServerGroups(serverStatuses, streams) {
             } else {
                 loadServerDetails($group, host);
             }
+        }
+        if (detailState && detailState.streamsCollapsed) {
+            $group.addClass('plexstreams-server-group--streams-collapsed');
+            $group.find('.plexstreams-server-streams-toggle').attr('aria-expanded', 'false').attr('title', _('Expand streams'));
+            $group.find('.plexstreams-server-streams-viewport').css({ height: 0, opacity: 0 });
         }
 
         var serverStreams = streams.filter(function(stream) {
@@ -476,11 +617,11 @@ function renderFullStreamServerGroups(serverStatuses, streams) {
 }
 
 function getFullStreamHolder(host) {
-    return $('#' + getServerGroupId(host) + ' > ul');
+    return $('#' + getServerGroupId(host) + ' .plexstreams-server-streams');
 }
 
 function renderServerEmptyStates() {
-    $('.plexstreams-server-group > ul').each(function() {
+    $('.plexstreams-server-streams').each(function() {
         var $holder = $(this);
         $holder.find('.plexstreams-empty-state').remove();
         $holder.append('<li class="plexstreams-empty-state"><p>' + _('There are currently no active streams') + '</p></li>');
@@ -551,6 +692,7 @@ function updateFullStreamInfo() {
                 $container.toggleClass('plexstreams-has-playback-progress', hasPlaybackTimeline);
                 $container.toggleClass('plexstreams-is-live', !hasPlaybackTimeline);
                 $container.toggleClass('plexstreams-is-playing', stream.state === 'playing');
+                applyStreamHealthClasses($container, stream);
                 var $lengthValue = $container.find('.details .label').filter(function() {
                     return $(this).text() === _('Length');
                 }).siblings('.value');
@@ -571,6 +713,7 @@ function updateFullStreamInfo() {
                 $footer.removeClass('bottom-box').addClass('plexstreams-card-footer').appendTo($artwork);
                 $footer.find('.title').removeClass('title').addClass('plexstreams-card-title');
                 $footer.find('.status').removeClass('status').addClass('plexstreams-card-status');
+                ensureStopStreamControl($container, $footer, stream);
                 updateStreamPresentation($container, stream);
                 if ($container.find('.playback-status').length === 0) {
                     var playbackTime = stream.currentPositionHours !== null ? '<span class="playback-current"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span></span><span class="playback-total"> / ' + stream.lengthDisplay + '</span>' : 'N/A';

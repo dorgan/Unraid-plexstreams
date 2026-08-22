@@ -27,6 +27,7 @@ $allStreams = [
                 '@attributes' => [
                     'title' => 'Episode',
                     'year' => '2026',
+                    'sessionKey' => 'video-session-key',
                     'parentTitle' => 'Season 1',
                     'grandparentTitle' => 'Example Show',
                     'viewOffset' => '60000',
@@ -34,9 +35,9 @@ $allStreams = [
                     'art' => '/library/metadata/100/art',
                     'thumb' => '/library/metadata/100/thumb'
                 ],
-                'Player' => ['@attributes' => ['product' => 'Plex Web', 'state' => 'playing', 'address' => '192.168.1.10']],
+                'Player' => ['@attributes' => ['product' => 'Plex Web', 'state' => 'playing', 'address' => '192.168.1.10', 'machineIdentifier' => 'plex-web-client']],
                 'User' => ['@attributes' => ['title' => 'Test User', 'thumb' => 'https://plex.test/avatar']],
-                'Session' => ['@attributes' => ['location' => 'lan', 'bandwidth' => '21300']],
+                'Session' => ['@attributes' => ['id' => 'video-session-id', 'location' => 'lan', 'bandwidth' => '21300']],
                 'TranscodeSession' => ['@attributes' => ['transcodeHwRequested' => '1', 'sourceAudioCodec' => 'dca', 'audioCodec' => 'aac']],
                 'Media' => [
                     '@attributes' => ['selected' => '1', 'id' => 'video-media', 'videoResolution' => '1080'],
@@ -132,6 +133,8 @@ assertSameValue('http://plex.test:32400', $video['serverHost'], 'video server ho
 assertSameValue('Example Show - Season 1 - Episode (2026)', $video['title'], 'video title');
 assertSameValue('transcode', $video['streamDecision'], 'video stream decision');
 assertSameValue('playing', $video['state'], 'video state');
+assertSameValue('plex-web-client', $video['clientIdentifier'], 'video client identifier');
+assertSameValue('video-session-id', $video['sessionId'], 'video session identifier');
 assertSameValue('LAN (192.168.1.10)', $video['locationDisplay'], 'video location');
 assertSameValue('transcode (HW)', $video['streamInfo']['video']['@attributes']['decision'], 'video decision');
 assertSameValue('Test Plex', $audio['alias'], 'audio alias');
