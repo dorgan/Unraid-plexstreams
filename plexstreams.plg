@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22b">
+    <!ENTITY version "2026.08.22c">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "7e9b8f99bfd99d6f83bd62fc87e73a9c">
+    <!ENTITY md5 "198210ce5a71f45124c5816f47b71749">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,11 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.22c
+        - feat: Add Server details to the plex streams page
+        - feat: enhance user display in stream dashboard with unknown user handling and styling
+        - feat: add dashboard widget layout options (default/condensed)
+
         ###2026.08.22b
         - feat: new look and feel
 
