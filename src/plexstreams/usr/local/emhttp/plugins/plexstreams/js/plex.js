@@ -1,8 +1,29 @@
 var serverList = [];
+var streamPollingInterval = 5000;
+
+function startStreamPolling(update) {
+    function poll() {
+        if (document.hidden) {
+            setTimeout(poll, streamPollingInterval);
+            return;
+        }
+
+        var request = update();
+        if (request && typeof request.always === 'function') {
+            request.always(function() {
+                setTimeout(poll, streamPollingInterval);
+            });
+        } else {
+            setTimeout(poll, streamPollingInterval);
+        }
+    }
+
+    poll();
+}
 
 
 function updateDashboardStreamsNew() {
-    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+    return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
         var hostStreams = [];
@@ -64,7 +85,7 @@ function updateDashboardStreamsNew() {
 
 
 function updateDashboardStreams() {
-    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+    return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         //$('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
         if (streams.length > 0) {
@@ -128,7 +149,7 @@ function uCWord(str) {
 }
 
 function updateFullStreamInfo() {
-    $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
+    return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         if (streams.length > 0) {
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
@@ -247,14 +268,21 @@ function updateServerList(dest) {
     $('#' + dest).val(list.join(','));
 }
 
-function getServers(containerSelector, selected) {
-    var url = '/plugins/plexstreams/getServers.php?useSsl=' + $('input[name="FORCE_PLEX_HTTPS"]:checked').val();
+function getServers(containerSelector, selected, token) {
     var $host = $(containerSelector);
     $host.hide();
     $('.lds-dual-ring').show();
-    selected = selected.split(',');
+    selected = (selected || '').split(',');
     $host.html('');
-    $.get(url).done(function(data) {
+    $.ajax({
+        url: '/plugins/plexstreams/getServers.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+            useSsl: $('input[name="FORCE_PLEX_HTTPS"]:checked').val(),
+            token: token || $('#plex-token').val()
+        }
+    }).done(function(data) {
         serverList = data.serverList;
         if (Object.keys(serverList).length > 0) {
             for (var id in serverList) {
@@ -276,6 +304,11 @@ function getServers(containerSelector, selected) {
         } else {
             $host.html('<p>No Servers found, please enter server in Custom Servers Field');
         }
+        $host.show();
+        $('.lds-dual-ring').hide();
+    }).fail(function(jqXHR) {
+        var message = jqXHR.responseJSON && jqXHR.responseJSON.error ? jqXHR.responseJSON.error : 'Unable to retrieve Plex servers.';
+        $host.html('<p>' + message + '</p>');
         $host.show();
         $('.lds-dual-ring').hide();
     });
@@ -454,10 +487,10 @@ function PlexOAuth(success, error, pre) {
                 success: function (data) {
                     if (data.authToken){
                         closePlexOAuthWindow();
-                        getServers('#hostcontainer', $('#HOST').val());
                         if (typeof success === "function") {
                             success(data.authToken)
                         }
+                        getServers('#hostcontainer', $('#HOST').val(), data.authToken);
                     }
                 },
                 error: function (jqXHR, textStatus, errorThrown) {

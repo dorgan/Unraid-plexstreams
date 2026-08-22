@@ -138,8 +138,7 @@ $(function() {
             sortTable($('#db-box3'), currentSortOrder3);
         }
 
-        updateDashboardStreams();
-        setInterval(updateDashboardStreams, 5000);
+        startStreamPolling(updateDashboardStreams);
     //}, 3000);
     setInterval(function() {
         var currentSortOrder1 = $.cookie('db-box1');

@@ -95,7 +95,6 @@ $(function() {
     sortTable($('#db-box2'),$.cookie('db-box2'));
     sortTable($('#db-box3'),$.cookie('db-box3'));
 
-    updateDashboardStreams();
-    setInterval(updateDashboardStreams, 5000)
+    startStreamPolling(updateDashboardStreams);
 });
 </script>
