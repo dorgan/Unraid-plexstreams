@@ -8,4 +8,16 @@
     } else {
         $cfg = array();
     }
+
+    $defaults = array(
+        'HOST' => '',
+        'TOKEN' => '',
+        'CUSTOM_SERVERS' => '',
+        'DISPLAY_NAV' => '1',
+        'DISPLAY_WIDGET' => '1',
+        'FORCE_PLEX_HTTPS' => '0',
+        'DEBUG_LOGGING' => '0'
+    );
+
+    $cfg = array_merge($defaults, $cfg);
 ?>

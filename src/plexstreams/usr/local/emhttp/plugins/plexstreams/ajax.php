@@ -12,12 +12,7 @@
             require_once "$docroot/webGui/include/Wrappers.php";
             extract(parse_plugin_cfg('dynamix',true));
 
-            $streams = getStreams($cfg);
-            $mergedStreams = mergeStreams($streams, $cfg);
-            
-            if (isset($_REQUEST['dbg'])) {
-                v_d($mergedStreams);
-            }
+            $mergedStreams = getMergedStreams($cfg);
             echo(json_encode($mergedStreams));
         } else {
             http_response_code(500);

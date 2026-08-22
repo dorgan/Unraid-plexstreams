@@ -24,6 +24,7 @@
     $serverList = getServers($cfg);
 
     if ($serverList === false) {
+        debugLog($cfg, 'Plex server discovery failed');
         http_response_code(502);
         echo(json_encode(array('error' => 'Unable to reach Plex server discovery. Check that Unraid can access plex.tv.')));
         exit;

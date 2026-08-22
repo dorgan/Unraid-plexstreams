@@ -102,6 +102,8 @@ $(function() {
     // append data from the table into the correct one
     $("#db-box<?php echo $dashboard_widget_pos ?>").append($(".plex_streams_container").html());
 
+    startStreamPolling(updateDashboardStreams);
+
     //setTimeout(function() {
         // reload toggle to get the correct state
         toggleView('dash_plexstreams', true);
@@ -138,7 +140,6 @@ $(function() {
             sortTable($('#db-box3'), currentSortOrder3);
         }
 
-        startStreamPolling(updateDashboardStreams);
     //}, 3000);
     setInterval(function() {
         var currentSortOrder1 = $.cookie('db-box1');

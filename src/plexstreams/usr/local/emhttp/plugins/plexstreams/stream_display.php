@@ -189,6 +189,21 @@
         backdrop-filter: blur(7px);
     }
 
+    #streams-loading {
+        align-items: center;
+        background: #000;
+        display: flex;
+        height: 225px;
+        justify-content: center;
+        width: 500px;
+    }
+
+    #streams-loading .lds-dual-ring {
+        left: auto;
+        position: relative;
+        top: auto;
+    }
+
 </style>
 <script>
     function openBox(cmd,title,height,width,load,func,id) {
@@ -215,60 +230,9 @@
         require_once "$docroot/plugins/$plugin/includes/Legacy.php";
     }
 
-    $mergedStreams = [];
-
     if (!empty($cfg['TOKEN'])) {
-        $streams = getStreams($cfg);
-        
-        $mergedStreams = mergeStreams($streams, $cfg);
         echo('<h4 style="margin-bottom:0px;display:none;" id="hover-message">' . _('Hover the stream for details') . '</h4>');
-        if (count($mergedStreams) > 0) {
-            echo ('<div id="streams-container"><ul>');     
-               
-            foreach($mergedStreams as $idx => $stream) {
-                echo('
-                    <li class="stream-container" id="' . $stream['id'] . '">
-                        <div class="stream-subcontainer">
-                            <div class="stream" style="background-image:url(' . $stream['artUrl'] .');">
-                                <div class="blur">
-                                    <div class="details">
-                                        <ul class="detail-list">
-                                            <li><div class="label">' . _('Server') . '</div><div class="value">' . (!empty($stream['alias']) ? $stream['alias'] : $stream['address']) .'</div></li>
-                                            ' . (isset($stream['lengthDisplay']) ? '<li><div class="label">' . _('Length') . '</div><div class="value">' . $stream['lengthDisplay'] .'</div></li>' : '' ) .'
-                                            <li><div class="label">' . _('Stream') . '</div><div class="stream value">' . ucwords($stream['streamDecision']) .'</div></li>
-                                            <li><div class="label">' . _('Location') . '</div><div class="value" title="' . $stream['locationDisplay'] . '" style="pointer:default;">' .$stream['locationDisplay'] .'</div></li>
-                                            <li><div class="label">' . _('Bandwidth') . '</div><div class="bandwidth value">' .$stream['bandwidth'] . ' Mbps</div></li>
-                                            <li><div class="label">' . _('Audio') . '</div><div class="audio value">' . ucwords($stream['streamInfo']['audio']['@attributes']['decision'] ?? $stream['streamInfo']['audio']['decision']) . '</div></li>
-                ');
-                if (isset($stream['streamInfo']['video'])) {
-                    echo('                  <li><div class="label">' . _('Video') . '</div><div class="video value">' . ucwords($stream['streamInfo']['video']['@attributes']['decision'] ?? $stream['streamInfo']['video']['decision']) . '</div></li>');
-                }
-
-                echo('
-                                        </ul>
-                                    </div>
-                                    <div class="poster" style="background-image:url(' .$stream['thumbUrl'] .');">
-                                    </div>
-                                    <div class="userIcon" title="' .$stream['user'] . '" style="background-image:url(' . $stream['userAvatar'] . ')">
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bottom-box">
-                                <div class="progressBar" duration="' . $stream['duration'] .'" style="width:' . 
-                                    (!is_null($stream['duration']) ? $stream['percentPlayed'] : '0') .
-                                    '%"><div class="position">' . 
-                                    (!is_null($stream['duration']) ?  '<span class="currentPositionHours">' .str_pad($stream['currentPositionHours'], 2, 0, STR_PAD_LEFT) . '</span>:<span class="currentPositionMinutes">' . str_pad($stream['currentPositionMinutes'], 2, 0, STR_PAD_LEFT) . '</span>:<span class="currentPositionSeconds">' .str_pad($stream['currentPositionSeconds'], 2, 0, STR_PAD_LEFT) .'</span>  / ' . $stream['lengthDisplay'] : '' ) .'</div></div>
-                                <div class="title">' . ($stream['type'] === 'video' ? '<a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' . urlencode($stream['key']) . '&host=' .urlencode($stream['@host']) . '\',\'Details\',600,900); return false;">' : '') . $stream['title'] . ($stream['type'] === 'video' ? '</a>' : '' ) . '<div class="status"><i class="fa fa-' .$stream['stateIcon']  . '" title="' .ucwords($stream['state']) .'"></i></div></div>
-                            </div>
-                        </div>
-                    </li>
-                ');
-            }
-            echo('</ul></div>');
-            echo('<script>$(\'#hover-message\').show();</script>');
-        } else {
-            echo('<p style="text-align:center;font-style:italic;" id="no-streams">' . _('There are currently no active streams') . '</p>');
-        }
+        echo('<div id="streams-root"><div id="streams-loading"><div class="lds-dual-ring"></div></div></div>');
     } else {
         echo('<div class="caution"><i class="fa fa-exclamation-triangle"></i><div class="text">' . _('Please provide server details under Settings -> Network Services -> Plex Streams or') . ' <a href="/Settings/PlexStreams">' . _('click here') .'</a></div></div>');
     }

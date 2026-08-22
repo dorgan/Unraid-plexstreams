@@ -21,19 +21,26 @@ function startStreamPolling(update) {
     poll();
 }
 
+function renderHostStreamCounts(hostStreams) {
+    var $container = $('#stream_count_container');
+    $container.empty();
+
+    Object.keys(hostStreams).forEach(function(host) {
+        $container.append('<div><strong>' + host + ':</strong> ' + hostStreams[host] + ' ' + _('Active Stream(s)') + '</div>');
+    });
+}
 
 function updateDashboardStreamsNew() {
     return $.ajax('/plugins/plexstreams/ajax.php').done(function(streams){
         $('#plexstreams_count').html(streams.length);
         $('#retrieving_streams').remove();
-        var hostStreams = [];
+        var hostStreams = {};
         if (streams.length > 0) {
             $('.no_streams').remove();
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
-            var hostStreams = [];
             streams.forEach(function(stream) {
-                $container = $('#' + stream.id);
+            var $container = $('#' + stream.id);
                 if (hostStreams[stream['alias']] === undefined) {
                     hostStreams[stream['alias']] = 1;
                 } else {
@@ -49,19 +56,14 @@ function updateDashboardStreamsNew() {
                     var node = $container[0];
                 } else {
                     var node = $container[0];
-                    $cells = $container.find('span');
+                    var $cells = $container.find('span');
                     $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
                 }
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
                 $(node).attr('prevStat', stream.state);
             });
-            $('#stream_count_container').html('');
-            for (var host in hostStreams) {
-                if(hostStreams.hasOwnProperty(host)) {
-                    $('#stream_count_container').append('<div><strong>' + host + ':</strong> ' + hostStreams[host] + ' ' +  _('Active Stream(s)') + '</div>');
-                }
-            }
+            renderHostStreamCounts(hostStreams);
             $('#plexstreams_streams tr[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
@@ -92,9 +94,9 @@ function updateDashboardStreams() {
             $('.no_streams').remove();
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
-            var hostStreams = [];
+            var hostStreams = {};
             streams.forEach(function(stream) {
-                $container = $('#' + stream.id);
+                var $container = $('#' + stream.id);
                 if (hostStreams[stream['alias']] === undefined) {
                     hostStreams[stream['alias']] = 1;
                 } else {
@@ -110,19 +112,14 @@ function updateDashboardStreams() {
                     var node = $container[0];
                 } else {
                     var node = $container[0];
-                    $cells = $container.find('td');
+                    var $cells = $container.find('td');
                     $($cells[1]).find('i').attr('class', 'fa fa-' + stream.stateIcon).attr('title', uCWord(stream.state));
                 }
                 $container.attr('updatedat', lastUpdate);
                 node.prevState = stream.state;
                 updateDuration(node, stream);
             });
-            $('#stream_count_container').html('');
-            for (var host in hostStreams) {
-                if(hostStreams.hasOwnProperty(host)) {
-                    $('#stream_count_container').append('<div><strong>' + host + ':</strong> ' + hostStreams[host] + ' ' +  _('Active Stream(s)') + '</div>');
-                }
-            }
+            renderHostStreamCounts(hostStreams);
             $('#plexstreams_streams tr[updatedat]').each(function() {
                 if ($(this).is('[updatedat]')) {
                     if ($(this).attr('updatedat') !== lastUpdate.toString()) {
@@ -153,17 +150,18 @@ function updateFullStreamInfo() {
         if (streams.length > 0) {
             var currentDate = new Date();
             var lastUpdate = currentDate.getTime();
-            $streamHolder = $('#streams-container');
+            var $streamHolder = $('#streams-container ul');
             if ($streamHolder.length === 0) {
-                $('.no_streams').replaceWith('<div id="streams-container"><ul></ul>');
+                $('#streams-root').html('<div id="streams-container"><ul></ul></div>');
                 $streamHolder = $('#streams-container ul');
             }
+            $('#hover-message').show();
             streams.forEach(function(stream) {
                 var node = $('#' + stream.id + '.stream-container')[0];
-                $container = $(node);
+                var $container = $(node);
                 if ($container.length > 0) {
-                    $status = $container.find('.status i');
-                    $progressBar = $container.find('.progressBar');
+                    var $status = $container.find('.status i');
+                    var $progressBar = $container.find('.progressBar');
                     $progressBar.css({
                         width: stream.percentPlayed + '%'
                     });
@@ -181,6 +179,7 @@ function updateFullStreamInfo() {
                     $container = $('<li class="stream-container" id="' + stream.id + '"><div class="stream-subcontainer"><div class="stream" style="background-image:url(' + stream.artUrl  + ');"><div class="blur"><div class="details"><ul class="detail-list"><li><div class="label">' + _('Server') + '</div><div class="value">' + stream.alias + '</div></li><li><div class="label">' + _('Length') + '</div><div class="value">' + stream.duration + '</div></li><li><div class="label">' + _('Stream') + '</div><div class="stream value">' + stream.streamDecision + '</div></li><li><div class="label">' + _('Location') + '</div><div class="value" title="' + stream.locationDisplay + '" style="pointer:default;">' + stream.locationDisplay + '</div></li><li><div class="label">' + _('Bandwidth') + '</div><div class="bandwidth value">' + stream.bandwidth + '</div></li><li><div class="label">' + _('Audio') + '</div><div class="audio value">' + stream.streamInfo.audio['@attributes'].decision + '</div></li><li>' +  (stream.streamInfo.video ? '<div class="label">' + _('Video') + '</div><div class="video value">' + stream.streamInfo.video['@attributes'].decision + '</div></li>' : '') + '</ul></div><div class="poster" style="background-image:url(' + stream.thumbUrl + ');"></div><div class="userIcon" title="' + stream.user + '" style="background-image:url(' + stream.userAvatar + ')"></div></div></div><div class="bottom-box"><div class="progressBar" duration="' + stream.duration + '" style="' + stream.percentPlayed + '%;"><div class="position"><span class="currentPositionHours">' + stream.currentPositionHours.toString().padStart(2, 0) + '</span>:<span class="currentPositionMinutes">' + stream.currentPositionMinutes.toString().padStart(2, 0) + '</span>:<span class="currentPositionSeconds">' + stream.currentPositionSeconds.toString().padStart(2, 0) + '</span>  / ' + stream.lengthDisplay + '</div></div><div class="title"><a href="#" onclick="openBox(\'/plugins/plexstreams/movieDetails.php?details=' + encodeURIComponent(stream.key) + '&host=' + encodeURIComponent(stream['@host'])  + '\',\'Details\',600,900); return false;">' + stream.title +'</a><div class="status"><i class="fa fa-' + stream.stateIcon + '" title="' + stream.status + '"></i></div></div></div></div></li>').appendTo($streamHolder);
                     node = $container[0];
                 }
+                $container.find('.progressBar').css('width', stream.percentPlayed + '%');
                 updateDuration(node, stream);
                 $container.attr('updatedat', lastUpdate);
                 node.prevState = stream.state;
@@ -197,24 +196,27 @@ function updateFullStreamInfo() {
                 }
             });
         } else {
-            if ($('#streams-container').length > 0) {
-                $('#streams-container').replaceWith('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></div>');
-            }
+            $('#hover-message').hide();
+            $('#streams-root').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + _('There are currently no active streams') + '</p></div>');
         }
     }).fail(function(jqXHR) {
-        if (jqXHR.status == '500') {
-            $('#plexstreams_streams').html('<tr><td colspan="4" align="center"><p style="text-align:center;font-style:italicl">' + _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') + '</p></td></tr>');
-        }
+        var message = jqXHR.status === 500 ? _('Please make sure you have') + ' <a href="/Settings/PlexStreams">' + _('setup') + '</a> ' + _('the plugin first') : _('Unable to retrieve stream information.');
+        $('#hover-message').hide();
+        $('#streams-root').html('<div class="no_streams"><span class="w100"><p style="text-align:center;font-style:italic;font-size:13px;">' + message + '</p></div>');
     });
 }
 
 function updateDuration(node, stream) {
+    if (!node) {
+        return;
+    }
+
     var $container = $(node);
 
     if (stream.duration) {
-        $hours = $container.find('.currentPositionHours');
-        $minutes = $container.find('.currentPositionMinutes');
-        $seconds = $container.find('.currentPositionSeconds');
+        var $hours = $container.find('.currentPositionHours');
+        var $minutes = $container.find('.currentPositionMinutes');
+        var $seconds = $container.find('.currentPositionSeconds');
     }
     if (node.prevState && node.prevState !== stream.state) {
         if (stream.duration) {
@@ -312,6 +314,37 @@ function getServers(containerSelector, selected, token) {
         $host.show();
         $('.lds-dual-ring').hide();
     });
+}
+
+function loadDebugLog() {
+    var $log = $('#plexstreams-debug-log');
+    if ($log.length === 0) {
+        return;
+    }
+
+    $.getJSON('/plugins/plexstreams/getDebugLog.php').done(function(data) {
+        $log.val(data.log || '');
+        $log.scrollTop($log[0].scrollHeight);
+    }).fail(function(jqXHR) {
+        var message = jqXHR.responseJSON && jqXHR.responseJSON.error ? jqXHR.responseJSON.error : 'Unable to load the debug log.';
+        $log.val(message);
+    });
+}
+
+function copyDebugLog() {
+    var log = document.getElementById('plexstreams-debug-log');
+    if (!log) {
+        return;
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(log.value);
+        return;
+    }
+
+    log.focus();
+    log.select();
+    document.execCommand('copy');
 }
 
 function setLocalStorage(key, value, path) {
@@ -422,6 +455,10 @@ function getPlexHeaders() {
     };
 }
 
+function logPlexDebugEvent(event) {
+    $.post('/plugins/plexstreams/debugLog.php', {event: event});
+}
+
 getPlexOAuthPin = function () {
     var x_plex_headers = getPlexHeaders();
     var deferred = $.Deferred();
@@ -431,9 +468,11 @@ getPlexOAuthPin = function () {
         type: 'POST',
         headers: x_plex_headers,
         success: function(data) {
+            logPlexDebugEvent('oauth_pin_received');
             deferred.resolve({pin: data.id, code: data.code});
         },
         error: function() {
+            logPlexDebugEvent('oauth_pin_failed');
             closePlexOAuthWindow();
             deferred.reject();
         }
@@ -456,6 +495,7 @@ function PlexOAuth(success, error, pre) {
     closePlexOAuthWindow();
     plex_oauth_window = PopupCenter('', 'Plex-OAuth', 600, 700);
     $(plex_oauth_window.document.body).html(plex_oauth_loader);
+    logPlexDebugEvent('oauth_started');
 
     getPlexOAuthPin().then(function (data) {
         var x_plex_headers = getPlexHeaders();
@@ -486,6 +526,7 @@ function PlexOAuth(success, error, pre) {
                 headers: x_plex_headers,
                 success: function (data) {
                     if (data.authToken){
+                        logPlexDebugEvent('oauth_token_received');
                         closePlexOAuthWindow();
                         if (typeof success === "function") {
                             success(data.authToken)
@@ -495,6 +536,7 @@ function PlexOAuth(success, error, pre) {
                 },
                 error: function (jqXHR, textStatus, errorThrown) {
                     if (textStatus !== "timeout") {
+                        logPlexDebugEvent('oauth_token_failed');
                         closePlexOAuthWindow();
                         if (typeof error === "function") {
                             error()

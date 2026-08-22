@@ -1,4 +1,3 @@
-
 <style>
 body {
     padding: 25px;
@@ -16,7 +15,7 @@ body {
 }
 
 .role .avatar {
-    backgorund-position: center;
+    background-position: center;
     border-radius: 50%;
     overflow: hidden;
     height: 75px;
@@ -29,12 +28,19 @@ body {
 </style>
 <?php
     include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
+    include('/usr/local/emhttp/plugins/plexstreams/includes/common.php');
 
     if (!empty($cfg['TOKEN']) && isset($_GET['details'])) {
         $host =  $_GET['host'];
         $url = urldecode($host) . urldecode($_GET['details']) . '?X-Plex-Token=' . $cfg['TOKEN'];
-        $details = getUrl($url);
-        $video = $details['Video'];
+        $details = getXml($url);
+        $video = $details['Video'] ?? null;
+
+        if ($video === null) {
+            echo('<p>Unable to retrieve Plex media details.</p>');
+            exit;
+        }
+
         $videoAttr = $video['@attributes'];
         $title = $videoAttr['title'];
         $directors = [];
@@ -91,32 +97,4 @@ body {
             echo('</p>');
         }
         //echo('</div>');
-    }
-
-
-    function getUrl($url) {
-        $arrContextOptions=array(
-            "http" => array(
-                "method" => "GET",
-                "header" => 
-                    "Content-Type: application/xml; charset=utf-8;\r\n".
-                    "Connection: close\r\n".
-                    "Cache-Control: no-cache, no-store, must-revalidate, max-age=0\r\n".
-                    "Pragma: no-cache\r\n",
-                "ignore_errors" => true,
-                "timeout" => (float)30.0
-            ),
-            "ssl"=>array(
-                "allow_self_signed"=>true,
-                "verify_peer"=>false,
-                "verify_peer_name"=>false,
-            )
-        );
-        return json_decode(json_encode(simplexml_load_string(file_get_contents($url, false, stream_context_create($arrContextOptions)))), TRUE);
-    }
-
-    function v_d($obj) {
-        echo('<pre>');
-        var_dump($obj);
-        echo('</pre>');
     }

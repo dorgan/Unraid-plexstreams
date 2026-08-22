@@ -72,6 +72,7 @@ tar -C "$source_dir" \
     --exclude='./pkg_build.sh' \
     --exclude='./sftp-config.json' \
     --exclude='./.DS_Store' \
+    --exclude='./tests' \
     -cf - . | tar -C "$temp_dir" -xf -
 
 tar -C "$temp_dir" --uid 0 --gid 0 -cJf "$package" usr

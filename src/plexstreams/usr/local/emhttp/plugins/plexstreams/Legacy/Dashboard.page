@@ -87,6 +87,8 @@ $(function() {
     // append data from the table into the correct one
     $("#db-box<?php echo $dashboard_widget_pos ?>").append($(".dash_plexstreams").html());
 
+    startStreamPolling(updateDashboardStreams);
+
     // reload toggle to get the correct state
     toggleView('dash_plexstreams_toggle',true);
 
@@ -95,6 +97,5 @@ $(function() {
     sortTable($('#db-box2'),$.cookie('db-box2'));
     sortTable($('#db-box3'),$.cookie('db-box3'));
 
-    startStreamPolling(updateDashboardStreams);
 });
 </script>
