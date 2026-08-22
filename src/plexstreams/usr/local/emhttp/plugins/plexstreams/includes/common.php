@@ -217,6 +217,45 @@
         return $thumb;
     }
 
+    function getLiveTvChannelContext($source, $cfg, $ratingKey) {
+        static $cache = null;
+        $cacheFile = '/boot/config/plugins/plexstreams/livetv-context-cache.json';
+        $cacheKey = ($source['@host'] ?? '') . ':' . $ratingKey;
+
+        if ($ratingKey === '' || empty($source['@host']) || empty($cfg['TOKEN'])) {
+            return [];
+        }
+
+        if ($cache === null) {
+            $savedCache = @file_get_contents($cacheFile);
+            $cache = is_string($savedCache) ? json_decode($savedCache, true) : [];
+            if (!is_array($cache)) {
+                $cache = [];
+            }
+        }
+
+        if (isset($cache[$cacheKey]) && $cache[$cacheKey]['expiresAt'] >= time()) {
+            return $cache[$cacheKey]['context'];
+        }
+
+        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey) . '?X-Plex-Token=' . urlencode($cfg['TOKEN']);
+        $metadata = getXml($url, 2);
+        $mediaItems = $metadata['MediaContainer']['Video']['Media'] ?? $metadata['Video']['Media'] ?? [];
+        $context = ['channel' => '', 'network' => ''];
+        foreach (normalizeXmlList($mediaItems) as $mediaItem) {
+            $attributes = $mediaItem['@attributes'] ?? [];
+            $context['channel'] = $attributes['channelCallSign'] ?? '';
+            $context['network'] = $attributes['network'] ?? '';
+            if ($context['channel'] !== '' || $context['network'] !== '') {
+                break;
+            }
+        }
+
+        $cache[$cacheKey] = ['expiresAt' => time() + 3600, 'context' => $context];
+        @file_put_contents($cacheFile, json_encode($cache), LOCK_EX);
+        return $context;
+    }
+
     function setPluginPageVisibility($pagePath, $visible) {
         $disabledPath = $pagePath . '.off';
         if (!$visible && file_exists($pagePath)) {
@@ -299,6 +338,76 @@
         }
 
         return array_values($servers);
+    }
+
+    function getPlexContainerCount($host, $path, $token) {
+        $response = getXml(rtrim($host, '/') . $path . (strpos($path, '?') === false ? '?' : '&') . 'X-Plex-Token=' . urlencode($token), 5);
+        $attributes = $response['MediaContainer']['@attributes'] ?? $response['@attributes'] ?? [];
+
+        return isset($attributes['totalSize']) ? (int)$attributes['totalSize'] : (int)($attributes['size'] ?? 0);
+    }
+
+    function getServerDetails($cfg) {
+        $details = [];
+
+        foreach (getConfiguredHosts($cfg) as $host) {
+            $host = rtrim($host, '/');
+            $root = getXml($host . '/?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $rootAttributes = $root['MediaContainer']['@attributes'] ?? $root['@attributes'] ?? [];
+            $sectionResponse = getXml($host . '/library/sections?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $sections = normalizeXmlList($sectionResponse['MediaContainer']['Directory'] ?? $sectionResponse['Directory'] ?? []);
+            $libraries = [];
+
+            foreach ($sections as $section) {
+                $attributes = $section['@attributes'] ?? [];
+                $type = $attributes['type'] ?? '';
+                if (!in_array($type, ['movie', 'show', 'artist'], true)) {
+                    continue;
+                }
+
+                $libraries[$type] = ($libraries[$type] ?? 0) + getPlexContainerCount(
+                    $host,
+                    '/library/sections/' . rawurlencode($attributes['key']) . '/all?X-Plex-Container-Start=0&X-Plex-Container-Size=0',
+                    $cfg['TOKEN']
+                );
+
+                if ($type === 'show') {
+                    $libraries['episode'] = ($libraries['episode'] ?? 0) + getPlexContainerCount(
+                        $host,
+                        '/library/sections/' . rawurlencode($attributes['key']) . '/all?type=4&X-Plex-Container-Start=0&X-Plex-Container-Size=0',
+                        $cfg['TOKEN']
+                    );
+                }
+                if ($type === 'artist') {
+                    $libraries['album'] = ($libraries['album'] ?? 0) + getPlexContainerCount(
+                        $host,
+                        '/library/sections/' . rawurlencode($attributes['key']) . '/all?type=9&X-Plex-Container-Start=0&X-Plex-Container-Size=0',
+                        $cfg['TOKEN']
+                    );
+                }
+            }
+
+            $dvrResponse = getXml($host . '/livetv/dvrs?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $dvrs = normalizeXmlList($dvrResponse['MediaContainer']['Dvr'] ?? $dvrResponse['Dvr'] ?? []);
+            $tuners = 0;
+            foreach ($dvrs as $dvr) {
+                foreach (normalizeXmlList($dvr['Device'] ?? []) as $device) {
+                    if (($device['@attributes']['state'] ?? '') === 'enabled') {
+                        $tuners += (int)($device['@attributes']['tuners'] ?? 0);
+                    }
+                }
+            }
+
+            $details[$host] = [
+                'host' => $host,
+                'remoteAccess' => ($rootAttributes['myPlexMappingState'] ?? '') === 'mapped' ? 'direct' : 'unknown',
+                'libraries' => $libraries,
+                'activeLiveTv' => getPlexContainerCount($host, '/livetv/sessions', $cfg['TOKEN']),
+                'tuners' => $tuners
+            ];
+        }
+
+        return array_values($details);
     }
 
     function parseXml($response) {
@@ -507,9 +616,10 @@
     }
 
     function createStreamBase($source, $cfg, $media, $item, $type, $title, $titleString, $duration, $artPath, $thumbPath) {
-        $player = $item['Player']['@attributes'];
+        $player = $item['Player']['@attributes'] ?? [];
         $user = $item['User']['@attributes'] ?? [];
-        $session = $item['Session']['@attributes'];
+        $session = $item['Session']['@attributes'] ?? [];
+        $itemAttributes = $item['@attributes'] ?? [];
         $userTitle = $user['title'] ?? '';
         $userIsUnknown = $userTitle === '';
 
@@ -519,7 +629,23 @@
             'alias' => getServerAlias($source['shortHost'], $cfg),
             'id' => $media['@attributes']['id'],
             'type' => $type,
-            'player' => $player['product'],
+            'player' => $player['product'] ?? 'Plex',
+            'client' => [
+                'product' => $player['product'] ?? 'Plex',
+                'name' => $player['title'] ?? '',
+                'platform' => $player['platform'] ?? '',
+                'device' => $player['device'] ?? ''
+            ],
+            'connection' => [
+                'location' => $session['location'] ?? '',
+                'relayed' => ($player['relayed'] ?? '0') === '1'
+            ],
+            'mediaIdentity' => [
+                'seriesTitle' => $itemAttributes['grandparentTitle'] ?? '',
+                'season' => $itemAttributes['parentIndex'] ?? null,
+                'episode' => $itemAttributes['index'] ?? null,
+                'episodeTitle' => $itemAttributes['title'] ?? ''
+            ],
             'title' => $title,
             'titleString' => $titleString,
             'key' => $item['@attributes']['key'],
@@ -529,13 +655,84 @@
             'user' => $userIsUnknown ? 'Unknown' : $userTitle,
             'userIsUnknown' => $userIsUnknown,
             'userAvatar' => $user['thumb'] ?? '',
-            'state' => $player['state'],
-            'stateIcon' => getStateIcon($player['state']),
+            'state' => $player['state'] ?? 'buffering',
+            'stateIcon' => getStateIcon($player['state'] ?? 'buffering'),
             'length' => $duration,
-            'location' => $session['location'],
-            'address' => $player['address'],
-            'bandwidth' => round((int)$session['bandwidth'] / 1000, 1)
+            'location' => $session['location'] ?? '',
+            'address' => $player['address'] ?? '',
+            'bandwidth' => round((int)($session['bandwidth'] ?? 0) / 1000, 1)
         ];
+    }
+
+    function getAudioChannelLabel($attributes) {
+        $channels = (int)($attributes['channels'] ?? $attributes['audioChannels'] ?? 0);
+        if ($channels === 1) {
+            return 'Mono';
+        }
+        if ($channels === 2) {
+            return 'Stereo';
+        }
+        if ($channels === 6) {
+            return '5.1';
+        }
+        if ($channels === 8) {
+            return '7.1';
+        }
+        return $channels > 0 ? $channels . ' ch' : '';
+    }
+
+    function getVideoQualityLabel($attributes, $fallbackResolution = '', $fallbackCodec = '') {
+        $height = $attributes['height'] ?? '';
+        $scanType = strtolower($attributes['scanType'] ?? '');
+        preg_match('/\b\d{3,4}[pi]\b/i', $attributes['displayTitle'] ?? '', $displayResolution);
+        $resolution = $displayResolution[0] ?? ($height ? $height . ($scanType === 'interlaced' ? 'i' : 'p') : ($attributes['videoResolution'] ?? $fallbackResolution));
+        $codec = $attributes['codec'] ?? $attributes['videoCodec'] ?? $fallbackCodec;
+        return trim($resolution . ' ' . strtoupper($codec));
+    }
+
+    function getAudioQualityLabel($attributes, $fallbackCodec = '', $fallbackChannels = '') {
+        $codec = $attributes['codec'] ?? $attributes['audioCodec'] ?? $fallbackCodec;
+        preg_match('/\b(?:[57]\.1|Stereo|Mono)\b/i', $attributes['displayTitle'] ?? '', $displayChannels);
+        $channels = $displayChannels[0] ?? getAudioChannelLabel($attributes) ?: $fallbackChannels;
+        return trim(strtoupper($codec) . ($channels ? ' ' . $channels : ''));
+    }
+
+    function getPlaybackQuality($mediaAttributes, $videoAttributes, $audioAttributes, $transcodeAttributes) {
+        $sourceVideoAttributes = $videoAttributes;
+        $sourceAudioAttributes = $audioAttributes;
+        if (!empty($transcodeAttributes['sourceVideoCodec'])) {
+            $sourceVideoAttributes['codec'] = $transcodeAttributes['sourceVideoCodec'];
+        }
+        if (!empty($transcodeAttributes['sourceAudioCodec'])) {
+            $sourceAudioAttributes['codec'] = $transcodeAttributes['sourceAudioCodec'];
+        }
+        $sourceVideo = getVideoQualityLabel($sourceVideoAttributes, $mediaAttributes['videoResolution'] ?? '', $mediaAttributes['videoCodec'] ?? '');
+        $sourceAudio = getAudioQualityLabel($sourceAudioAttributes, $mediaAttributes['audioCodec'] ?? '', getAudioChannelLabel($mediaAttributes));
+        $videoChanged = ($transcodeAttributes['videoDecision'] ?? '') === 'transcode';
+        $audioChanged = ($transcodeAttributes['audioDecision'] ?? '') === 'transcode';
+
+        return [
+            'videoSource' => $sourceVideo,
+            'videoOutput' => $videoChanged ? getVideoQualityLabel($mediaAttributes, '', $transcodeAttributes['videoCodec'] ?? '') : $sourceVideo,
+            'videoTranscoded' => $videoChanged,
+            'audioSource' => $sourceAudio,
+            'audioOutput' => $audioChanged ? getAudioQualityLabel($mediaAttributes, $transcodeAttributes['audioCodec'] ?? '', getAudioChannelLabel($mediaAttributes)) : $sourceAudio,
+            'audioTranscoded' => $audioChanged
+        ];
+    }
+
+    function getSubtitleState($subtitleAttributes, $transcodeAttributes) {
+        if (empty($subtitleAttributes)) {
+            return ['state' => 'off', 'label' => 'Off'];
+        }
+        $decision = strtolower($transcodeAttributes['subtitleDecision'] ?? $subtitleAttributes['decision'] ?? 'directplay');
+        if (strpos($decision, 'burn') !== false) {
+            return ['state' => 'burned', 'label' => 'Burned in'];
+        }
+        if ($decision === 'transcode') {
+            return ['state' => 'converted', 'label' => 'Converted'];
+        }
+        return ['state' => 'direct', 'label' => 'Direct play'];
     }
 
     function normalizeXmlList($value) {
@@ -625,7 +822,7 @@
                                     $title,
                                     $duration,
                                     $artThumb,
-                                    $video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb'] ?? $artThumb
+                                    $video['@attributes']['parentThumb'] ?? $video['@attributes']['grandparentThumb'] ?? $video['@attributes']['thumb'] ?? $artThumb
                                 ),
                                 [
                                 'endSecondsFromNow' => $timing['endSecondsFromNow']
@@ -635,18 +832,38 @@
                             );
 
                             $mergedStream['locationDisplay'] = getLocationDisplay($mergedStream['location'], $mergedStream['address']);
-                            
+                            $videoAttributes = [];
+                            $audioAttributes = [];
+                            $subtitleAttributes = [];
                             foreach (normalizeXmlList($media['Part']['Stream'] ?? []) as $stream) {
                                 if ($stream['@attributes']['streamType'] === '2') {
                                     $mergedStream['streamInfo']['audio'] = $stream;
                                     $mergedStream['streamInfo']['audio']['@attributes']['decision'] = $mergedStream['streamInfo']['audio']['@attributes']['decision'] ?? 'direct play';
+                                    $audioAttributes = $stream['@attributes'];
                                 } else if ($stream['@attributes']['streamType'] === '1') {
                                     $mergedStream['streamInfo']['video'] = $stream;
                                     $mergedStream['streamInfo']['video']['@attributes']['decision'] = $mergedStream['streamInfo']['video']['@attributes']['decision'] ?? 'direct play';
+                                    $videoAttributes = $stream['@attributes'];
+                                } else if ($stream['@attributes']['streamType'] === '3' && ($stream['@attributes']['selected'] ?? '0') === '1') {
+                                    $subtitleAttributes = $stream['@attributes'];
                                 }
                             }
-                            
+
+                            $transcodeAttributes = $video['TranscodeSession']['@attributes'] ?? [];
                             $mergedStream['streamDecision'] = formatStreamDecision($media['Part']['@attributes']['decision']);
+                            $mergedStream['playbackQuality'] = getPlaybackQuality($media['@attributes'], $videoAttributes, $audioAttributes, $transcodeAttributes);
+                            $mergedStream['subtitle'] = getSubtitleState($subtitleAttributes, $transcodeAttributes);
+                            $mergedStream['liveContext'] = [
+                                'channel' => $media['@attributes']['channelCallSign'] ?? '',
+                                'network' => $media['@attributes']['network'] ?? '',
+                                'programTitle' => $duration === null ? ($video['@attributes']['title'] ?? '') : ''
+                            ];
+                            if ($duration === null && $mergedStream['liveContext']['channel'] === '' && $mergedStream['liveContext']['network'] === '') {
+                                $mergedStream['liveContext'] = array_merge(
+                                    $mergedStream['liveContext'],
+                                    getLiveTvChannelContext($streams, $cfg, $video['@attributes']['ratingKey'] ?? '')
+                                );
+                            }
 
                             if ($mergedStream['streamDecision'] === 'transcode') {
                                 if ($mergedStream['streamInfo']['video']['@attributes']['decision'] === 'transcode') {

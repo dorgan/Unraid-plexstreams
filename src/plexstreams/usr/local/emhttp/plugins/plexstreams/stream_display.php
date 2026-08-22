@@ -35,6 +35,7 @@
     .plexstreams-server-group {
         display: grid;
         gap: 12px;
+        overflow: clip;
     }
 
     .plexstreams-server-header {
@@ -47,7 +48,7 @@
     }
 
     .plexstreams-server-identity {
-        color: #a9b2b3;
+        color: #a9b2b3 !important;
         display: grid;
         font-size: 12px;
         gap: 4px;
@@ -71,6 +72,101 @@
         white-space: nowrap;
     }
 
+    .plexstreams-server-details-toggle {
+        appearance: none;
+        background: transparent !important;
+        border: 1px solid transparent !important;
+        border-radius: 4px;
+        color: #a9b2b3;
+        cursor: pointer;
+        display: grid;
+        flex: 0 0 28px;
+        font-size: 13px;
+        height: 28px;
+        line-height: 1;
+        margin: 0;
+        padding: 0 !important;
+        place-items: center;
+        transition: background-color 160ms ease, color 160ms ease;
+        width: 28px;
+    }
+
+    .plexstreams-server-details-toggle:hover {
+        background: rgba(121, 184, 118, 0.12) !important;
+        color: #8dbb7f !important;
+    }
+
+    .plexstreams-server-details-toggle:focus-visible {
+        border-color: #8dbb7f !important;
+        outline: 0;
+    }
+
+    .plexstreams-server-details-toggle i {
+        transition: transform 220ms ease;
+    }
+
+    .plexstreams-server-group--expanded .plexstreams-server-details-toggle i {
+        transform: rotate(180deg);
+    }
+
+    .plexstreams-server-details {
+        display: grid;
+        gap: 8px 12px;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        max-height: 0;
+        opacity: 0;
+        overflow: hidden;
+        transform: translateY(-5px);
+        transition: max-height 280ms ease, opacity 180ms ease, transform 280ms ease, visibility 0s linear 280ms;
+        visibility: hidden;
+    }
+
+    .plexstreams-server-group--expanded .plexstreams-server-details {
+        max-height: 360px;
+        opacity: 1;
+        transform: translateY(0);
+        transition-delay: 0s;
+        visibility: visible;
+    }
+
+    .plexstreams-server-details.is-loading {
+        align-items: center;
+        color: #a9b2b3;
+        display: flex;
+        font-size: 12px;
+        grid-template-columns: none;
+        min-height: 36px;
+    }
+
+    .plexstreams-server-details-spinner {
+        animation: plexstreams-server-details-spin 700ms linear infinite;
+        border: 2px solid rgba(169, 178, 179, 0.3);
+        border-right-color: #8dbb7f;
+        border-radius: 50%;
+        display: inline-block;
+        flex: 0 0 13px;
+        height: 13px;
+        width: 13px;
+    }
+
+    @keyframes plexstreams-server-details-spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .plexstreams-server-detail {
+        border-left: 2px solid rgba(121, 184, 118, 0.7);
+        color: #a9b2b3;
+        display: grid;
+        font-size: 11px;
+        gap: 3px;
+        padding-left: 8px;
+    }
+
+    .plexstreams-server-detail strong {
+        color: #f1f4f0;
+        font-size: 14px;
+    }
+
     #streams-container ul {
         display: flex;
         flex-wrap: wrap;
@@ -78,6 +174,22 @@
         list-style: none;
         margin: 0;
         padding: 0;
+    }
+
+    .plexstreams-empty-state {
+        align-items: center;
+        color: #a9b2b3;
+        display: flex;
+        flex: 1 1 100%;
+        font-size: 13px;
+        font-style: italic;
+        justify-content: center;
+        min-height: 96px;
+        text-align: center;
+    }
+
+    .plexstreams-empty-state p {
+        margin: 0;
     }
 
     .stream-container {
@@ -90,7 +202,21 @@
         max-width: 820px;
         overflow: hidden;
         position: relative;
+        transition: border-color 420ms ease, opacity 420ms ease, transform 420ms cubic-bezier(0.2, 0, 0, 1);
         width: min(100%, 820px);
+    }
+
+    .stream-container.plexstreams-stream-entering {
+        border-color: transparent;
+        opacity: 0;
+        transform: translateY(10px) scale(0.98);
+    }
+
+    .stream-container.plexstreams-stream-exiting {
+        border-color: transparent;
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(-8px) scale(0.98);
     }
 
     .stream-subcontainer {
@@ -207,6 +333,18 @@
         white-space: nowrap;
     }
 
+    .plexstreams-card-context {
+        color: #a5a5a5;
+        font-size: 10px;
+        left: 70px;
+        max-width: calc(100% - 160px);
+        overflow: hidden;
+        position: absolute;
+        text-overflow: ellipsis;
+        top: 9px;
+        white-space: nowrap;
+    }
+
     .plexstreams-card-footer .stream-user {
         bottom: 12px;
         color: #a5a5a5;
@@ -222,6 +360,28 @@
         font-style: italic;
     }
 
+    .plexstreams-live-status {
+        align-items: center;
+        color: #8dbb7f;
+        display: inline-flex;
+        font-size: 11px;
+        font-weight: 700;
+        gap: 5px;
+        text-transform: uppercase;
+    }
+
+    .plexstreams-live-status i {
+        animation: plexstreams-live-pulse 1.6s ease-in-out infinite;
+        background: #8dbb7f;
+        border-radius: 50%;
+        height: 6px;
+        width: 6px;
+    }
+
+    .details .plexstreams-live-status {
+        font-size: 10px;
+    }
+
     .plexstreams-card-footer .plexstreams-card-title a {
         color: #fff;
         text-decoration: none;
@@ -235,7 +395,26 @@
         background: #8dbb7f;
         height: 4px;
         left: 0;
+        overflow: hidden;
+        position: relative;
         top: 0;
+    }
+
+    .stream-container.plexstreams-is-playing.plexstreams-has-playback-progress .progressBar::after {
+        animation: plexstreams-card-progress-sheen 2.4s linear infinite;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.55), transparent);
+        content: '';
+        inset: 0;
+        position: absolute;
+        transform: translateX(-100%);
+        width: 45%;
+    }
+
+    .stream-container.plexstreams-is-live.plexstreams-is-playing .progressBar {
+        animation: plexstreams-card-live-sheen 4.8s linear infinite;
+        background: linear-gradient(90deg, rgba(121, 184, 118, 0.18), rgba(141, 187, 127, 0.72), rgba(121, 184, 118, 0.18));
+        background-size: 200% 100%;
+        width: 100% !important;
     }
 
     .plexstreams-card-footer .position {
@@ -284,16 +463,55 @@
         z-index: 2;
     }
 
+    @keyframes plexstreams-card-progress-sheen {
+        to {
+            transform: translateX(325%);
+        }
+    }
+
+    @keyframes plexstreams-card-live-sheen {
+        from {
+            background-position: 200% 0;
+        }
+        to {
+            background-position: -200% 0;
+        }
+    }
+
+    @keyframes plexstreams-live-pulse {
+        from {
+            opacity: 0.45;
+            transform: scale(0.75);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+
     @media (max-width: 760px) {
         .plexstreams-server-header {
-            align-items: start;
-            flex-direction: column;
-            gap: 6px;
+            align-items: center;
+            display: grid;
+            gap: 6px 12px;
+            grid-template-columns: minmax(0, 1fr) auto;
+        }
+
+        .plexstreams-server-identity {
+            grid-column: 1;
+            grid-row: 1;
         }
 
         .plexstreams-server-summary {
+            grid-column: 1 / -1;
+            grid-row: 2;
             text-align: left;
             white-space: normal;
+        }
+
+        .plexstreams-server-details-toggle {
+            grid-column: 2;
+            grid-row: 1;
         }
 
         .details ul {
