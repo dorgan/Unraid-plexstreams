@@ -2,7 +2,7 @@
 
 ## Scope
 
-This document describes the plugin at `v2023.11.27` as shipped in this repository. It guides a cleanup that preserves the existing Unraid dashboard and stream-detail experience while allowing Plex, Jellyfin, and Emby servers to coexist.
+This document describes the plugin at `v2026.08.22e` as shipped in this repository. It records the current Plex-only implementation and guides the next cleanup toward Plex, Jellyfin, and Emby servers coexisting without regressing the Unraid dashboard and stream-detail experience.
 
 The plugin is an Unraid WebGUI plugin written in PHP and jQuery. Its source package lives below `src/plexstreams`; `plexstreams.plg` installs the packaged contents into `/usr/local/emhttp/plugins/plexstreams` and persists configuration in `/boot/config/plugins/plexstreams/plexstreams.cfg`.
 
@@ -15,7 +15,10 @@ flowchart LR
     Settings --> Config[plexstreams.cfg]
     Dashboard[Dashboard widget] --> BrowserJS[js/plex.js]
     StreamsPage[Detailed streams page] --> BrowserJS
-    BrowserJS -->|GET every 5 seconds| Ajax[ajax.php]
+  BrowserJS -->|visibility-aware, non-overlapping polls| Ajax[ajax.php]
+  BrowserJS --> ServerStatus[server_status.php]
+  BrowserJS --> ServerDetails[server_details.php]
+  BrowserJS -->|POST verified session termination| Terminate[terminate_stream.php]
     Ajax --> Config
     Ajax --> Common[includes/common.php]
     Common --> PlexDiscovery[plex.tv devices/resources]
@@ -27,6 +30,9 @@ flowchart LR
     BrowserJS --> Details[movieDetails.php]
     ImageProxy --> PlexServers
     Details --> PlexServers
+  ServerStatus --> Common
+  ServerDetails --> Common
+  Terminate --> Common
 ```
 
 ### Installation and page entry points
@@ -35,19 +41,19 @@ flowchart LR
 - `src/pkg_build.sh` packages `src/plexstreams` as a Slackware `.txz`, updates the manifest version and checksum, and writes artifacts to `archive/`.
 - `PlexStreamsSettings.page` is the modern settings page. `Legacy/Settings.page` is used when the relevant Unraid translations support is absent.
 - `NewDashboard.page` serves Unraid versions newer than `6.12.0-beta5`. `PlexStreams_dashboard.page` and `Legacy/Dashboard.page` support older dashboard layouts.
-- `Plex_Streams.page`, `PlexStreamsTools.page`, and `PlexStreamsToolsStreams.page` expose the navigation and detailed stream view. `stream_display.php` produces the initial detailed cards.
+- `Plex_Streams.page`, `PlexStreamsTools.page`, and `PlexStreamsToolsStreams.page` expose the navigation and detailed stream view. The dedicated stream page is AJAX-first: `stream_display.php` supplies the loading surface and client-side rendering maintains stream cards.
+- `server_status.php` returns lightweight server health summaries, `server_details.php` returns expanded server details, and `terminate_stream.php` validates and terminates an active Plex playback session.
 
 ## Current Plex Data Flow
 
 1. The user selects **Get Plex Token** in `PlexStreamsSettings.page`.
 2. `js/plex.js` creates a Plex PIN with `POST https://plex.tv/api/v2/pins`, opens `app.plex.tv/auth`, and polls the PIN endpoint once per second until it receives `authToken`.
-3. Unraid's `/update.php` writes `TOKEN`, selected `HOST` URLs, optional `CUSTOM_SERVERS`, display toggles, and generated `ALIAS-*` entries to the plugin INI file.
-4. Settings-page discovery calls `getServers.php`. `getServers()` in `includes/common.php` requests `https://plex.tv/devices.xml` and `https://plex.tv/api/resources`, then returns server connection URLs.
-5. All views poll `ajax.php` every five seconds. `getStreams()` builds two requests per configured host: `/status/sessions` and `/media/subscriptions/scheduled`, both authenticated with the Plex token.
-6. `getUrl()` uses `curl_multi` to retrieve the server XML responses in parallel. `mergeStreams()` turns selected video and audio media entries into a shared array used by the dashboard and detail page.
-7. The browser creates or updates DOM nodes by stream `id`, starts a local one-second position counter for playing streams, and removes nodes absent from the latest response.
-
-The scheduled-subscription calls are fetched but their results are not rendered; the related handling in `mergeStreams()` is commented out.
+3. Unraid's `/update.php` writes `TOKEN`, selected `HOST` URLs, optional `CUSTOM_SERVERS`, display toggles, layout preference, debug-log preference, and generated `ALIAS-*` entries to the plugin INI file.
+4. Settings-page discovery calls `getServers.php`. `getServers()` in `includes/common.php` requests `https://plex.tv/devices.xml` and `https://plex.tv/api/resources`, then returns server connection URLs. The transient OAuth token can be used for discovery before settings are saved.
+5. Visible dashboard and stream views poll `ajax.php` on a five-second cadence. `startStreamPolling()` schedules the next request only after the preceding request completes and defers polling while the browser tab is hidden.
+6. `getStreams()` requests only `/status/sessions` for each nonblank configured host. `getXmlBatch()` retrieves server XML responses in parallel, classifies failed transport requests for opt-in redacted logging, and discards invalid XML responses.
+7. `mergeStreams()` maps selected Plex video and audio media into normalized stream arrays. It handles live TV without a duration, unknown users, playback-quality and subtitle state, per-stream location, and cached GeoIP/live-TV metadata lookups.
+8. The browser creates, updates, animates, and removes cards by stream `id`; it resynchronizes its one-second playback counter on every poll. The dedicated stream page also fetches server health/details on demand, retains expand/collapse state in the browser, and can request termination of a verified active session.
 
 ## Configuration Model
 
@@ -60,7 +66,9 @@ The existing INI keys are Plex-specific and model one logical Plex account acros
 | `CUSTOM_SERVERS` | Comma-separated manually entered Plex URLs. |
 | `ALIAS-<host>` | Display name generated while listing discovered connections. |
 | `DISPLAY_NAV` / `DISPLAY_WIDGET` | Navigation and dashboard visibility. |
+| `DASHBOARD_LAYOUT` | `default` or `condensed` dashboard-widget layout. |
 | `FORCE_PLEX_HTTPS` | Requests HTTPS connection records during Plex discovery. |
+| `DEBUG_LOGGING` | Enables redacted diagnostic logging with rotation. |
 
 The settings page must currently have a token before it can discover servers. `CUSTOM_SERVERS` is the only path for a server Plex does not return.
 
@@ -73,7 +81,7 @@ The settings page must currently have a token before it can discover servers. `C
   "id": "unique-session-id",
   "type": "video|audio",
   "alias": "Server display name",
-  "title": "HTML display title",
+  "title": "display title",
   "titleString": "plain title",
   "user": "Viewer",
   "userAvatar": "image URL",
@@ -89,6 +97,19 @@ The settings page must currently have a token before it can discover servers. `C
   "locationDisplay": "LAN (192.0.2.10)",
   "bandwidth": 8.4,
   "streamDecision": "Direct Play",
+  "playbackQuality": {
+    "videoSource": "1080p H264",
+    "videoOutput": "720p H264",
+    "videoTranscoded": true,
+    "audioSource": "DTS 5.1",
+    "audioOutput": "AAC Stereo",
+    "audioTranscoded": true
+  },
+  "subtitle": { "state": "direct", "label": "Direct play" },
+  "client": { "product": "Plex Web", "name": "Browser" },
+  "connection": { "location": "lan", "relayed": false },
+  "mediaIdentity": { "seriesTitle": "Show", "season": 1, "episode": 2, "episodeTitle": "Episode" },
+  "liveContext": { "channel": "KXYZ", "network": "Example", "programTitle": "Live Event" },
   "streamInfo": {
     "audio": { "decision": "Direct Play" },
     "video": { "decision": "Transcode" }
@@ -100,7 +121,7 @@ The settings page must currently have a token before it can discover servers. `C
 }
 ```
 
-The actual Plex representation stores stream decisions under `streamInfo.*['@attributes'].decision`; PHP-rendered pages accept both that form and a direct `decision` field, while the JavaScript update path currently expects the Plex form. The cleanup should make this a documented, provider-free shape: use direct fields such as `audioDecision` and `videoDecision`, and make all display strings plain text. Do not make provider response objects part of the public AJAX response.
+The response remains Plex-shaped in places: `@host`, `key`, `streamInfo`, and provider XML-derived attributes still leak through the boundary. `sessionId` is intentionally removed by `ajax.php`, but `serverHost` and `clientIdentifier` are returned so the dedicated view can request a server-validated termination. The current client still interpolates some response fields into HTML strings. The next cleanup should document a provider-free schema, use direct decision fields such as `audioDecision` and `videoDecision`, make all display strings plain text, and render provider data with DOM text APIs.
 
 `id` must identify a playback session, not merely a media item. It is used as a DOM ID, so two viewers watching the same item must produce distinct values.
 
@@ -108,29 +129,29 @@ The actual Plex representation stores stream decisions under `streamInfo.*['@att
 
 ### P0: security and trust boundaries
 
-1. TLS verification is disabled for all stream requests in `includes/common.php`, as well as the image proxy and metadata request. This exposes account tokens and data to interception. Centralize HTTP transport, verify certificates by default, and retain an explicit, per-server opt-out only for self-signed local deployments.
-2. `getImage.php` accepts arbitrary `host` and `img` query values; an absolute `img` URL bypasses the configured host. It therefore behaves as an authenticated network fetcher and needs an allowlist of configured server origins, strict path validation, redirect revalidation, and a response-size cap.
-3. Stream, user, server, and metadata fields are interpolated into JavaScript HTML strings and PHP `echo` output without escaping. Treat all provider data as untrusted. Render browser text through `.text()`/DOM APIs, sanitize URLs, and escape server-rendered text with `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`.
-4. `?dbg` can dump response contents and URLs containing the Plex token. Remove public debug output or restrict it to a privileged, redacted diagnostics path.
+1. TLS verification is disabled for stream, metadata, image-proxy, and termination requests in `includes/common.php` and `getImage.php`. This exposes tokens and stream data to interception. Centralize transport, verify certificates by default, and retain an explicit per-server opt-out only for self-signed local deployments.
+2. `getImage.php` now restricts `host` to configured Plex hosts and requires a relative path before adding the token. It still follows redirects without validating the destination and has no response-size cap; enforce both in the shared transport layer.
+3. Stream, user, server, and metadata fields are still interpolated into JavaScript HTML strings in several render paths. Treat provider data as untrusted. Render text through `.text()`/DOM APIs, sanitize URLs, and escape server-rendered text with `htmlspecialchars(..., ENT_QUOTES, 'UTF-8')`.
+4. Debug logging is opt-in and redacts known secret fields and URL query values, rather than publicly dumping responses. Confirm log-file permissions and extend redaction coverage before treating it as a diagnostics boundary.
 5. The Plex token is written as plaintext in the persistent plugin INI file. Confirm Unraid's supported secret-storage mechanism before changing this; at minimum, ensure restrictive permissions and never include it in logs or responses.
 
 ### P1: correctness, reliability, and maintainability
 
 1. `includes/common.php` combines HTTP transport, Plex discovery, XML parsing, normalization, formatting, geolocation, and configuration interpretation. This is the main obstacle to additional providers.
-2. Several requests are made per poll without a total timeout, status-code handling, response validation, retry policy, or a concurrency bound. A stalled server can slow every page refresh.
-3. `getGeo()` can make an external Plex request for each remote stream on every poll. Cache results with a TTL, make geolocation optional, and never let it block session rendering.
-4. The code fetches scheduled subscriptions even though the resulting data is unused. Remove it until there is a rendered feature with tests.
-5. `lengthMinuites` is misspelled where `lengthMinutes` is populated, producing incorrect/null minute values. The audio branch also uses the stale `$loc` value when constructing `locationDisplay`; calculate it from each audio session.
-6. There are inconsistent failure semantics: `ajax.php` can return an empty HTTP 200 body when no token exists, while the client only treats HTTP 500 as an unconfigured state. Return structured JSON errors and use explicit HTTP status codes.
-7. The browser timer is only an approximation between five-second polls. Keep it, but resynchronize from the server on each response and avoid assuming a duration exists for live streams.
-8. The detailed view is rendered once in PHP and then maintained by JavaScript. It duplicates markup and behavior. Move to a single client-side renderer or a shared template after the API contract is stabilized.
+2. Parallel session requests now have connection and total timeouts, status-code validation, malformed-XML rejection, and failure classification. They still have no aggregate deadline, retry policy, or concurrency bound; one or many unavailable servers can extend a refresh cycle.
+3. GeoIP and live-TV metadata are cached with a TTL, but their external Plex requests still occur in the request path. Make these enrichments optional and non-blocking.
+4. Unused scheduled-subscription fetching has been removed.
+5. Timing normalization now consistently supplies `lengthMinutes`; audio location display is calculated from each audio session.
+6. Setup failure handling remains inconsistent: `ajax.php`, `server_status.php`, and `server_details.php` use an HTTP 500 with an empty array when configuration is incomplete. Return structured JSON errors and use explicit, documented status codes.
+7. The browser timer remains an approximation between polls, but it now resynchronizes with each response and does not assume a duration for live TV.
+8. The dedicated view has moved to AJAX-first client-side stream rendering. Dashboard layouts and the detailed renderer still duplicate presentation and should share a safe template once the API contract is stabilized.
 9. There are three dashboard paths and legacy settings paths. Define the lowest Unraid version to support, then remove obsolete variants or make them share templates and rendering helpers.
 
 ### P2: packaging and project health
 
-1. There are no automated tests, fixtures, dependency manifest, lint command, or CI workflow.
-2. `src/pkg_build.sh` updates the manifest in place and relies on GNU/Linux tools (`readlink -f`, `sed -i`, `makepkg`, `md5sum`). Document that it runs in an Unraid/Linux build environment; it will not run unchanged on macOS.
-3. `PLUGIN_VERSION` in `includes/common.php` is `2023.03.26`, while the manifest version is `2023.11.27`. Derive this from build metadata or update it in one place.
+1. `tests/mergeStreamsTest.php` provides PHP regression fixtures for video, audio, live TV, unknown users, host/image validation, and transport-failure classification. There is still no dependency manifest, lint command, CI workflow, or adapter-level test suite.
+2. `src/pkg_build.sh` now uses Bash, BSD-compatible `sed -i ''`, `tar`, and macOS `md5 -q`, so it supports macOS package builds. Document and test its remaining packaging assumptions before release automation.
+3. `PLUGIN_VERSION` in `includes/common.php` is still `2023.03.26`, while the manifest version is `2026.08.22e`. Derive it from build metadata or update it from one source of truth.
 
 ## Target Architecture
 
