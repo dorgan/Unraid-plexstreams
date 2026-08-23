@@ -17,16 +17,17 @@
     $host = rtrim(trim($_POST['host'] ?? ''), '/');
     $streamId = trim($_POST['streamId'] ?? '');
     $clientIdentifier = trim($_POST['clientIdentifier'] ?? '');
+    $serverId = trim($_POST['serverId'] ?? '');
     $reason = trim(preg_replace('/[\x00-\x1F\x7F]/', ' ', $_POST['reason'] ?? ''));
     $reason = substr($reason, 0, 250) ?: 'Stream stopped by server administrator.';
 
-    if (empty($cfg['TOKEN']) || $host === '' || $streamId === '' || $clientIdentifier === '' || !isConfiguredPlexHost($host, $cfg)) {
+    if ($host === '' || $streamId === '') {
         terminateStreamResponse(400, ['error' => 'Invalid stream termination request.']);
     }
 
     $stream = null;
-    foreach (getMergedStreams($cfg) as $candidate) {
-        if (rtrim($candidate['serverHost'] ?? '', '/') === $host && (string)($candidate['id'] ?? '') === $streamId && (string)($candidate['clientIdentifier'] ?? '') === $clientIdentifier) {
+    foreach (getAllMergedStreams($cfg) as $candidate) {
+        if (rtrim($candidate['serverHost'] ?? '', '/') === $host && (string)($candidate['id'] ?? '') === $streamId && ($serverId === '' || ($candidate['serverId'] ?? '') === $serverId) && ($clientIdentifier === '' || (string)($candidate['clientIdentifier'] ?? '') === $clientIdentifier)) {
             $stream = $candidate;
             break;
         }
@@ -36,14 +37,19 @@
         terminateStreamResponse(404, ['error' => 'The stream is no longer active.']);
     }
 
-    $result = terminatePlexSession($host, $stream['sessionId'], $reason, $cfg['TOKEN']);
+    if (($stream['provider'] ?? 'plex') === 'plex') {
+        $result = terminatePlexSession($host, $stream['sessionId'], $reason, $cfg['TOKEN']);
+    } else {
+        $server = getMediaServerById($cfg, $stream['serverId'] ?? '');
+        $result = $server === null ? ['success' => false, 'statusCode' => 400, 'error' => 'Unknown server.'] : mediaServerPost($server, '/Sessions/' . rawurlencode($stream['sessionId']) . '/Playing/Stop');
+    }
     if (!$result['success']) {
         debugLog($cfg, 'Failed to terminate Plex stream', [
             'host' => $host,
             'statusCode' => $result['statusCode'],
             'error' => $result['error']
         ]);
-        terminateStreamResponse(502, ['error' => 'Plex could not terminate this stream.']);
+        terminateStreamResponse(502, ['error' => 'The media server could not terminate this stream.']);
     }
 
     $sessionEnded = false;
@@ -53,7 +59,7 @@
         }
 
         $sessionEnded = true;
-        foreach (getMergedStreams($cfg) as $candidate) {
+        foreach (getAllMergedStreams($cfg) as $candidate) {
             if (rtrim($candidate['serverHost'] ?? '', '/') === $host && (string)($candidate['sessionId'] ?? '') === (string)$stream['sessionId']) {
                 $sessionEnded = false;
                 break;

@@ -287,7 +287,7 @@ function requestStreamTermination($button) {
     if ($button.prop('disabled')) {
         return;
     }
-    var reason = window.prompt(_('Reason shown to the Plex client:'), _('Stream stopped by server administrator.'));
+    var reason = window.prompt(_('Reason shown to the media client:'), _('Stream stopped by server administrator.'));
     if (reason === null) {
         return;
     }
@@ -305,6 +305,7 @@ function requestStreamTermination($button) {
             host: $button.data('server-host'),
             streamId: $button.data('stream-id'),
             clientIdentifier: $button.data('client-identifier'),
+            serverId: $button.data('server-id'),
             reason: reason,
             csrf_token: typeof csrf_token === 'undefined' ? '' : csrf_token
         }
@@ -345,7 +346,23 @@ function ensureStopStreamControl($container, $footer, stream) {
             $container.removeClass('plexstreams-card-action-focused');
         });
     }
-    $button.data('server-host', stream.serverHost).data('stream-id', stream.id).data('client-identifier', stream.clientIdentifier).data('stream-title', stream.titleString || stream.title);
+    $button.data('server-host', stream.serverHost).data('server-id', stream.serverId || '').data('stream-id', stream.id).data('client-identifier', stream.clientIdentifier).data('stream-title', stream.titleString || stream.title);
+    $button.toggle(Boolean(stream.canTerminate === undefined || stream.canTerminate)).attr('aria-hidden', stream.canTerminate === false ? 'true' : 'false');
+}
+
+function updateStreamUserAvatar($container, stream) {
+    var $avatar = $container.find('.userIcon');
+    if ($avatar.length === 0) {
+        return;
+    }
+    var userName = String(stream.user || '').trim();
+    if (stream.userAvatar) {
+        $avatar.removeClass('plexstreams-user-initial').empty().css('background-image', 'url("' + String(stream.userAvatar).replace(/"/g, '%22') + '")');
+    } else {
+        var initial = userName ? userName.charAt(0).toUpperCase() : '?';
+        $avatar.addClass('plexstreams-user-initial').text(initial).css('background-image', 'none');
+    }
+    $avatar.attr('title', userName || _('Unknown'));
 }
 
 function getServerGroupId(host) {
@@ -603,7 +620,8 @@ function renderFullStreamServerGroups(serverStatuses, streams) {
         var state = server.online ? _('Online') : _('Unavailable');
         var facts = [state];
         if (server.version) {
-            facts.push('PMS ' + server.version);
+            var providerName = server.provider ? String(server.provider).charAt(0).toUpperCase() + String(server.provider).slice(1) : _('Server');
+            facts.push((server.provider === 'plex' ? 'PMS' : providerName) + ' ' + server.version);
         }
         if (server.online && server.claimed !== null) {
             facts.push(server.claimed ? _('Claimed') : _('Unclaimed'));
@@ -713,6 +731,7 @@ function updateFullStreamInfo() {
                 $footer.removeClass('bottom-box').addClass('plexstreams-card-footer').appendTo($artwork);
                 $footer.find('.title').removeClass('title').addClass('plexstreams-card-title');
                 $footer.find('.status').removeClass('status').addClass('plexstreams-card-status');
+                updateStreamUserAvatar($container, stream);
                 ensureStopStreamControl($container, $footer, stream);
                 updateStreamPresentation($container, stream);
                 if ($container.find('.playback-status').length === 0) {
@@ -888,6 +907,50 @@ function incrementTimer($hours, $minutes, $seconds) {
     $seconds.html(seconds.toString().padStart(2, 0));
     $minutes.html(minutes.toString().padStart(2, 0));
     $hours.html(hours.toString().padStart(2, 0));
+}
+
+function getServers(containerSelector, selected, token) {
+    var $host = $(containerSelector);
+    var selectedHosts = (selected || '').split(',');
+    $host.hide().empty();
+    $('.lds-dual-ring').show();
+
+    return $.ajax({
+        url: '/plugins/plexstreams/getServers.php',
+        method: 'POST',
+        dataType: 'json',
+        data: {
+            useSsl: $('input[name="FORCE_PLEX_HTTPS"]:checked').val(),
+            token: token || $('#plex-token').val()
+        }
+    }).done(function(data) {
+        serverList = data.serverList || {};
+        Object.keys(serverList).forEach(function(id) {
+            var server = serverList[id];
+            (server.Connections || []).forEach(function(connection) {
+                if (!connection || !connection.uri) {
+                    return;
+                }
+                var shortHost = String(connection.uri).replace(/^https?:\/\//, '').replace(/:\d+$/, '');
+                $('<input>', { type: 'hidden', name: 'ALIAS-' + shortHost, value: server.Name }).appendTo($host);
+                var checkboxId = 'plex-server-' + id + '-' + String(connection.uri).replace(/[^a-z0-9]+/gi, '-');
+                var $checkbox = $('<input>', { type: 'checkbox', name: 'hostbox', id: checkboxId, value: connection.uri })
+                    .prop('checked', selectedHosts.indexOf(connection.uri) !== -1)
+                    .on('change', function() { updateServerList('HOST'); });
+                var label = (server.Name || 'Plex') + ' (' + (connection.address || connection.uri) + (connection.port ? ':' + connection.port : '') + ')' + (connection.local === '0' ? ' - Remote' : '');
+                $host.append($checkbox).append($('<label>', { 'for': checkboxId }).text(' ' + label)).append('<br/>');
+            });
+        });
+        if (Object.keys(serverList).length === 0) {
+            $host.append($('<p>').text('No Plex servers found. Add one under Custom Servers instead.'));
+        }
+    }).fail(function(jqXHR) {
+        var message = jqXHR.responseJSON && jqXHR.responseJSON.error ? jqXHR.responseJSON.error : 'Unable to retrieve Plex servers.';
+        $host.append($('<p>').text(message));
+    }).always(function() {
+        $host.show();
+        $('.lds-dual-ring').hide();
+    });
 }
 
 function updateServerList(dest) {

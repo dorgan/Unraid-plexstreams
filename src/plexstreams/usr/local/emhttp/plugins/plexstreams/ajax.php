@@ -6,13 +6,13 @@
     global $display;
 
     $mergedStreams = [];
-    if (!empty($cfg['TOKEN'])) {
-        if ($cfg['HOST'] !== '' || $cfg['CUSTOM_SERVERS'] !== '') {
+    if (!empty(getConfiguredMediaServers($cfg))) {
+        if (!empty(getConfiguredMediaServers($cfg))) {
             $docroot = $docroot ?? $_SERVER['DOCUMENT_ROOT'] ?: '/usr/local/emhttp';
             require_once "$docroot/webGui/include/Wrappers.php";
             extract(parse_plugin_cfg('dynamix',true));
 
-            $mergedStreams = getMergedStreams($cfg);
+            $mergedStreams = getAllMergedStreams($cfg);
             foreach ($mergedStreams as &$stream) {
                 unset($stream['sessionId']);
             }

@@ -17,7 +17,16 @@
         'DISPLAY_WIDGET' => '1',
         'DASHBOARD_LAYOUT' => 'default',
         'FORCE_PLEX_HTTPS' => '0',
-        'DEBUG_LOGGING' => '0'
+        'DEBUG_LOGGING' => '0',
+        // These initial convenience entries feed the provider-neutral registry below.
+        // MEDIA_SERVERS may additionally contain any number of configured instances.
+        'JELLYFIN_NAME' => 'Jellyfin',
+        'JELLYFIN_HOST' => '',
+        'JELLYFIN_API_KEY' => '',
+        'EMBY_NAME' => 'Emby',
+        'EMBY_HOST' => '',
+        'EMBY_API_KEY' => '',
+        'MEDIA_SERVERS' => ''
     );
 
     $cfg = array_merge($defaults, $cfg);
