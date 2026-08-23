@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.22e">
+    <!ENTITY version "2026.08.23">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "184c67924fc3306106626c35c2633af0">
+    <!ENTITY md5 "3e345cfdb0d8cba34c924dc4c0bcac99">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,11 @@
 
     <CHANGES>
         ##&name;
+        ###2026.08.23
+        - Add Jellyfin and Emby Support
+        - feat: update settings page look/feel
+        - feat: update settings page to support emby/jellyfin servers
+
         ###2026.08.22e
         - feat: expand/collapse: server details and server sections and browser will remember their
         state
