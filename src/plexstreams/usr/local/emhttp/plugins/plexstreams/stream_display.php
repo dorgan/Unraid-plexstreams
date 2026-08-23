@@ -615,6 +615,18 @@
         z-index: 2;
     }
 
+    .userIcon.plexstreams-user-initial {
+        align-items: center;
+        background: linear-gradient(135deg, #556c9b, #31435f);
+        color: #fff;
+        display: flex;
+        font-size: 20px;
+        font-weight: 700;
+        justify-content: center;
+        line-height: 1;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.42);
+    }
+
     @keyframes plexstreams-card-progress-sheen {
         to {
             transform: translateX(325%);

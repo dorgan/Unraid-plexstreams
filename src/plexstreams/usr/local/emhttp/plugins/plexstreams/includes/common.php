@@ -328,6 +328,7 @@
             $shortHost = parse_url($normalizedHost, PHP_URL_HOST) ?: $normalizedHost;
             $servers[$normalizedHost] = [
                 'host' => $normalizedHost,
+                'provider' => 'plex',
                 'alias' => getServerAlias($shortHost, $cfg) ?: $shortHost,
                 'name' => getServerAlias($shortHost, $cfg) ?: $shortHost,
                 'online' => false,
@@ -957,6 +958,173 @@
         }
 
         return $mergedStreams;
+    }
+
+    function normalizeMediaServerUrl($url) {
+        $url = rtrim(trim((string)$url), '/');
+        $parts = parse_url($url);
+        if ($parts === false || !isset($parts['scheme'], $parts['host']) || !in_array(strtolower($parts['scheme']), ['http', 'https'], true)) {
+            return '';
+        }
+        return $url;
+    }
+
+    function getConfiguredMediaServers($cfg) {
+        $servers = [];
+        $registryValue = $cfg['MEDIA_SERVERS'] ?? '';
+        $registry = json_decode($registryValue, true);
+        if (!is_array($registry) && $registryValue !== '') {
+            $decodedRegistry = base64_decode($registryValue, true);
+            $registry = $decodedRegistry === false ? null : json_decode($decodedRegistry, true);
+        }
+        $hasRegistry = is_array($registry) && isset($registry['servers']) && is_array($registry['servers']);
+        if ($hasRegistry) {
+            foreach ($registry['servers'] as $server) {
+                $provider = strtolower($server['provider'] ?? '');
+                $baseUrl = normalizeMediaServerUrl($server['baseUrl'] ?? '');
+                if (in_array($provider, ['jellyfin', 'emby'], true) && $baseUrl !== '' && !empty($server['apiKey'])) {
+                    $servers[] = [
+                        'id' => preg_replace('/[^a-zA-Z0-9_-]/', '-', $server['id'] ?? ($provider . '-' . substr(sha1($baseUrl), 0, 10))),
+                        'provider' => $provider,
+                        'name' => trim($server['name'] ?? '') ?: ucfirst($provider),
+                        'baseUrl' => $baseUrl,
+                        'apiKey' => (string)$server['apiKey']
+                    ];
+                }
+            }
+        }
+
+        // Preserve every existing Plex installation without requiring migration.
+        if (!empty($cfg['TOKEN'])) {
+            foreach (getConfiguredHosts($cfg) as $host) {
+                $host = normalizeMediaServerUrl($host);
+                if ($host !== '') {
+                    $shortHost = parse_url($host, PHP_URL_HOST) ?: $host;
+                    $servers[] = ['id' => 'plex-' . substr(sha1($host), 0, 10), 'provider' => 'plex', 'name' => getServerAlias($shortHost, $cfg) ?: $shortHost, 'baseUrl' => $host, 'apiKey' => $cfg['TOKEN']];
+                }
+            }
+        }
+
+        if (!$hasRegistry) {
+            foreach (['JELLYFIN' => 'jellyfin', 'EMBY' => 'emby'] as $prefix => $provider) {
+                $baseUrl = normalizeMediaServerUrl($cfg[$prefix . '_HOST'] ?? '');
+                $apiKey = trim($cfg[$prefix . '_API_KEY'] ?? '');
+                if ($baseUrl !== '' && $apiKey !== '') {
+                    $servers[] = ['id' => $provider . '-' . substr(sha1($baseUrl), 0, 10), 'provider' => $provider, 'name' => trim($cfg[$prefix . '_NAME'] ?? '') ?: ucfirst($provider), 'baseUrl' => $baseUrl, 'apiKey' => $apiKey];
+                }
+            }
+        }
+        return $servers;
+    }
+
+    function getMediaServerById($cfg, $serverId) {
+        foreach (getConfiguredMediaServers($cfg) as $server) {
+            if (hash_equals($server['id'], (string)$serverId)) {
+                return $server;
+            }
+        }
+        return null;
+    }
+
+    function mediaServerRequest($server, $path, $timeout = 10) {
+        $url = rtrim($server['baseUrl'], '/') . '/' . ltrim($path, '/');
+        $handle = curl_init($url);
+        curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => $timeout, CURLOPT_HTTPHEADER => ['Accept: application/json', 'X-Emby-Token: ' . $server['apiKey']]]);
+        $body = curl_exec($handle);
+        $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $contentType = curl_getinfo($handle, CURLINFO_CONTENT_TYPE) ?: '';
+        $error = curl_error($handle);
+        $errorCode = curl_errno($handle);
+        curl_close($handle);
+        return ['body' => $body, 'statusCode' => $statusCode, 'contentType' => $contentType, 'url' => $url, 'error' => $error, 'errorCode' => $errorCode];
+    }
+
+    function mediaServerPost($server, $path) {
+        $handle = curl_init(rtrim($server['baseUrl'], '/') . '/' . ltrim($path, '/'));
+        curl_setopt_array($handle, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => '', CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['X-Emby-Token: ' . $server['apiKey']]]);
+        $body = curl_exec($handle);
+        $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+        $error = curl_error($handle);
+        curl_close($handle);
+        return ['success' => $body !== false && $statusCode >= 200 && $statusCode < 300, 'statusCode' => $statusCode, 'error' => $error];
+    }
+
+    function mediaServerImageUrl($server, $itemId, $kind) {
+        if ($itemId === '') return '';
+        return '/plugins/plexstreams/getImage.php?server=' . rawurlencode($server['id']) . '&item=' . rawurlencode($itemId) . '&type=' . rawurlencode($kind);
+    }
+
+    function ticksToMilliseconds($ticks) { return $ticks === null || $ticks === '' ? null : (int)round(((float)$ticks) / 10000); }
+
+    function mapEmbyLikeSession($server, $session, $display) {
+        $item = $session['NowPlayingItem'] ?? null;
+        if (!is_array($item) || empty($item['Id'])) return null;
+        $playState = $session['PlayState'] ?? [];
+        $transcoding = $session['TranscodingInfo'] ?? [];
+        $mediaStreams = $item['MediaStreams'] ?? [];
+        $duration = ticksToMilliseconds($item['RunTimeTicks'] ?? null);
+        $timing = formatPlaybackTiming($duration, ticksToMilliseconds($playState['PositionTicks'] ?? 0) ?? 0, $display, false, '');
+        $type = strtolower($item['Type'] ?? '') === 'audio' ? 'audio' : 'video';
+        $playMethod = strtolower($playState['PlayMethod'] ?? '');
+        $isTranscoding = !empty($transcoding) || $playMethod === 'transcode';
+        $decision = $isTranscoding ? 'Transcode' : ($playMethod === 'directstream' ? 'Direct Stream' : 'Direct Play');
+        $video = []; $audio = []; $subtitle = [];
+        foreach ($mediaStreams as $mediaStream) {
+            if (($mediaStream['Type'] ?? '') === 'Video') $video = $mediaStream;
+            if (($mediaStream['Type'] ?? '') === 'Audio') $audio = $mediaStream;
+            if (($mediaStream['Type'] ?? '') === 'Subtitle' && (($mediaStream['IsExternal'] ?? false) === false)) $subtitle = $mediaStream;
+        }
+        $title = $item['Name'] ?? 'Unknown';
+        if (!empty($item['SeriesName'])) $title = $item['SeriesName'] . ' - ' . $title;
+        $state = !empty($playState['IsPaused']) ? 'paused' : 'playing';
+        $remote = $session['RemoteEndPoint'] ?? '';
+        $location = $remote !== '' ? 'WAN' : 'LAN';
+        $itemId = (string)$item['Id'];
+        return array_merge([
+            'id' => $server['id'] . '-' . ($session['Id'] ?? sha1($itemId . ($session['DeviceId'] ?? ''))),
+            'provider' => $server['provider'], 'serverId' => $server['id'], 'serverHost' => $server['baseUrl'], '@host' => $server['baseUrl'],
+            'alias' => $server['name'], 'type' => $type, 'title' => $title, 'titleString' => $title, 'key' => $itemId,
+            'artUrl' => mediaServerImageUrl($server, $item['BackdropItemId'] ?? $itemId, 'Backdrop'),
+            'thumbUrl' => mediaServerImageUrl($server, $item['ThumbItemId'] ?? $itemId, 'Primary'),
+            'user' => $session['UserName'] ?? 'Unknown', 'userIsUnknown' => empty($session['UserName']), 'userAvatar' => '',
+            'state' => $state, 'stateIcon' => getStateIcon($state), 'duration' => $duration, 'length' => $duration,
+            'location' => $location, 'address' => $remote, 'locationDisplay' => $remote !== '' ? getLocationDisplay($location, $remote) : $location,
+            'bandwidth' => round((float)($transcoding['Bitrate'] ?? $item['Bitrate'] ?? 0) / 1000000, 1),
+            'streamDecision' => $decision, 'streamInfo' => ['audio' => ['@attributes' => ['decision' => $isTranscoding && !($transcoding['IsAudioDirect'] ?? false) ? 'transcode' : 'direct play']]],
+            'playbackQuality' => ['videoSource' => getVideoQualityLabel($video), 'videoOutput' => $isTranscoding ? getVideoQualityLabel($transcoding, '', $transcoding['VideoCodec'] ?? '') : getVideoQualityLabel($video), 'videoTranscoded' => $isTranscoding, 'audioSource' => getAudioQualityLabel($audio), 'audioOutput' => getAudioQualityLabel($transcoding, $transcoding['AudioCodec'] ?? '') ?: getAudioQualityLabel($audio), 'audioTranscoded' => $isTranscoding && !($transcoding['IsAudioDirect'] ?? false)],
+            'subtitle' => empty($subtitle) ? ['state' => 'off', 'label' => 'Off'] : ['state' => 'direct', 'label' => 'Direct play'],
+            'client' => ['product' => $session['Client'] ?? ucfirst($server['provider']), 'name' => $session['DeviceName'] ?? '', 'platform' => $session['DeviceType'] ?? '', 'device' => $session['DeviceName'] ?? ''],
+            'connection' => ['location' => strtolower($location), 'relayed' => false],
+            'mediaIdentity' => ['seriesTitle' => $item['SeriesName'] ?? '', 'season' => $item['ParentIndexNumber'] ?? null, 'episode' => $item['IndexNumber'] ?? null, 'episodeTitle' => $item['Name'] ?? ''],
+            'liveContext' => ['channel' => $item['ChannelName'] ?? '', 'network' => '', 'programTitle' => !empty($item['IsLive']) ? $title : ''],
+            'sessionId' => $session['Id'] ?? null, 'clientIdentifier' => $session['DeviceId'] ?? '', 'canTerminate' => !empty($session['SupportsRemoteControl'])
+        ], getPlaybackTimingFields($timing));
+    }
+
+    function getEmbyLikeStreams($server, $display, $cfg) {
+        $response = mediaServerRequest($server, '/Sessions');
+        if ($response['statusCode'] < 200 || $response['statusCode'] >= 300) {
+            debugLog($cfg, ucfirst($server['provider']) . ' session request failed', ['server' => $server['id'], 'statusCode' => $response['statusCode'], 'errorCode' => $response['errorCode'], 'error' => $response['error']]);
+            return [];
+        }
+        $sessions = json_decode($response['body'], true);
+        if (!is_array($sessions)) return [];
+        return array_values(array_filter(array_map(function ($session) use ($server, $display) { return mapEmbyLikeSession($server, $session, $display); }, $sessions)));
+    }
+
+    function getAllMergedStreams($cfg) {
+        global $display;
+        $streams = getMergedStreams($cfg);
+        $configuredServers = getConfiguredMediaServers($cfg);
+        $providers = [];
+        foreach ($configuredServers as $server) {
+            $providers[] = ['id' => $server['id'], 'provider' => $server['provider'], 'baseUrl' => $server['baseUrl']];
+            if ($server['provider'] !== 'plex') {
+                $streams = array_merge($streams, getEmbyLikeStreams($server, $display ?? ['time' => '%R', 'date' => '%c'], $cfg));
+            }
+        }
+        debugLog($cfg, 'Retrieved streams across configured media servers', ['servers' => $providers, 'streamCount' => count($streams)]);
+        return $streams;
     }
 
 ?>

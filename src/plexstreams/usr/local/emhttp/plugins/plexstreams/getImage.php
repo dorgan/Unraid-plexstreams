@@ -4,6 +4,23 @@
     
     $host = $_GET['host'] ?? '';
     $imagePath = $_GET['img'] ?? '';
+    $mediaServer = getMediaServerById($cfg, $_GET['server'] ?? '');
+    if ($mediaServer !== null && $mediaServer['provider'] !== 'plex') {
+        $itemId = trim($_GET['item'] ?? '');
+        $imageType = trim($_GET['type'] ?? 'Primary');
+        if ($itemId === '' || !in_array($imageType, ['Primary', 'Backdrop', 'Thumb'], true)) {
+            http_response_code(400);
+            exit;
+        }
+        $response = mediaServerRequest($mediaServer, '/Items/' . rawurlencode($itemId) . '/Images/' . rawurlencode($imageType), 10);
+        if ($response['body'] === false || $response['statusCode'] < 200 || $response['statusCode'] >= 300 || preg_match('#^image/(?:png|jpe?g|gif|webp)#i', $response['contentType']) !== 1) {
+            http_response_code(404);
+            exit;
+        }
+        header('Content-Type: ' . $response['contentType']);
+        echo $response['body'];
+        exit;
+    }
     if (empty($cfg['TOKEN'])) {
         http_response_code(500);
         exit;

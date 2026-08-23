@@ -123,6 +123,13 @@ assertSameValue('https://plex.example:32400/library/metadata/1/thumb?X-Plex-Toke
 assertSameValue(false, buildPlexImageUrl('https://plex.example:32400', 'https://external.example/image', 'token'), 'absolute image URL');
 assertSameValue('/plugins/plexstreams/getImage.php?img=%2Flibrary%2Fmetadata%2F1%2Fthumb&host=https%3A%2F%2Fplex.example%3A32400', buildStreamImageUrl('https://plex.example:32400', '/library/metadata/1/thumb'), 'relative stream image URL');
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', buildStreamImageUrl('https://plex.example:32400', 'https://metadata-static.plex.tv/channel.jpg'), 'external channel image URL');
+assertSameValue(['emby'], array_column(getConfiguredMediaServers([
+    'HOST' => '', 'CUSTOM_SERVERS' => '', 'TOKEN' => '',
+    'EMBY_HOST' => 'http://legacy-emby.test:8096', 'EMBY_API_KEY' => 'legacy-key',
+    'MEDIA_SERVERS' => base64_encode(json_encode(['version' => 1, 'servers' => [[
+        'id' => 'emby-library', 'provider' => 'emby', 'name' => 'Library Emby', 'baseUrl' => 'http://emby.test:8096', 'apiKey' => 'registry-key'
+    ]]]) )
+]), 'provider'), 'versioned media registry takes precedence over legacy entries');
 assertSameValue('Live Event', getVideoTitle(
     ['@attributes' => ['title' => 'Live Event', 'parentTitle' => 'Channel']],
     ['@attributes' => ['origin' => 'livetv']]
@@ -160,5 +167,22 @@ assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['thumbUrl']
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', $live['artUrl'], 'live channel background fallback');
 assertSameValue('Unknown', $live['user'], 'missing user fallback');
 assertSameValue(true, $live['userIsUnknown'], 'missing user flag');
+
+$jellyfinServer = ['id' => 'jellyfin-test', 'provider' => 'jellyfin', 'name' => 'Test Jellyfin', 'baseUrl' => 'http://jellyfin.test:8096', 'apiKey' => 'redacted'];
+$jellyfinStream = mapEmbyLikeSession($jellyfinServer, [
+    'Id' => 'session-1', 'UserName' => 'Jelly User', 'Client' => 'Jellyfin Web', 'DeviceName' => 'Browser', 'DeviceId' => 'browser-1', 'SupportsRemoteControl' => true,
+    'PlayState' => ['PositionTicks' => 600000000, 'PlayMethod' => 'Transcode', 'IsPaused' => false],
+    'TranscodingInfo' => ['Bitrate' => 8000000, 'VideoCodec' => 'h264', 'AudioCodec' => 'aac', 'IsAudioDirect' => false],
+    'NowPlayingItem' => ['Id' => 'item-1', 'Name' => 'Episode One', 'SeriesName' => 'Example Show', 'Type' => 'Episode', 'RunTimeTicks' => 36000000000, 'ParentIndexNumber' => 1, 'IndexNumber' => 1, 'MediaStreams' => [
+        ['Type' => 'Video', 'Codec' => 'hevc', 'Height' => 1080], ['Type' => 'Audio', 'Codec' => 'dts', 'Channels' => 6]
+    ]]
+], $display);
+assertSameValue('jellyfin-test-session-1', $jellyfinStream['id'], 'Jellyfin session id');
+assertSameValue('jellyfin', $jellyfinStream['provider'], 'Jellyfin provider');
+assertSameValue('Example Show - Episode One', $jellyfinStream['title'], 'Jellyfin title');
+assertSameValue('Transcode', $jellyfinStream['streamDecision'], 'Jellyfin stream decision');
+assertSameValue(60000.0, $jellyfinStream['currentPosition'], 'Jellyfin tick conversion');
+assertSameValue(true, $jellyfinStream['canTerminate'], 'Jellyfin remote-control capability');
+assertSameValue('/plugins/plexstreams/getImage.php?server=jellyfin-test&item=item-1&type=Primary', $jellyfinStream['thumbUrl'], 'Jellyfin image proxy URL');
 
 echo "mergeStreams fixtures passed\n";
