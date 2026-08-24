@@ -9,8 +9,8 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
     }
 
     .plexstreams-modern-stream {
+        border-left: 3px solid transparent;
         border-top: 1px solid rgba(255, 255, 255, 0.12);
-        box-shadow: inset 3px 0 transparent;
         display: grid;
         gap: 12px;
         grid-template-columns: 70px minmax(0, 1fr) 26px;
@@ -18,23 +18,23 @@ Cond="parse_ini_file('/boot/config/plugins/plexstreams/plexstreams.cfg')['DISPLA
     }
 
     .plexstreams-modern-stream.plexstreams-is-paused {
-        box-shadow: inset 3px 0 #88969a;
+        border-left-color: #88969a;
     }
 
     .plexstreams-modern-stream.plexstreams-is-remote {
-        box-shadow: inset 3px 0 #4ba7ae;
+        border-left-color: #4ba7ae;
     }
 
     .plexstreams-modern-stream.plexstreams-is-relayed {
-        box-shadow: inset 3px 0 #d17d87;
+        border-left-color: #d17d87;
     }
 
     .plexstreams-modern-stream.plexstreams-is-transcoding {
-        box-shadow: inset 3px 0 #d89a52;
+        border-left-color: #d89a52;
     }
 
     .plexstreams-modern-stream.plexstreams-is-buffering {
-        box-shadow: inset 3px 0 #e2b257;
+        border-left-color: #e2b257;
     }
 
     .plexstreams-modern-stream:first-child {

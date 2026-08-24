@@ -240,6 +240,7 @@
     .stream-container {
         background: rgba(0, 0, 0, 0.28);
         border: 1px solid rgba(255, 255, 255, 0.12);
+        border-left: 4px solid transparent;
         box-sizing: border-box;
         flex: 1 1 640px;
         height: 440px;
@@ -265,23 +266,23 @@
     }
 
     .stream-container.plexstreams-is-paused {
-        box-shadow: inset 3px 0 #88969a;
+        border-left-color: #88969a;
     }
 
     .stream-container.plexstreams-is-remote {
-        box-shadow: inset 3px 0 #4ba7ae;
+        border-left-color: #4ba7ae;
     }
 
     .stream-container.plexstreams-is-relayed {
-        box-shadow: inset 3px 0 #d17d87;
+        border-left-color: #d17d87;
     }
 
     .stream-container.plexstreams-is-transcoding {
-        box-shadow: inset 3px 0 #d89a52;
+        border-left-color: #d89a52;
     }
 
     .stream-container.plexstreams-is-buffering {
-        box-shadow: inset 3px 0 #e2b257;
+        border-left-color: #e2b257;
     }
 
     .stream-subcontainer {
