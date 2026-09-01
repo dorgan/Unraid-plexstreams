@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.08.24">
+    <!ENTITY version "2026.09.01">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "8657fd6bf19ce4701c633818be8662be">
+    <!ENTITY md5 "7d17ffafe3a256f7fdac016df14e67a5">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,10 @@
 
     <CHANGES>
         ##&name;
+
+        ###2026.09.01
+        - feat: add media server connection testing functionality and UI updates
+
         ###2026.08.24
         - fix: remote stream health indicator getting cutoff
 
