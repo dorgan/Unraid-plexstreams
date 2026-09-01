@@ -10,9 +10,28 @@
         exit;
     }
 
+    function enablePlexHttpsDiscovery() {
+        $configFile = '/boot/config/plugins/plexstreams/plexstreams.cfg';
+        $contents = @file_get_contents($configFile);
+        if ($contents === false) return false;
+        $updated = preg_match('/^FORCE_PLEX_HTTPS\s*=.*$/m', $contents)
+            ? preg_replace('/^FORCE_PLEX_HTTPS\s*=.*$/m', 'FORCE_PLEX_HTTPS="1"', $contents)
+            : rtrim($contents) . "\nFORCE_PLEX_HTTPS=\"1\"\n";
+        $temporaryFile = $configFile . '.tmp';
+        return @file_put_contents($temporaryFile, $updated, LOCK_EX) !== false && @rename($temporaryFile, $configFile);
+    }
+
     function testPlexConnectionWithRemoteFallback($server, $cfg) {
         $result = testMediaServerConnection($server);
         if ($result['success']) return $result;
+        $httpsUrl = getPlexHttpsFallbackUrl($server['baseUrl']);
+        if ($httpsUrl !== '') {
+            $httpsResult = testMediaServerConnection(['provider' => 'plex', 'baseUrl' => $httpsUrl, 'apiKey' => $server['apiKey']]);
+            if ($httpsResult['success']) {
+                $httpsEnabled = enablePlexHttpsDiscovery();
+                return ['success' => true, 'url' => $server['baseUrl'], 'httpsUrl' => $httpsUrl, 'httpsEnabled' => $httpsEnabled, 'message' => $server['baseUrl'] . ' is not currently reachable by this Unraid server, but ' . $httpsUrl . ' is reachable.' . ($httpsEnabled ? ' Plex HTTPS discovery has been enabled.' : ' HTTPS works, but Plex HTTPS discovery could not be saved.')];
+            }
+        }
         $discoveryCfg = $cfg;
         $discoveryCfg['TOKEN'] = $server['apiKey'];
         $serverList = getServers($discoveryCfg);

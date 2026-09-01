@@ -281,6 +281,12 @@ function clearToken() {
       button.disabled = true; button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testing';
       $.ajax({ url: '/plugins/plexstreams/test_connections.php', method: 'POST', dataType: 'json', data: { mode: 'server', server: JSON.stringify(server), useSsl: document.getElementById('FORCE_PLEX_HTTPS').value } }).done(function(data) {
         card.dataset.connectionTestSignature = serverSignature(server);
+        if (data.httpsEnabled) {
+          var httpsToggle = document.querySelector('.plexstreams-switch input[data-setting="FORCE_PLEX_HTTPS"]');
+          httpsToggle.checked = true;
+          httpsToggle.dispatchEvent(new Event('change'));
+          refreshPlexConnections(tokenField.value);
+        }
         showConnectionResult((server.name ? server.name + ': ' : '') + (data.message || 'Reachable from this Unraid server.'), true);
       }).fail(function(xhr) {
         var data = xhr.responseJSON || {};
@@ -293,7 +299,15 @@ function clearToken() {
       testConnectionsButton.disabled = true; testConnectionsButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testing connections';
       $.ajax({ url: '/plugins/plexstreams/test_connections.php', method: 'POST', dataType: 'json', data: { mode: 'all' } }).done(function(data) {
         if (!(data.results || []).length) showConnectionResult('No saved media servers to test.', false);
-        (data.results || []).forEach(function(result) { showConnectionResult((result.name || result.provider) + ': ' + (result.message || result.url), Boolean(result.success)); });
+        (data.results || []).forEach(function(result) {
+          if (result.httpsEnabled) {
+            var httpsToggle = document.querySelector('.plexstreams-switch input[data-setting="FORCE_PLEX_HTTPS"]');
+            httpsToggle.checked = true;
+            httpsToggle.dispatchEvent(new Event('change'));
+            refreshPlexConnections(tokenField.value);
+          }
+          showConnectionResult((result.name || result.provider) + ': ' + (result.message || result.url), Boolean(result.success));
+        });
       }).fail(function() { showConnectionResult('Unable to run saved connection tests.', false); }).always(function() {
         testConnectionsButton.disabled = false; testConnectionsButton.innerHTML = '<i class="fa fa-plug"></i> Test connections';
       });

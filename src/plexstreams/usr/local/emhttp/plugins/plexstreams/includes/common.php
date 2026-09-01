@@ -1068,6 +1068,11 @@
         return ['success' => $success, 'url' => $baseUrl, 'statusCode' => $response['statusCode'], 'message' => $success ? 'Reachable from this Unraid server.' : 'Not reachable from this Unraid server.' . ($response['error'] !== '' ? ' ' . $response['error'] : '')];
     }
 
+    function getPlexHttpsFallbackUrl($url) {
+        $url = normalizeMediaServerUrl($url);
+        return stripos($url, 'http://') === 0 ? 'https://' . substr($url, 7) : '';
+    }
+
     function mediaServerPost($server, $path) {
         $handle = curl_init(rtrim($server['baseUrl'], '/') . '/' . ltrim($path, '/'));
         curl_setopt_array($handle, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => '', CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['X-Emby-Token: ' . $server['apiKey']]]);

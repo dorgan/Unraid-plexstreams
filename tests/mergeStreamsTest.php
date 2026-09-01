@@ -127,6 +127,8 @@ $unsupportedConnectionTest = testMediaServerConnection(['provider' => 'unsupport
 $plexMissingTokenTest = testMediaServerConnection(['provider' => 'plex', 'baseUrl' => 'http://plex.test']);
 assertSameValue(false, $unsupportedConnectionTest['success'], 'unsupported connection test');
 assertSameValue('A Plex account token is required.', $plexMissingTokenTest['message'], 'Plex test requires token');
+assertSameValue('https://plex.example:32400', getPlexHttpsFallbackUrl('http://plex.example:32400'), 'Plex HTTPS fallback URL');
+assertSameValue('', getPlexHttpsFallbackUrl('https://plex.example:32400'), 'Plex HTTPS fallback only applies to HTTP');
 assertSameValue(['emby'], array_column(getConfiguredMediaServers([
     'HOST' => '', 'CUSTOM_SERVERS' => '', 'TOKEN' => '',
     'EMBY_HOST' => 'http://legacy-emby.test:8096', 'EMBY_API_KEY' => 'legacy-key',
