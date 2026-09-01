@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.09.01">
+    <!ENTITY version "2026.09.01a">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "7d17ffafe3a256f7fdac016df14e67a5">
+    <!ENTITY md5 "f09e4af591199c5d21d63dbe40ebc749">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,8 @@
 
     <CHANGES>
         ##&name;
+        ###2026.09.01a
+        - feat: implement Plex HTTPS fallback and connection testing enhancements
 
         ###2026.09.01
         - feat: add media server connection testing functionality and UI updates
