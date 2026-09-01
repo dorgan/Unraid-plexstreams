@@ -1039,6 +1039,35 @@
         return ['body' => $body, 'statusCode' => $statusCode, 'contentType' => $contentType, 'url' => $url, 'error' => $error, 'errorCode' => $errorCode];
     }
 
+    function testMediaServerConnection($server, $timeout = 7) {
+        $provider = $server['provider'] ?? '';
+        $baseUrl = normalizeMediaServerUrl($server['baseUrl'] ?? '');
+        if (!in_array($provider, ['plex', 'jellyfin', 'emby'], true) || $baseUrl === '') {
+            return ['success' => false, 'url' => $baseUrl, 'message' => 'A valid media-server URL is required.'];
+        }
+
+        if ($provider === 'plex') {
+            $token = trim((string)($server['apiKey'] ?? ''));
+            if ($token === '') {
+                return ['success' => false, 'url' => $baseUrl, 'message' => 'A Plex account token is required.'];
+            }
+            $url = $baseUrl . '/identity?X-Plex-Token=' . rawurlencode($token);
+            $handle = curl_init($url);
+            curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => $timeout, CURLOPT_SSL_VERIFYHOST => 0, CURLOPT_SSL_VERIFYPEER => 0]);
+            $body = curl_exec($handle);
+            $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
+            $error = curl_error($handle);
+            curl_close($handle);
+            $success = $body !== false && $statusCode >= 200 && $statusCode < 300 && parseXml($body) !== false;
+            return ['success' => $success, 'url' => $baseUrl, 'statusCode' => $statusCode, 'message' => $success ? 'Reachable from this Unraid server.' : 'Not reachable from this Unraid server.' . ($error !== '' ? ' ' . $error : '')];
+        }
+
+        $response = mediaServerRequest($server, '/System/Info/Public', $timeout);
+        $info = $response['statusCode'] >= 200 && $response['statusCode'] < 300 ? json_decode($response['body'], true) : null;
+        $success = is_array($info);
+        return ['success' => $success, 'url' => $baseUrl, 'statusCode' => $response['statusCode'], 'message' => $success ? 'Reachable from this Unraid server.' : 'Not reachable from this Unraid server.' . ($response['error'] !== '' ? ' ' . $response['error'] : '')];
+    }
+
     function mediaServerPost($server, $path) {
         $handle = curl_init(rtrim($server['baseUrl'], '/') . '/' . ltrim($path, '/'));
         curl_setopt_array($handle, [CURLOPT_POST => true, CURLOPT_POSTFIELDS => '', CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => 10, CURLOPT_HTTPHEADER => ['X-Emby-Token: ' . $server['apiKey']]]);

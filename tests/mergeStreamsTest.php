@@ -123,6 +123,10 @@ assertSameValue('https://plex.example:32400/library/metadata/1/thumb?X-Plex-Toke
 assertSameValue(false, buildPlexImageUrl('https://plex.example:32400', 'https://external.example/image', 'token'), 'absolute image URL');
 assertSameValue('/plugins/plexstreams/getImage.php?img=%2Flibrary%2Fmetadata%2F1%2Fthumb&host=https%3A%2F%2Fplex.example%3A32400', buildStreamImageUrl('https://plex.example:32400', '/library/metadata/1/thumb'), 'relative stream image URL');
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', buildStreamImageUrl('https://plex.example:32400', 'https://metadata-static.plex.tv/channel.jpg'), 'external channel image URL');
+$unsupportedConnectionTest = testMediaServerConnection(['provider' => 'unsupported', 'baseUrl' => 'http://plex.test']);
+$plexMissingTokenTest = testMediaServerConnection(['provider' => 'plex', 'baseUrl' => 'http://plex.test']);
+assertSameValue(false, $unsupportedConnectionTest['success'], 'unsupported connection test');
+assertSameValue('A Plex account token is required.', $plexMissingTokenTest['message'], 'Plex test requires token');
 assertSameValue(['emby'], array_column(getConfiguredMediaServers([
     'HOST' => '', 'CUSTOM_SERVERS' => '', 'TOKEN' => '',
     'EMBY_HOST' => 'http://legacy-emby.test:8096', 'EMBY_API_KEY' => 'legacy-key',

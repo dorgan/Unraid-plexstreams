@@ -23,6 +23,8 @@ Tag="film"
     .plexstreams-token-button { background: rgba(255,255,255,.1); border: 1px solid rgba(202,220,243,.35); border-radius: 5px; color: #eef5ff; cursor: pointer; font-weight: 600; padding: 9px 13px; white-space: nowrap; }
     .plexstreams-token-button:hover, .plexstreams-token-button:focus { background: rgba(255,255,255,.18); }
     .plexstreams-token-button.is-connected { border-color: rgba(105,195,139,.65); color: #9ce9bb; }
+    .plexstreams-test-connections { background: rgba(105,195,139,.14); border: 1px solid rgba(105,195,139,.55); border-radius: 5px; color: #b7f0ca; cursor: pointer; font-weight: 600; padding: 9px 13px; white-space: nowrap; }
+    .plexstreams-test-connections:hover, .plexstreams-test-connections:focus { background: rgba(105,195,139,.24); }
     .plexstreams-media-server-list { display: grid; gap: 12px; margin-top: 18px; }
     .plexstreams-media-server { background: rgba(255,255,255,.06); border: 1px solid rgba(180,204,234,.19); border-radius: 8px; opacity: 1; overflow: hidden; transform: translateY(0); transition: opacity .2s ease, transform .2s ease, max-height .24s ease, margin .24s ease; }
     .plexstreams-media-server.is-entering { opacity: 0; transform: translateY(-8px); }
@@ -42,11 +44,27 @@ Tag="film"
     .plexstreams-media-server-empty { border: 1px dashed rgba(180,204,234,.3); border-radius: 7px; color: #b5c4d7; margin: 18px 0 0; padding: 18px; text-align: center; }
     .plexstreams-media-server-help { border-top: 1px solid rgba(180,204,234,.16); font-size: 12px; margin-top: 16px; padding-top: 14px; }
     .plexstreams-media-server-validation { color: #ffb0b0; font-size: 12px; margin: 10px 0 0; }
+    .plexstreams-connection-results { bottom: 22px; color: #d8e6f5; display: grid; font-size: 12px; gap: 8px; max-height: min(58vh, 460px); max-width: min(520px, calc(100vw - 32px)); overflow-y: auto; pointer-events: none; position: fixed; right: 22px; width: 440px; z-index: 10001; }
+    .plexstreams-connection-result { align-items: flex-start; background: #1c2735; border: 1px solid rgba(180,204,234,.35); border-left: 4px solid #8a97a5; border-radius: 6px; box-shadow: 0 10px 24px rgba(0,0,0,.32); display: flex; gap: 10px; line-height: 1.45; padding: 10px 11px 14px; pointer-events: auto; position: relative; animation: plexstreams-toast-in .2s ease-out; }
+    .plexstreams-connection-result.is-success { border-left-color: #69c38b; color: #c5f6d4; }
+    .plexstreams-connection-result.is-failure { border-left-color: #e77d7d; color: #ffd0d0; }
+    .plexstreams-connection-result-copy { flex: 1; overflow-wrap: anywhere; }
+    .plexstreams-connection-result-close { background: transparent; border: 0; color: inherit; cursor: pointer; font-size: 17px; line-height: 14px; opacity: .8; padding: 0 2px; }
+    .plexstreams-connection-result-close:hover, .plexstreams-connection-result-close:focus { opacity: 1; }
+    .plexstreams-connection-result-progress { animation: plexstreams-toast-countdown var(--plexstreams-toast-timeout) linear forwards; background: #aebdcb; bottom: 0; height: 3px; left: 0; position: absolute; width: 100%; }
+    .plexstreams-connection-result.is-success .plexstreams-connection-result-progress { background: #69c38b; }
+    .plexstreams-connection-result.is-failure .plexstreams-connection-result-progress { background: #e77d7d; }
+    @keyframes plexstreams-toast-in { from { opacity: 0; transform: translateY(9px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes plexstreams-toast-countdown { from { width: 100%; } to { width: 0; } }
+    .plexstreams-card-test { background: transparent; border: 1px solid rgba(180,204,234,.45); border-radius: 4px; color: #e5effa; cursor: pointer; font-size: 12px; margin: 0 14px 12px; padding: 6px 9px; }
     .plexstreams-setting-toggle { align-items: center; border-bottom: 1px solid #dce3ea; display: flex; justify-content: space-between; max-width: 620px; padding: 12px 0; }
     .plexstreams-setting-toggle:first-of-type { margin-top: 8px; }
     .plexstreams-setting-toggle-copy { display: grid; gap: 2px; }
     .plexstreams-setting-toggle-copy strong { color: #283848; font-size: 14px; }
     .plexstreams-setting-toggle-copy span { color: #6d7d8e; font-size: 12px; }
+    .plexstreams-setting-number { align-items: center; border-bottom: 1px solid #dce3ea; display: flex; gap: 14px; justify-content: space-between; max-width: 620px; padding: 12px 0; }
+    .plexstreams-setting-number input { background: #fff !important; border: 1px solid #bac8d8; border-radius: 4px; color: #1e2938 !important; font-size: 14px; padding: 6px 8px; text-align: right; text-shadow: none !important; width: 82px; }
+    .plexstreams-setting-number input:focus { background: #fff !important; border-color: #2e89d5 !important; box-shadow: 0 0 0 3px rgba(46,137,213,.24) !important; color: #1e2938 !important; outline: 0; }
     .plexstreams-switch { align-items: center; cursor: pointer; display: inline-flex; gap: 9px; user-select: none; }
     .plexstreams-switch input { height: 1px; opacity: 0; position: absolute; width: 1px; }
     .plexstreams-switch-track { background: #8a97a5; border-radius: 999px; height: 24px; position: relative; transition: background .22s ease, box-shadow .22s ease; width: 44px; }
@@ -59,8 +77,8 @@ Tag="film"
     .plexstreams-switch.is-changing .plexstreams-switch-label { animation: plexstreams-switch-label .28s ease-out; color: #2e89d5; }
     @keyframes plexstreams-switch-pulse { 0% { box-shadow: 0 0 0 0 rgba(46,137,213,.34); } 70% { box-shadow: 0 0 0 7px rgba(46,137,213,0); } 100% { box-shadow: 0 0 0 0 rgba(46,137,213,0); } }
     @keyframes plexstreams-switch-label { from { opacity: .32; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
-    @media (prefers-reduced-motion: reduce) { .plexstreams-switch-track, .plexstreams-switch-track::after, .plexstreams-switch-label { transition-duration: 0ms; } .plexstreams-switch.is-changing .plexstreams-switch-track, .plexstreams-switch.is-changing .plexstreams-switch-label, .plexstreams-media-server.is-reordering { animation: none; } }
-    @media (max-width: 780px) { .plexstreams-settings-heading { align-items: flex-start; flex-direction: column; } .plexstreams-media-server-fields { grid-template-columns: 1fr 1fr; } .plexstreams-media-server-fields label:nth-child(3), .plexstreams-media-server-fields label:nth-child(4), .plexstreams-media-server-fields label:nth-child(5) { grid-column: span 2; } }
+    @media (prefers-reduced-motion: reduce) { .plexstreams-switch-track, .plexstreams-switch-track::after, .plexstreams-switch-label { transition-duration: 0ms; } .plexstreams-switch.is-changing .plexstreams-switch-track, .plexstreams-switch.is-changing .plexstreams-switch-label, .plexstreams-media-server.is-reordering, .plexstreams-connection-result, .plexstreams-connection-result-progress { animation: none; } }
+    @media (max-width: 780px) { .plexstreams-settings-heading { align-items: flex-start; flex-direction: column; } .plexstreams-media-server-fields { grid-template-columns: 1fr 1fr; } .plexstreams-media-server-fields label:nth-child(3), .plexstreams-media-server-fields label:nth-child(4), .plexstreams-media-server-fields label:nth-child(5) { grid-column: span 2; } .plexstreams-connection-results { bottom: 14px; right: 16px; width: calc(100vw - 32px); } }
 </style>
 <?php
 include('/usr/local/emhttp/plugins/plexstreams/includes/config.php');
@@ -104,11 +122,12 @@ function clearToken() {
 <section class="plexstreams-media-servers" aria-labelledby="media-servers-title">
     <div class="plexstreams-settings-heading">
         <div><h2 id="media-servers-title">Media servers</h2><p>Monitor any number of Jellyfin and Emby servers alongside Plex.</p></div>
-        <div class="plexstreams-settings-actions"><button type="button" id="plexstreams-token-button" class="plexstreams-token-button"><i class="fa fa-key"></i> Connect Plex</button><button type="button" class="plexstreams-add-server"><i class="fa fa-plus"></i> Add server</button></div>
+        <div class="plexstreams-settings-actions"><button type="button" id="plexstreams-token-button" class="plexstreams-token-button"><i class="fa fa-key"></i> Connect Plex</button><button type="button" id="plexstreams-test-connections" class="plexstreams-test-connections"><i class="fa fa-plug"></i> Test connections</button><button type="button" class="plexstreams-add-server"><i class="fa fa-plus"></i> Add server</button></div>
     </div>
     <div id="plexstreams-media-server-list" class="plexstreams-media-server-list"></div>
     <p id="plexstreams-media-server-empty" class="plexstreams-media-server-empty">No media servers yet. Add Plex, Jellyfin, or Emby to start monitoring sessions.</p>
     <p class="plexstreams-media-server-help">Plex uses the account token above. Jellyfin and Emby use a direct server URL and an API key, which is never displayed in logs.</p>
+    <div id="plexstreams-connection-results" class="plexstreams-connection-results" aria-live="polite" aria-atomic="false"></div>
 </section>
        
 <input type="hidden" name="DISPLAY_NAV" id="DISPLAY_NAV" value="<?php echo $cfg['DISPLAY_NAV']; ?>" />
@@ -121,6 +140,7 @@ function clearToken() {
 <div class="plexstreams-setting-toggle"><div class="plexstreams-setting-toggle-copy"><strong>Dashboard layout</strong><span>Use a compact presentation for the dashboard widget.</span></div><label class="plexstreams-switch"><input type="checkbox" data-setting="DASHBOARD_LAYOUT" data-on="condensed" data-off="default" <?php echo $cfg['DASHBOARD_LAYOUT'] === 'condensed' ? 'checked' : ''; ?>/><span class="plexstreams-switch-track"></span><span class="plexstreams-switch-label"></span></label></div>
 <div class="plexstreams-setting-toggle"><div class="plexstreams-setting-toggle-copy"><strong>Plex HTTPS discovery</strong><span>Prefer secure connections when discovering Plex servers.</span></div><label class="plexstreams-switch"><input type="checkbox" data-setting="FORCE_PLEX_HTTPS" <?php echo $cfg['FORCE_PLEX_HTTPS'] === '1' ? 'checked' : ''; ?>/><span class="plexstreams-switch-track"></span><span class="plexstreams-switch-label"></span></label></div>
 <div class="plexstreams-setting-toggle"><div class="plexstreams-setting-toggle-copy"><strong>Debug logging</strong><span>Record redacted connection diagnostics.</span></div><label class="plexstreams-switch"><input type="checkbox" data-setting="DEBUG_LOGGING" <?php echo $cfg['DEBUG_LOGGING'] === '1' ? 'checked' : ''; ?>/><span class="plexstreams-switch-track"></span><span class="plexstreams-switch-label"></span></label></div>
+<div class="plexstreams-setting-number"><div class="plexstreams-setting-toggle-copy"><strong>Notification timeout</strong><span>Seconds before connection-test notifications close automatically. Use 0 to keep them until dismissed.</span></div><input type="number" id="NOTIFICATION_TIMEOUT" name="NOTIFICATION_TIMEOUT" min="0" max="3600" step="1" value="<?php echo htmlspecialchars($cfg['NOTIFICATION_TIMEOUT'], ENT_QUOTES, 'UTF-8'); ?>" aria-label="Notification timeout in seconds" /></div>
 <?if ($cfg['DEBUG_LOGGING'] === '1'):?>
 <div>
     _(Debug Log)_:<br/>
@@ -146,6 +166,9 @@ function clearToken() {
     var form = document.getElementById('plexstreams_settings');
     var tokenField = document.getElementById('TOKEN');
     var tokenButton = document.getElementById('plexstreams-token-button');
+    var testConnectionsButton = document.getElementById('plexstreams-test-connections');
+    var connectionResults = document.getElementById('plexstreams-connection-results');
+    var notificationTimeoutField = document.getElementById('NOTIFICATION_TIMEOUT');
     var plexConnections = [];
     var plexTokenValid = false;
 
@@ -217,6 +240,65 @@ function clearToken() {
       emptyState.style.display = list.children.length ? 'none' : '';
     }
 
+    function showConnectionResult(message, success) {
+      var line = document.createElement('div');
+      line.className = 'plexstreams-connection-result ' + (success ? 'is-success' : 'is-failure');
+      var copy = document.createElement('div'); copy.className = 'plexstreams-connection-result-copy'; copy.textContent = message;
+      var close = document.createElement('button'); close.type = 'button'; close.className = 'plexstreams-connection-result-close'; close.setAttribute('aria-label', 'Dismiss connection result'); close.innerHTML = '&times;';
+      close.addEventListener('click', function() { line.remove(); });
+      line.appendChild(copy); line.appendChild(close);
+      connectionResults.appendChild(line);
+      var timeoutSeconds = parseInt(notificationTimeoutField.value, 10);
+      timeoutSeconds = isNaN(timeoutSeconds) ? 10 : Math.max(0, Math.min(timeoutSeconds, 3600));
+      if (success && timeoutSeconds > 0) {
+        var timeoutMilliseconds = timeoutSeconds * 1000;
+        var progress = document.createElement('span'); progress.className = 'plexstreams-connection-result-progress';
+        line.style.setProperty('--plexstreams-toast-timeout', timeoutMilliseconds + 'ms');
+        line.appendChild(progress);
+        window.setTimeout(function() { line.remove(); }, timeoutMilliseconds);
+      }
+    }
+
+    function cardServer(card) {
+      var provider = card.querySelector('.media-server-provider').value;
+      var plexUrlSelect = card.querySelector('.media-server-plex-url');
+      var baseUrl = provider === 'plex' ? (plexUrlSelect.value === '__custom__' ? card.querySelector('.media-server-custom-url').value : plexUrlSelect.value) : card.querySelector('.media-server-url').value;
+      return { provider: provider, name: card.querySelector('.media-server-name').value.trim(), baseUrl: baseUrl.trim().replace(/\/$/, ''), apiKey: provider === 'plex' ? tokenField.value : card.querySelector('.media-server-key').value.trim() };
+    }
+
+    function serverSignature(server) {
+      return [server.provider, server.baseUrl, server.apiKey].join('|');
+    }
+
+    function testCardConnection(card) {
+      var server = cardServer(card);
+      var button = card.querySelector('.plexstreams-card-test');
+      card.dataset.connectionTestSignature = '';
+      if (!server.baseUrl || (server.provider !== 'plex' && !server.apiKey) || (server.provider === 'plex' && !server.apiKey)) {
+        showConnectionResult('Enter the server URL and required credentials before testing.', false);
+        return;
+      }
+      button.disabled = true; button.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testing';
+      $.ajax({ url: '/plugins/plexstreams/test_connections.php', method: 'POST', dataType: 'json', data: { mode: 'server', server: JSON.stringify(server), useSsl: document.getElementById('FORCE_PLEX_HTTPS').value } }).done(function(data) {
+        card.dataset.connectionTestSignature = serverSignature(server);
+        showConnectionResult((server.name ? server.name + ': ' : '') + (data.message || 'Reachable from this Unraid server.'), true);
+      }).fail(function(xhr) {
+        var data = xhr.responseJSON || {};
+        showConnectionResult((server.name ? server.name + ': ' : '') + (data.message || data.error || 'The server could not be reached from this Unraid server.'), false);
+      }).always(function() { button.disabled = false; button.innerHTML = '<i class="fa fa-plug"></i> Test connection'; });
+    }
+
+    testConnectionsButton.addEventListener('click', function() {
+      connectionResults.textContent = '';
+      testConnectionsButton.disabled = true; testConnectionsButton.innerHTML = '<i class="fa fa-spinner fa-spin"></i> Testing connections';
+      $.ajax({ url: '/plugins/plexstreams/test_connections.php', method: 'POST', dataType: 'json', data: { mode: 'all' } }).done(function(data) {
+        if (!(data.results || []).length) showConnectionResult('No saved media servers to test.', false);
+        (data.results || []).forEach(function(result) { showConnectionResult((result.name || result.provider) + ': ' + (result.message || result.url), Boolean(result.success)); });
+      }).fail(function() { showConnectionResult('Unable to run saved connection tests.', false); }).always(function() {
+        testConnectionsButton.disabled = false; testConnectionsButton.innerHTML = '<i class="fa fa-plug"></i> Test connections';
+      });
+    });
+
     function placeServerCard(card, provider) {
       if (provider === 'plex') {
         var firstNonPlex = Array.prototype.find.call(list.children, function(candidate) {
@@ -274,6 +356,9 @@ function clearToken() {
       var keyLabel = field('API key', 'media-server-key', 'password'); keyLabel.lastChild.autocomplete = 'new-password'; keyLabel.lastChild.value = server.apiKey || '';
       var customUrlLabel = field('Custom server URL', 'media-server-custom-url', 'text'); customUrlLabel.lastChild.placeholder = 'http://server.example:32400'; customUrlLabel.lastChild.value = server.baseUrl || '';
       fields.appendChild(providerLabel); fields.appendChild(nameLabel); fields.appendChild(urlLabel); fields.appendChild(keyLabel); fields.appendChild(customUrlLabel); card.appendChild(fields);
+      var testButton = document.createElement('button'); testButton.type = 'button'; testButton.className = 'plexstreams-card-test'; testButton.innerHTML = '<i class="fa fa-plug"></i> Test connection';
+      testButton.addEventListener('click', function() { testCardConnection(card); });
+      card.appendChild(testButton);
       function updateProviderFields() {
         var isPlex = providerLabel.lastChild.value === 'plex';
         urlLabel.firstChild.nodeValue = isPlex ? 'Plex server' : 'Server URL';
@@ -289,6 +374,7 @@ function clearToken() {
         placeServerCard(card, providerLabel.lastChild.value);
       });
       plexUrlSelect.addEventListener('change', function() { updateProviderFields(); });
+      Array.prototype.forEach.call(card.querySelectorAll('input, select'), function(input) { input.addEventListener('input', function() { card.dataset.connectionTestSignature = ''; }); input.addEventListener('change', function() { card.dataset.connectionTestSignature = ''; }); });
       updateProviderFields();
       list.appendChild(card); updateEmptyState();
       window.requestAnimationFrame(function() { card.classList.remove('is-entering'); });
@@ -308,7 +394,10 @@ function clearToken() {
     form.addEventListener('submit', function(event) {
       var error = form.querySelector('.plexstreams-media-server-validation');
       if (error) error.remove();
+      var notificationTimeout = parseInt(notificationTimeoutField.value, 10);
+      notificationTimeoutField.value = isNaN(notificationTimeout) ? '10' : String(Math.max(0, Math.min(notificationTimeout, 3600)));
       var valid = true;
+      var untestedNewServer = false;
       var plexHosts = [];
       Array.prototype.slice.call(form.querySelectorAll('.plexstreams-generated-alias')).forEach(function(input) { input.remove(); });
       var servers = Array.prototype.map.call(list.children, function(card, index) {
@@ -321,6 +410,7 @@ function clearToken() {
         var apiKey = card.querySelector('.media-server-key').value.trim();
         try { var parsedUrl = new URL(baseUrl); valid = valid && (parsedUrl.protocol === 'http:' || parsedUrl.protocol === 'https:'); } catch (e) { valid = false; }
         valid = valid && Boolean(name && (provider === 'plex' ? plexTokenValid : apiKey));
+        if (!card.dataset.id && card.dataset.connectionTestSignature !== serverSignature({ provider: provider, baseUrl: baseUrl, apiKey: provider === 'plex' ? tokenField.value : apiKey })) untestedNewServer = true;
         if (provider === 'plex') {
           plexHosts.push(baseUrl);
           var alias = document.createElement('input');
@@ -331,9 +421,9 @@ function clearToken() {
         }
         return { id: card.dataset.id || provider + '-' + Date.now().toString(36) + '-' + index, provider: provider, name: name, baseUrl: baseUrl, apiKey: apiKey };
       });
-      if (!valid) {
+      if (!valid || untestedNewServer) {
         event.preventDefault();
-        error = document.createElement('p'); error.className = 'plexstreams-media-server-validation'; error.textContent = 'Each server needs a display name and an http(s) URL. Jellyfin and Emby require API keys; Plex must be connected first.'; form.querySelector('.plexstreams-media-servers').appendChild(error); return;
+        error = document.createElement('p'); error.className = 'plexstreams-media-server-validation'; error.textContent = untestedNewServer ? 'Test each newly added server successfully before saving.' : 'Each server needs a display name and an http(s) URL. Jellyfin and Emby require API keys; Plex must be connected first.'; form.querySelector('.plexstreams-media-servers').appendChild(error); return;
       }
       document.getElementById('HOST').value = plexHosts.join(',');
       document.getElementById('CUSTOM_SERVERS').value = '';
