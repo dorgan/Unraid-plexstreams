@@ -119,8 +119,9 @@ assertSameValue(['https://plex.example:32400'], getConfiguredHosts([
 ]), 'configured hosts');
 assertSameValue(true, isConfiguredPlexHost('https://plex.example:32400/', ['HOST' => 'https://plex.example:32400']), 'configured image host');
 assertSameValue(false, isConfiguredPlexHost('https://external.example', ['HOST' => 'https://plex.example:32400']), 'external image host');
-assertSameValue('https://plex.example:32400/library/metadata/1/thumb?X-Plex-Token=token', buildPlexImageUrl('https://plex.example:32400', '/library/metadata/1/thumb', 'token'), 'image URL');
-assertSameValue(false, buildPlexImageUrl('https://plex.example:32400', 'https://external.example/image', 'token'), 'absolute image URL');
+assertSameValue('https://plex.example:32400/library/metadata/1/thumb', buildPlexImageUrl('https://plex.example:32400', '/library/metadata/1/thumb'), 'image URL');
+assertSameValue(false, buildPlexImageUrl('https://plex.example:32400', 'https://external.example/image'), 'absolute image URL');
+assertSameValue(['X-Plex-Token: token'], getPlexRequestHeaders('token'), 'Plex token request header');
 assertSameValue('/plugins/plexstreams/getImage.php?img=%2Flibrary%2Fmetadata%2F1%2Fthumb&host=https%3A%2F%2Fplex.example%3A32400', buildStreamImageUrl('https://plex.example:32400', '/library/metadata/1/thumb'), 'relative stream image URL');
 assertSameValue('https://metadata-static.plex.tv/channel.jpg', buildStreamImageUrl('https://plex.example:32400', 'https://metadata-static.plex.tv/channel.jpg'), 'external channel image URL');
 $unsupportedConnectionTest = testMediaServerConnection(['provider' => 'unsupported', 'baseUrl' => 'http://plex.test']);

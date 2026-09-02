@@ -53,7 +53,7 @@ flowchart LR
 3. Unraid's `/update.php` writes legacy Plex values plus dashboard/debug preferences and the `MEDIA_SERVERS` JSON registry. The settings UI exposes Plex, Jellyfin, and Emby server cards; Jellyfin/Emby require a direct base URL and API key.
 4. Plex discovery still calls `getServers.php`, which requests the Plex device and resource APIs. The transient OAuth token can be used before settings are saved. Jellyfin and Emby are manually configured server instances.
 5. Visible dashboard and stream views poll `ajax.php` on a five-second cadence. `startStreamPolling()` schedules the next request only after the preceding request completes and defers polling while the browser tab is hidden.
-6. `getAllMergedStreams()` preserves legacy Plex configuration, fetches Plex `/status/sessions` XML, and fetches Jellyfin/Emby `/Sessions` JSON with `X-Emby-Token`. Plex XML is normalized by `mergeStreams()`; Jellyfin/Emby sessions are normalized by `mapEmbyLikeSession()` into the same response shape.
+6. `getAllMergedStreams()` preserves legacy Plex configuration, fetches Plex `/status/sessions` XML with the `X-Plex-Token` request header, and fetches Jellyfin/Emby `/Sessions` JSON with `X-Emby-Token`. Plex XML is normalized by `mergeStreams()`; Jellyfin/Emby sessions are normalized by `mapEmbyLikeSession()` into the same response shape.
 7. The browser creates, updates, animates, and removes cards by stable provider-prefixed stream ID. It resynchronizes its one-second playback counter on every poll, groups cards by server, retains expansion state in the browser, and can request termination when the provider reports remote-control capability.
 
 ## Configuration Model

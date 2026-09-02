@@ -30,7 +30,7 @@
         exit;
     }
 
-    $url = buildPlexImageUrl($host, $imagePath, $cfg['TOKEN']);
+    $url = buildPlexImageUrl($host, $imagePath);
     if ($url === false) {
         http_response_code(400);
         exit;
@@ -55,6 +55,7 @@
     curl_setopt($ch, CURLOPT_BUFFERSIZE, 12800);
     curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
     curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+    curl_setopt($ch, CURLOPT_HTTPHEADER, getPlexRequestHeaders($cfg['TOKEN']));
     $out = curl_exec($ch);
     $statusCode = curl_getinfo($ch, CURLINFO_RESPONSE_CODE);
     $headerSize = curl_getinfo($ch, CURLINFO_HEADER_SIZE);

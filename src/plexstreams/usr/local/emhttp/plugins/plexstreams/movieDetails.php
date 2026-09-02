@@ -32,8 +32,8 @@ body {
 
     if (!empty($cfg['TOKEN']) && isset($_GET['details'])) {
         $host =  $_GET['host'];
-        $url = urldecode($host) . urldecode($_GET['details']) . '?X-Plex-Token=' . $cfg['TOKEN'];
-        $details = getXml($url);
+        $url = urldecode($host) . urldecode($_GET['details']);
+        $details = getPlexXml($url, $cfg['TOKEN']);
         $video = $details['Video'] ?? null;
 
         if ($video === null) {

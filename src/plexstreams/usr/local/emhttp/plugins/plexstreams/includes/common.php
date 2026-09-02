@@ -79,10 +79,10 @@
     }
 
     function getServers($cfg) {
-        $url = 'https://plex.tv/devices.xml?X-Plex-Token=' . $cfg['TOKEN'];
-        $url2 = 'https://plex.tv/api/resources?X-Plex-Token=' .$cfg['TOKEN'] . ($cfg['FORCE_PLEX_HTTPS'] === '1' ? '&includeHttps=1' : '');
+        $url = 'https://plex.tv/devices.xml';
+        $url2 = 'https://plex.tv/api/resources' . ($cfg['FORCE_PLEX_HTTPS'] === '1' ? '?includeHttps=1' : '');
         debugLog($cfg, 'Starting Plex server discovery', ['devicesUrl' => $url, 'resourcesUrl' => $url2]);
-        $servers = getXml($url);
+        $servers = getPlexXml($url, $cfg['TOKEN']);
         if ($servers !== false) {
             $serverList = [];
             if (isset($servers['@attributes'])) {
@@ -105,7 +105,7 @@
                     }
                 }
                 if (count($serverList) > 0) {
-                    $connections = getXml($url2);
+                    $connections = getPlexXml($url2, $cfg['TOKEN']);
                     if ($connections !== false) {
                         foreach($connections['Device'] as $device) {
                             $identifier = $device['@attributes']['clientIdentifier'];
@@ -148,12 +148,12 @@
         return false;
     }
 
-    function buildPlexImageUrl($host, $imagePath, $token) {
+    function buildPlexImageUrl($host, $imagePath) {
         if (!is_string($imagePath) || strpos($imagePath, '/') !== 0) {
             return false;
         }
 
-        return rtrim($host, '/') . $imagePath . (strpos($imagePath, '?') === false ? '?' : '&') . 'X-Plex-Token=' . urlencode($token);
+        return rtrim($host, '/') . $imagePath;
     }
 
     function buildStreamImageUrl($host, $imagePath) {
@@ -190,8 +190,8 @@
             return $cache[$cacheKey]['thumb'];
         }
 
-        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey) . '?X-Plex-Token=' . urlencode($cfg['TOKEN']);
-        $metadata = getXml($url, 2);
+        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey);
+        $metadata = getPlexXml($url, $cfg['TOKEN'], 2);
         $attributes = $metadata['MediaContainer']['Metadata']['@attributes']
             ?? $metadata['MediaContainer']['Video']['@attributes']
             ?? $metadata['Metadata']['@attributes']
@@ -238,8 +238,8 @@
             return $cache[$cacheKey]['context'];
         }
 
-        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey) . '?X-Plex-Token=' . urlencode($cfg['TOKEN']);
-        $metadata = getXml($url, 2);
+        $url = rtrim($source['@host'], '/') . '/library/metadata/' . rawurlencode($ratingKey);
+        $metadata = getPlexXml($url, $cfg['TOKEN'], 2);
         $mediaItems = $metadata['MediaContainer']['Video']['Media'] ?? $metadata['Video']['Media'] ?? [];
         $context = ['channel' => '', 'network' => ''];
         foreach (normalizeXmlList($mediaItems) as $mediaItem) {
@@ -271,11 +271,11 @@
 
         foreach($hosts as $host) {
             if (!empty($cfg['TOKEN'])) {
-                $streams[] = $host . "/status/sessions?X-Plex-Token=" . $cfg['TOKEN'] . '&_m=' . time();
+                $streams[] = $host . '/status/sessions?_m=' . time();
             }
         }
 
-        return !empty($cfg['TOKEN']) && !empty($streams) ? getXmlBatch($streams, $cfg) : [];
+        return !empty($cfg['TOKEN']) && !empty($streams) ? getPlexXmlBatch($streams, $cfg) : [];
     }
 
     function getMergedStreams($cfg) {
@@ -287,8 +287,7 @@
     function terminatePlexSession($host, $sessionId, $reason, $token) {
         $query = http_build_query([
             'sessionId' => $sessionId,
-            'reason' => $reason,
-            'X-Plex-Token' => $token
+            'reason' => $reason
         ]);
         $handle = curl_init(rtrim($host, '/') . '/status/sessions/terminate?' . $query);
         curl_setopt($handle, CURLOPT_RETURNTRANSFER, true);
@@ -296,6 +295,7 @@
         curl_setopt($handle, CURLOPT_SSL_VERIFYPEER, 0);
         curl_setopt($handle, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($handle, CURLOPT_TIMEOUT, 15);
+        curl_setopt($handle, CURLOPT_HTTPHEADER, getPlexRequestHeaders($token));
 
         $response = curl_exec($handle);
         $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
@@ -337,11 +337,11 @@
                 'liveTv' => false,
                 'tuners' => false
             ];
-            $urls[] = $normalizedHost . '/?X-Plex-Token=' . urlencode($cfg['TOKEN']);
-            $identityUrls[] = $normalizedHost . '/identity?X-Plex-Token=' . urlencode($cfg['TOKEN']);
+            $urls[] = $normalizedHost . '/';
+            $identityUrls[] = $normalizedHost . '/identity';
         }
 
-        foreach (getXmlBatch($urls, $cfg) as $response) {
+        foreach (getPlexXmlBatch($urls, $cfg) as $response) {
             $host = getServerHost($response['url']);
             if ($host === '' || !isset($servers[$host])) {
                 continue;
@@ -356,7 +356,7 @@
             $servers[$host]['tuners'] = ($attributes['allowTuners'] ?? '') === '1';
         }
 
-        foreach (getXmlBatch($identityUrls, $cfg) as $response) {
+        foreach (getPlexXmlBatch($identityUrls, $cfg) as $response) {
             $host = getServerHost($response['url']);
             if ($host !== '' && isset($servers[$host])) {
                 $servers[$host]['claimed'] = ($response['content']['@attributes']['claimed'] ?? '') === '1';
@@ -367,7 +367,7 @@
     }
 
     function getPlexContainerCount($host, $path, $token) {
-        $response = getXml(rtrim($host, '/') . $path . (strpos($path, '?') === false ? '?' : '&') . 'X-Plex-Token=' . urlencode($token), 5);
+        $response = getPlexXml(rtrim($host, '/') . $path, $token, 5);
         $attributes = $response['MediaContainer']['@attributes'] ?? $response['@attributes'] ?? [];
 
         return isset($attributes['totalSize']) ? (int)$attributes['totalSize'] : (int)($attributes['size'] ?? 0);
@@ -378,9 +378,9 @@
 
         foreach (getConfiguredHosts($cfg) as $host) {
             $host = rtrim($host, '/');
-            $root = getXml($host . '/?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $root = getPlexXml($host . '/', $cfg['TOKEN'], 5);
             $rootAttributes = $root['MediaContainer']['@attributes'] ?? $root['@attributes'] ?? [];
-            $sectionResponse = getXml($host . '/library/sections?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $sectionResponse = getPlexXml($host . '/library/sections', $cfg['TOKEN'], 5);
             $sections = normalizeXmlList($sectionResponse['MediaContainer']['Directory'] ?? $sectionResponse['Directory'] ?? []);
             $libraries = [];
 
@@ -413,7 +413,7 @@
                 }
             }
 
-            $dvrResponse = getXml($host . '/livetv/dvrs?X-Plex-Token=' . urlencode($cfg['TOKEN']), 5);
+            $dvrResponse = getPlexXml($host . '/livetv/dvrs', $cfg['TOKEN'], 5);
             $dvrs = normalizeXmlList($dvrResponse['MediaContainer']['Dvr'] ?? $dvrResponse['Dvr'] ?? []);
             $tuners = 0;
             foreach ($dvrs as $dvr) {
@@ -445,11 +445,25 @@
         return $xml === false ? false : json_decode(json_encode($xml), true);
     }
 
-    function getXml($url, $timeout = 30) {
+    function getPlexRequestHeaders($token) {
+        return ['X-Plex-Token: ' . $token];
+    }
+
+    function getPlexXml($url, $token, $timeout = 30) {
+        return getXml($url, $timeout, getPlexRequestHeaders($token));
+    }
+
+    function getXml($url, $timeout = 30, $headers = []) {
+        $headers = array_merge([
+            'Content-Type: application/xml; charset=utf-8',
+            'Connection: close',
+            'Cache-Control: no-cache, no-store, must-revalidate, max-age=0',
+            'Pragma: no-cache'
+        ], $headers);
         $arrContextOptions = array(
             "http" => array(
                 "method" => "GET",
-                "header" => "Content-Type: application/xml; charset=utf-8;\r\nConnection: close\r\nCache-Control: no-cache, no-store, must-revalidate, max-age=0\r\nPragma: no-cache\r\n",
+                "header" => implode("\r\n", $headers) . "\r\n",
                 "ignore_errors" => true,
                 "timeout" => (float)$timeout
             ),
@@ -514,6 +528,9 @@
             curl_setopt($multi[$id], CURLOPT_TIMEOUT, 30);
             curl_setopt($multi[$id], CURLOPT_FOLLOWLOCATION, 1);
             curl_setopt($multi[$id], CURLOPT_RETURNTRANSFER, 1);
+            if (!empty($cfg['headers'])) {
+                curl_setopt($multi[$id], CURLOPT_HTTPHEADER, $cfg['headers']);
+            }
             curl_multi_add_handle($mh, $multi[$id]);
         }
 
@@ -552,6 +569,11 @@
 
         curl_multi_close($mh);
         return $rets;
+    }
+
+    function getPlexXmlBatch($urls, $cfg) {
+        $cfg['headers'] = getPlexRequestHeaders($cfg['TOKEN']);
+        return getXmlBatch($urls, $cfg);
     }
 
     function formatPlaybackTiming($duration, $viewOffset, $display, $roundEndSeconds, $emptyProgress) {
@@ -1051,9 +1073,9 @@
             if ($token === '') {
                 return ['success' => false, 'url' => $baseUrl, 'message' => 'A Plex account token is required.'];
             }
-            $url = $baseUrl . '/identity?X-Plex-Token=' . rawurlencode($token);
+            $url = $baseUrl . '/identity';
             $handle = curl_init($url);
-            curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => $timeout, CURLOPT_SSL_VERIFYHOST => 0, CURLOPT_SSL_VERIFYPEER => 0]);
+            curl_setopt_array($handle, [CURLOPT_RETURNTRANSFER => true, CURLOPT_CONNECTTIMEOUT => 4, CURLOPT_TIMEOUT => $timeout, CURLOPT_SSL_VERIFYHOST => 0, CURLOPT_SSL_VERIFYPEER => 0, CURLOPT_HTTPHEADER => getPlexRequestHeaders($token)]);
             $body = curl_exec($handle);
             $statusCode = curl_getinfo($handle, CURLINFO_RESPONSE_CODE);
             $error = curl_error($handle);
