@@ -691,6 +691,20 @@
         .details li {
             font-size: 11px;
         }
+
+        /*
+         * On phones the one-column detail list can be taller than the space
+         * above the persistent card footer. Keep the artwork card fixed and
+         * let only this pane scroll so the remaining stream fields stay
+         * reachable.
+         */
+        .details {
+            bottom: 92px;
+            overflow-x: hidden;
+            overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+        }
     }
 
     @media (max-width: 560px) {

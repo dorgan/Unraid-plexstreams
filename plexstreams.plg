@@ -334,7 +334,12 @@
 
     <FILE Name="&plgPATH;/&name;.cfg">
         <INLINE>
-      <![CDATA[HOST="" TOKEN=""]]>
+      <![CDATA[
+HOST=""
+TOKEN=""
+DISPLAY_NAV="1"
+DISPLAY_WIDGET="1"
+      ]]>
       </INLINE>
     </FILE>
 
@@ -360,25 +365,18 @@
     <!-- POST-INSTALL SCRIPT -->
     <FILE Run="/bin/bash">
         <INLINE>
-            WIDGET_OFF_FILE=/usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
-            WIDGET_SETTING=`php -r
-            'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg",
-            false)["DISPLAY_WIDGET"]);'`
-            if [[ -f "$WIDGET_OFF_FILE" || "$WIDGET_SETTING" == "0" ]]; then
-            rm -f /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
-            mv -f /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page
-            /usr/local/emhttp/plugins/plexstreams/PlexStreams_dashboard.page.off
-            fi
-
-            NAV_OFF=/usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
-            NAV_SETTING=`php -r
-            'exit(parse_ini_file("/boot/config/plugins/plexstreams/plexstreams.cfg",
-            false)["DISPLAY_NAV"]);'`
-            if [[ -f "$NAV_OFF" || "$NAV_SETTING" == "0" ]]; then
-            rm -f /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
-            mv -f /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page
-            /usr/local/emhttp/plugins/plexstreams/Plex_Streams.page.off
-            fi
+            # Page Cond expressions honor the saved visibility settings. Restore
+            # pages hidden by older installs without replacing newly installed files.
+            for PAGE in PlexStreams_dashboard NewDashboard Plex_Streams; do
+                PAGE_FILE="&emhttp;/$PAGE.page"
+                if [[ -f "$PAGE_FILE.off" ]]; then
+                    if [[ -f "$PAGE_FILE" ]]; then
+                        rm -f "$PAGE_FILE.off"
+                    else
+                        mv -f "$PAGE_FILE.off" "$PAGE_FILE"
+                    fi
+                fi
+            done
 
             echo ""
             echo "-----------------------------------------------------------"

@@ -4,7 +4,12 @@
     $cfg_file    = "$plg_path/" . $plugin . ".cfg";
 
     if (file_exists($cfg_file)) {
-        $cfg  = parse_ini_file($cfg_file);
+        // Older installers wrote an invalid one-line INI file. Keep settings
+        // usable so the next save can replace it with a valid configuration.
+        $cfg = @parse_ini_file($cfg_file);
+        if (!is_array($cfg)) {
+            $cfg = array();
+        }
     } else {
         $cfg = array();
     }
