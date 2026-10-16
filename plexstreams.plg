@@ -2,7 +2,7 @@
 <!DOCTYPE PLUGIN [
     <!ENTITY name "plexstreams">
     <!ENTITY author "Donald Organ">
-    <!ENTITY version "2026.09.02">
+    <!ENTITY version "2026.10.16">
     <!ENTITY launch "Settings/PlexStreams">
     <!ENTITY branch "master">
     <!ENTITY gitURL "https://raw.githubusercontent.com/dorgan/Unraid-&name;/&branch;">
@@ -11,7 +11,7 @@
     <!ENTITY emhttp "/usr/local/emhttp/plugins/&name;">
     <!ENTITY plgPATH "/boot/config/plugins/&name;">
     <!ENTITY plgNAME "&name;-&version;-x86_64-1">
-    <!ENTITY md5 "b713527865feab484e109af7acc380e0">
+    <!ENTITY md5 "7419e6a747efba373c8dcf7452d2e6b7">
 ]>
 
 <PLUGIN name="&name;"
@@ -25,6 +25,9 @@
 
     <CHANGES>
         ##&name;
+        ###2026.10.16
+        - fix: correct fresh-install configuration and boot errors
+
         ###2026.09.02
         - refactor: streamline Plex API requests by removing token from URLs and adding request
         headers
@@ -334,12 +337,7 @@
 
     <FILE Name="&plgPATH;/&name;.cfg">
         <INLINE>
-      <![CDATA[
-HOST=""
-TOKEN=""
-DISPLAY_NAV="1"
-DISPLAY_WIDGET="1"
-      ]]>
+      <![CDATA[HOST="" TOKEN="" DISPLAY_NAV="1" DISPLAY_WIDGET="1"]]>
       </INLINE>
     </FILE>
 
@@ -368,14 +366,14 @@ DISPLAY_WIDGET="1"
             # Page Cond expressions honor the saved visibility settings. Restore
             # pages hidden by older installs without replacing newly installed files.
             for PAGE in PlexStreams_dashboard NewDashboard Plex_Streams; do
-                PAGE_FILE="&emhttp;/$PAGE.page"
-                if [[ -f "$PAGE_FILE.off" ]]; then
-                    if [[ -f "$PAGE_FILE" ]]; then
-                        rm -f "$PAGE_FILE.off"
-                    else
-                        mv -f "$PAGE_FILE.off" "$PAGE_FILE"
-                    fi
-                fi
+            PAGE_FILE="&emhttp;/$PAGE.page"
+            if [[ -f "$PAGE_FILE.off" ]]; then
+            if [[ -f "$PAGE_FILE" ]]; then
+            rm -f "$PAGE_FILE.off"
+            else
+            mv -f "$PAGE_FILE.off" "$PAGE_FILE"
+            fi
+            fi
             done
 
             echo ""
